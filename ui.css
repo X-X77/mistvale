@@ -471,3 +471,14 @@
   #loading .loading-ver{width:50px;bottom:3px;}
   #loading .loading-track{margin-top:25px;}
 }
+
+
+/* Optional BGM; silence on first page load until an explicit game/menu click. */
+.bgm-toggle{
+  border:1px solid #ede2bb85;border-radius:3px;background:#17342db8;color:#f5edda;
+  padding:9px 13px;min-height:36px;font:500 11px/1.2 var(--sans);
+  letter-spacing:.02em;white-space:nowrap;text-shadow:0 1px 6px #15261d;
+}
+.bgm-toggle[aria-pressed="true"]{border-color:#e9d6a4;background:#546d4dd9;}
+.bgm-toggle:hover{background:#304c3ce8;}
+@media(max-width:600px){.topbar>div{gap:9px}.bgm-toggle{padding:8px 9px;font-size:10px;}}
