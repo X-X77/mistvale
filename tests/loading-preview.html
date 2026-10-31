@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MISTVALE 로딩 컴포넌트 검증</title>
+<link rel="stylesheet" href="../styles.css"><link rel="stylesheet" href="../ui.css">
+<style>body{padding:32px}main{max-width:600px;margin:auto}#host{height:300px;position:relative;margin:20px 0}button{padding:12px;background:#29473e;border:1px solid #aaa477}h1{font-size:24px;letter-spacing:0}canvas{display:block;margin:auto}</style>
+<main><h1>로딩 컴포넌트 검증</h1><p>실제 오프닝에서는 이동용 베르 로딩을 호출하지 않습니다.</p>
+<div id="host"></div><button id="show">이동 로딩 표시</button> <button id="hide">이동 로딩 숨기기</button>
+<label><input type="checkbox" id="reduce">동작 줄이기</label>
+<canvas id="farm" class="pixel-stage" width="160" height="86" aria-label="도트 농사 애니메이션"></canvas>
+<script type="module">
+import { createTravelLoader, createPixelLoader } from '../js/loading.js';
+const reduced = () => document.querySelector('#reduce').checked;
+const loader = createTravelLoader(document.querySelector('#host'), { reduced });
+document.querySelector('#show').onclick = () => loader.show();
+document.querySelector('#hide').onclick = () => loader.hide();
+const farm = createPixelLoader(document.querySelector('#farm'), { reduced });
+farm.start(); loader.show();
+window.addEventListener('pagehide', () => { farm.stop(); loader.destroy(); });
+</script></main></html>
