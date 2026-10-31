@@ -437,3 +437,37 @@
   #loading .loading-track {width:100%;}
   #loading .pixel-stage {object-position:52% center;}
 }
+
+
+/* v0.5 — creator-supplied Ber sprite follows the real loading progress. */
+#loading .ver-progress-rail{
+  position:relative;display:block;flex:1;min-width:0;height:8px;
+}
+#loading .ver-progress-rail progress{
+  display:block;position:absolute;left:0;bottom:0;width:100%;
+  height:3px;margin:0;
+}
+#loading .loading-ver{
+  position:absolute;z-index:3;display:block;
+  width:clamp(43px,5.8vw,64px);height:auto;
+  bottom:3px;left:27px;pointer-events:none;
+  image-rendering:pixelated;
+  transform:translateX(-50%) scaleX(-1);
+  transform-origin:50% 100%;
+  filter:drop-shadow(0 3px 4px rgba(4,17,17,.55));
+  animation:mistvale-ver-run 340ms ease-in-out infinite;
+  will-change:left,transform;
+}
+@keyframes mistvale-ver-run{
+  0%,100%{transform:translateX(-50%) scaleX(-1) translateY(0)}
+  50%{transform:translateX(-50%) scaleX(-1) translateY(-5px)}
+}
+#loading .loading-track{margin-top:30px;}
+#game.reduced-motion #loading .loading-ver{animation:none;}
+@media(prefers-reduced-motion:reduce){
+  #loading .loading-ver{animation:none;}
+}
+@media(max-width:600px){
+  #loading .loading-ver{width:50px;bottom:3px;}
+  #loading .loading-track{margin-top:25px;}
+}
