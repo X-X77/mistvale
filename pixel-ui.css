@@ -219,3 +219,56 @@ dialog#settings .settings-done{background:#3d6e60!important;color:#fff9e3!import
  [data-scene="notification"] .parchment,[data-scene="result"] .parchment{max-height:calc(100svh - 80px);}
 }
 @media(prefers-reduced-motion:reduce){[data-scene="story"] .next-mark{animation:none;}}
+
+/* v2 — actual 320×180 pixel scene, not an upscaled painterly illustration. */
+[data-scene="story"] .room,
+[data-scene="notification"] .room,
+[data-scene="result"] .room {
+  background-image:url("./assets/pixel-farmhouse.svg");
+  background-color:#527369;
+  background-size:cover;
+  background-position:center;
+  image-rendering:pixelated;
+  filter:none;
+}
+[data-scene="story"] .room:after,
+[data-scene="notification"] .room:after,
+[data-scene="result"] .room:after{
+  background:linear-gradient(180deg,#112e2815 30%,#0d242755 100%);
+}
+[data-scene="notification"] .parchment,
+[data-scene="result"] .parchment {
+  width:min(565px,100%);
+  background:#f3ddb1;
+  border-width:4px;
+  box-shadow:inset 0 0 0 4px #fff0c7,inset 0 0 0 9px #ae8154,6px 6px 0 #142d2b,0 15px 0 #13282677;
+  padding:clamp(20px,3vw,31px);
+}
+[data-scene="notification"] .parchment h2,[data-scene="result"] .parchment h2{font-size:clamp(19px,2.4vw,24px);}
+[data-scene="notification"] .registration-data{background:#f8e9c9;border-color:#92764f;box-shadow:inset 0 0 0 3px #e2c598;}
+[data-scene="notification"] .choices button{
+  background:#e8c995;color:#2a4240;border-color:#735b43;
+  box-shadow:inset 0 0 0 3px #fff0c8,4px 4px 0 #614f3d;
+  min-height:57px;
+  font-size:15px;
+}
+[data-scene="notification"] .choices button>span{
+  background:#547a71;border-color:#2c544f;color:#fff3cb;
+}
+[data-scene="notification"] .choices button>b{color:#496e65;}
+[data-scene="notification"] .choices button:hover:not(:disabled),
+[data-scene="notification"] .choices button:focus-visible{
+  background:#5e8876;color:#fff6d6;border-color:#274a45;
+  box-shadow:inset 0 0 0 3px #a5c4a5,4px 4px 0 #2c4d42;
+}
+[data-scene="notification"] .choices button:hover>b,
+[data-scene="notification"] .choices button:focus-visible>b{color:#fff0c9;}
+[data-scene="notification"] .choices button.chosen{
+  background:#3d6a5f;color:#fff8dc;
+}
+[data-scene="story"] .dialogue-shell{background:#f7e3bb;}
+[data-scene="story"] .dialogue-toolbar button{box-shadow:2px 2px 0 #826d50;}
+@media(max-width:650px){
+ [data-scene="notification"] .parchment,[data-scene="result"] .parchment{padding:22px 17px;}
+ [data-scene="notification"] .choices button{font-size:13px;min-height:55px;}
+}
