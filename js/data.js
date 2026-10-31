@@ -14,4 +14,4 @@ export const results = {
   village: { label: '창밖의 마을', heading: '안개 너머, 미스트베일', text: '초록 들판 너머로 지붕들이 옹기종기 모여 있다. 굴뚝에서는 가느다란 연기가 피어나고, 멀리서 아침을 알리는 종소리가 들려온다. 지붕 사이로 난 좁은 길은 낮은 언덕 너머로 이어져 있었다.', note: '오프닝 미리보기 · 마을 탐색은 다음 이야기에서 이어집니다.' },
   logout: { label: 'SYSTEM ERROR', heading: '로그아웃 기능을 찾을 수 없습니다.', text: ' ', note: '이곳의 이야기는 이제 막 시작되었습니다.' },
 };
-export const assets = { title: './assets/title.jpg', room: './assets/room.jpg', ver: './assets/ver.png' };
+export const assets = { title: './assets/title.jpg', room: './assets/room.jpg', ver: './assets/ver-illustration.webp' };

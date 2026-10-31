@@ -95,6 +95,16 @@ function sceneVer(ctx,imgs,t,reduce,w,h){
   ctx.fillRect(x-55-f*30,382-(n%2)*7,Math.max(1,4-f*3),3);
  }}
 }
+
+function syncVerOnProgressBar(){
+  const mascot=document.getElementById('loading-ver');
+  const progress=document.getElementById('progress');
+  if(!mascot||!progress)return;
+  const percent=Math.max(0,Math.min(100,Number(progress.value)||0));
+  // CSS clamps the mascot inside the rail, including small mobile widths.
+  mascot.style.left=`clamp(27px, ${percent}%, calc(100% - 27px))`;
+}
+
 export function createPixelLoader(canvas,{mode='farm',reduced=()=>false,sprite=null}={}){
  const ctx=canvas?.getContext('2d');
  if(!ctx)return {start(){},stop(){}};
@@ -121,6 +131,7 @@ export function createPixelLoader(canvas,{mode='farm',reduced=()=>false,sprite=n
    const n=reduced()?0:Math.floor(t/(sprite.frameMs||160))%(sprite.frames||1);
    ctx.drawImage(sheet,n*sprite.width,0,sprite.width,sprite.height,360,225,190,190);
   }
+  if(mode==='farm')syncVerOnProgressBar();
   frameId=requestAnimationFrame(paint);
  }
  return {
