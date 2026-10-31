@@ -1,11 +1,24 @@
 import { narrative, results, assets } from './data.js';
 import { readSave, writeSave } from './storage.js';
 import { Sound } from './audio.js';
+import { Music } from './music.js';
 import { createPixelLoader, prepareImages } from './loading.js';
 import { readingTime } from './dialogue-timing.js';
 
 const $ = id => document.getElementById(id);
 const game=$('game'), settings=$('settings'), sound=new Sound();
+const music=new Music({onChange:()=>updateMusicButton()});
+function updateMusicButton(){
+  const button=$('music-toggle');if(!button)return;
+  const playing=music.isPlaying();
+  button.textContent=playing?'♫ BGM 켜짐':'♫ BGM 시작';
+  button.setAttribute('aria-pressed',String(playing));
+  button.setAttribute('aria-label',playing?'배경음악 끄기':'배경음악 시작');
+}
+function toggleMusic(){
+  if(music.isPlaying()){music.setEnabled(false);}else{music.setEnabled(true);music.activate();}
+  updateMusicButton();
+}
 const preferences=readSave(), systemMotion=matchMedia('(prefers-reduced-motion: reduce)');
 let scene='title',controller=new AbortController(),line=0,typeTimer=0,autoTimer=0;
 let fullText='',typing=false,auto=true,choosing=false;
@@ -31,6 +44,7 @@ function scheduleAuto(){
 function setScene(next){
   controller.abort();controller=new AbortController();clearInterval(typeTimer);cancelAuto();typing=false;choosing=false;
   farmLoader.stop();scene=next;game.dataset.scene=next;
+  music.setScene(next,{delay: next==='story'?1250:0});
   game.classList.remove('anomaly','blooming','revealing');
   for(const id of ['title','loading','story','notification','result'])$(id).hidden=id!==next;
   $('skip').hidden=!['loading','transition'].includes(next);
@@ -142,8 +156,9 @@ function openSettings(){if(!settings.open){cancelAuto();settings.showModal();}}
 systemMotion.addEventListener('change',()=>{updateSettings();if(typing&&reduced())finishText();});
 settings.addEventListener('close',scheduleAuto);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelAuto();else scheduleAuto();});
-$('new-game').addEventListener('click',launch);
-$('continue').addEventListener('click',()=>{if(preferences.completed){sound.play();awaken();}});
+$('new-game').addEventListener('click',()=>{music.activate();launch();});
+$('music-toggle').addEventListener('click',toggleMusic);
+$('continue').addEventListener('click',()=>{if(preferences.completed){music.activate();sound.play();awaken();}});
 $('skip').addEventListener('click',()=>{if(['loading','transition'].includes(scene))awaken();});
 $('dialogue').addEventListener('click',()=>advance());
 $('auto-toggle').addEventListener('click',()=>{
@@ -178,4 +193,4 @@ for(const [name,url]of Object.entries(assets)){
   image.src=url;
 }
 document.querySelectorAll('#result-ver img').forEach(image=>image.addEventListener('error',()=>{image.hidden=true;}));
-updateSettings();restoreRoute();
+updateSettings();restoreRoute();updateMusicButton();
