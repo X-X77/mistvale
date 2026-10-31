@@ -1,101 +1,152 @@
-// Code-drawn placeholder sprites. Supply a horizontal sprite sheet to replace them.
-// No player identity is implied by the anonymous farming symbol.
-export function createPixelLoader(canvas, { mode = 'farm', reduced = () => false, sprite = null } = {}) {
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return { start() {}, stop() {} };
-  canvas.width = 160; canvas.height = 86;
-  ctx.imageSmoothingEnabled = false;
-  let frame = 0, running = false, start = 0, sheet = null;
-  if (sprite?.src) {
-    const image = new Image();
-    image.onload = () => { sheet = image; };
-    image.src = sprite.src;
-  }
-  const rect = (x, y, w, h, color) => { ctx.fillStyle = color; ctx.fillRect(Math.round(x), Math.round(y), w, h); };
-  function drawFarm(t) {
-    // Floating little garden island, tilled rows, grass and tiny spring flowers.
-    rect(18,64,124,4,'#273b32'); rect(23,61,114,4,'#718455');
-    rect(34,65,92,5,'#5d4b35'); rect(40,70,80,3,'#394238');
-    rect(69,54,53,9,'#8a6747');
-    for (let x=72;x<120;x+=12) {rect(x,56,7,2,'#b28b58');rect(x,60,7,2,'#5d4735');}
-    rect(24,57,2,5,'#8ea866'); rect(28,59,2,3,'#8ea866');
-    rect(130,55,2,7,'#81985c');rect(127,54,3,2,'#e3ce92');
-    const phase = t % 6400;
-    const walk = phase < 1300;
-    const x = walk ? 24 + Math.floor(phase / 1300 * 31) : 55;
-    const bob = walk ? Math.floor(phase/160)%2 : (phase>2400&&phase<4200 ? Math.floor(phase/350)%2 : 0);
-    const y = 31 + bob;
-    // Hat, tiny shadowed face, neutral overalls and boots. No facial/body traits.
-    rect(x+4,y-3,10,5,'#d6be7c');rect(x,y+2,19,3,'#e9d49b');
-    rect(x+5,y+5,9,6,'#aa9670');rect(x+12,y+6,2,2,'#36453b');
-    rect(x+3,y+11,12,10,'#a8b493');rect(x+6,y+12,7,10,'#526c60');
-    rect(x+4,y+21,4,6,'#344e46');rect(x+10,y+21,4,6,'#344e46');
-    const step = walk ? (Math.floor(phase/160)%2)*2 : 0;
-    rect(x+2,y+26-step,6,3,'#d1b481');rect(x+10,y+26+step,6,3,'#d1b481');
-    if (phase>=1300&&phase<2500) {
-      rect(x+15,y+12,6,3,'#c0ad82');
-      for(let n=0;n<3;n++){const f=((phase-1300+n*210)%700)/700;rect(x+22+f*20,y+13+f*11,2,2,'#e4c785');}
-    } else if (phase>=2500&&phase<4300) {
-      rect(x+15,y+13,9,7,'#8db3ac');rect(x+23,y+14,5,3,'#a8c5b1');
-      rect(x+17,y+10,5,2,'#a8c5b1');
-      for(let n=0;n<5;n++){const f=((phase+n*110)%600)/600;rect(x+28+f*11+n%2,y+16+f*15,1,3,'#b6dcce');}
-    } else rect(x+15,y+12,3,8,'#c0ad82');
-    if (phase>=4200) {
-      const height = Math.min(9,Math.floor((phase-4200)/110));
-      for(let x=78;x<120;x+=15){rect(x,56-height,2,height,'#8faa69');if(height>4){rect(x-4,56-height,4,3,'#b6cc82');rect(x+2,53-height,4,3,'#a2bd70');}}
-    }
-    if (phase>5500) {ctx.fillStyle='rgba(25,43,38,'+Math.max(0,(phase-5800)/600)+')';ctx.fillRect(0,0,160,86);}
-  }
-  function drawVer(t) {
-    const bounce = reduced() ? 0 : Math.sin(t/160)*2, y=42+bounce;
-    rect(24,66,112,1,'#7f8662');
-    rect(64,y,25,18,'#292c33');rect(59,y+5,35,11,'#34353c');
-    rect(65,y-5,4,7,'#cc9b9d');rect(83,y-5,4,7,'#cc9b9d');
-    rect(53,y+5,8,5,'#554652');rect(91,y+5,8,5,'#554652');
-    rect(68,y+5,4,2,'#e1ce8c');rect(81,y+5,4,2,'#e1ce8c');
-    rect(74,y+11,6,1,'#c4aba4');
-    const stride = reduced()?0:Math.floor(t/160)%2*4;
-    rect(66,y+18,6+stride,3,'#292c33');rect(81,y+18,10-stride,3,'#292c33');
-    for(let n=0;n<3;n++){const f=((t+n*230)%900)/900;ctx.globalAlpha=1-f;rect(54-f*24,63-n%2*2,3,2,'#bba577');}ctx.globalAlpha=1;
-  }
-  function paint(time) {
-    if (!running) return;
-    const t = reduced() ? (mode === 'farm' ? 4900 : 0) : time-start;
-    ctx.clearRect(0,0,160,86);
-    if (sheet && sprite) {
-      const index=reduced()?0:Math.floor(t/(sprite.frameMs||160))%sprite.frames;
-      ctx.drawImage(sheet,index*sprite.width,0,sprite.width,sprite.height,0,0,160,86);
-    } else if (mode === 'ver') drawVer(t); else drawFarm(t);
-    frame=requestAnimationFrame(paint);
-  }
-  return {
-    start() { if(running)return;running=true;start=performance.now();frame=requestAnimationFrame(paint); },
-    stop() {running=false;cancelAnimationFrame(frame);}
-  };
+const ROOT = './assets/loading/';
+const PATHS = {
+  farm: ROOT+'farm-scene.webp', valley:ROOT+'valley-scene.webp',
+  idle:ROOT+'farmer-idle.webp', seed:ROOT+'farmer-seed.webp', water:ROOT+'farmer-water.webp',
+  sprout:ROOT+'sprout.webp', petal:ROOT+'petal.webp',
+  ver:ROOT+'ver-run.webp', seedBag:ROOT+'seed-bag.webp'
+};
+const smooth = t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);};
+function cover(ctx,im,w,h,scale=1){
+  const srcRatio=im.width/im.height, dstRatio=w/h;
+  let sx=0,sy=0,sw=im.width,sh=im.height;
+  if(srcRatio>dstRatio){sw=sh*dstRatio;sx=(im.width-sw)*.5;}
+  else{sh=sw/dstRatio;sy=(im.height-sh)*.5;}
+  const ex=(w-w*scale)/2,ey=(h-h*scale)/2;
+  ctx.drawImage(im,sx,sy,sw,sh,ex,ey,w*scale,h*scale);
 }
-export function prepareImages(urls, { signal, onProgress = () => {}, timeout = 8000 } = {}) {
-  let completed=0;
-  return Promise.all(urls.map(url => new Promise(resolve => {
-    const image=new Image();let settled=false;
-    const done=ok=>{if(settled)return;settled=true;clearTimeout(timer);signal?.removeEventListener('abort',abort);image.onload=image.onerror=null;if(!signal?.aborted)onProgress(++completed/urls.length);resolve({url,ok});};
-    const abort=()=>done(false);
-    const timer=setTimeout(()=>done(false),timeout);
-    if(signal?.aborted)return done(false);
-    signal?.addEventListener('abort',abort,{once:true});
-    image.onload=async()=>{try{await image.decode();}catch{}done(true);};
-    image.onerror=()=>done(false);image.src=url;
-  })));
+function drawItem(ctx,image,x,y,height,alpha=1,flip=false){
+  if(!image?.complete||!image.naturalWidth||alpha<=0)return;
+  const ww=height*image.naturalWidth/image.naturalHeight;
+  ctx.save(); ctx.globalAlpha=Math.max(0,Math.min(1,alpha));
+  if(flip){ctx.translate(x,0);ctx.scale(-1,1);ctx.drawImage(image,-ww/2,y-height,ww,height);}
+  else ctx.drawImage(image,x-ww/2,y-height,ww,height);
+  ctx.restore();
 }
-// Reusable transition component, deliberately NOT inserted into the opening.
-// const loader = createTravelLoader(host, { reduced, sprite: optionalSheet });
-// loader.show(); await prepareNextScene(); loader.hide(); // destroy() on unmount
-export function createTravelLoader(host, options = {}) {
-  const panel=document.createElement('section');panel.className='travel-loader';panel.hidden=true;
-  panel.setAttribute('role','status');panel.setAttribute('aria-label','이동 중');
-  const canvas=document.createElement('canvas');canvas.setAttribute('aria-hidden','true');
-  const title=document.createElement('p');title.textContent='이동 중...';
-  const subtitle=document.createElement('small');subtitle.textContent='베르가 길을 안내하는 중.';
-  panel.append(canvas,title,subtitle);host.append(panel);
-  const animation=createPixelLoader(canvas,{...options,mode:'ver'});
-  return {show(){panel.hidden=false;animation.start();},hide(){panel.hidden=true;animation.stop();},destroy(){animation.stop();panel.remove();}};
+function loadArt(){
+ const imgs={};
+ for(const [key,url]of Object.entries(PATHS)){
+  const img=new Image();img.decoding='async';img.src=url;imgs[key]=img;
+ }
+ return imgs;
+}
+function drawSoftShadow(ctx,x,y,rx,ry,opacity=.22){
+ ctx.save();ctx.fillStyle=`rgba(9,25,19,${opacity})`;
+ ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fill();ctx.restore();
+}
+function sceneFarm(ctx,imgs,t,reduce,w,h){
+ const background=imgs.farm?.naturalWidth?imgs.farm:null;
+ if(background)cover(ctx,background,w,h,reduce?1:1.018);
+ else{ctx.fillStyle='#244338';ctx.fillRect(0,0,w,h);}
+ // The ground plane follows the garden beds in the creator's background.
+ const baseY=370, playerX=540;
+ const phase=t%7800;
+ let state=phase<1750?'idle':phase<4050?'seed':phase<6300?'water':'idle';
+ const image=imgs[state];
+ const bounce=reduce?0:Math.sin(t/380)*1.3;
+ const playerHeight=163;
+ if(imgs.seedBag?.naturalWidth)drawItem(ctx,imgs.seedBag,440,baseY+2,42,.84);
+ // A few seedlings appear only after the planting and watering segments.
+ for(let n=0;n<3;n++){
+  let x=615+n*42, y=371+n*2;
+  const grow=reduce?1:smooth((phase-5900-n*130)/1000);
+  if(grow>.005){drawSoftShadow(ctx,x,y,14,4,.20*grow);ctx.save();ctx.translate(x,y);ctx.scale(.25+grow*.36,.25+grow*.36);ctx.translate(-x,-y);drawItem(ctx,imgs.sprout,x,y+3,64,Math.min(1,grow*1.3));ctx.restore();}
+ }
+ drawSoftShadow(ctx,playerX,baseY+2,43,10,.34);
+ drawItem(ctx,image,playerX,baseY+bounce,playerHeight,1);
+ // Additional tiny pixelated seeds / droplets fill in missing motion frames.
+ if(!reduce && state==='seed'){
+  ctx.fillStyle='#e4bd70';
+  const local=phase-1750;
+  for(let k=0;k<9;k++){
+   let u=((local+k*220)%1120)/1120;
+   let x=557+u*64+(k%3)*5,y=299+u*u*63+(k%2)*4;
+   ctx.fillRect(Math.round(x),Math.round(y),3,3);
+  }
+ }
+ if(!reduce && state==='water'){
+  ctx.fillStyle='#c2e8e0';
+  const local=phase-4050;
+  for(let k=0;k<11;k++){
+   let u=((local+k*130)%880)/880;
+   let x=570+u*60+(k%3)*3,y=296+u*u*70;
+   ctx.fillRect(Math.round(x),Math.round(y),2,5);
+  }
+ }
+ // Sparse drifting petal motifs on top of the scenery, without large UI clutter.
+ if(imgs.petal?.naturalWidth&&!reduce){
+  for(let i=0;i<5;i++){
+   const seed=i*1237+487;
+   const p=((t+seed)%(9800+i*280))/(9800+i*280);
+   const x=100+i*171+p*80;
+   const y=70+(i%3)*53+p*165;
+   drawItem(ctx,imgs.petal,x,y,9+i%2*3,.48*(Math.sin(p*Math.PI)**2));
+  }
+ }
+}
+function sceneVer(ctx,imgs,t,reduce,w,h){
+ if(imgs.valley?.naturalWidth)cover(ctx,imgs.valley,w,h,reduce?1:1.01);
+ else{ctx.fillStyle='#294c42';ctx.fillRect(0,0,w,h);}
+ const bounce=reduce?0:Math.abs(Math.sin(t/195))*10;
+ const x=430+(reduce?0:Math.sin(t/2200)*14),y=375-bounce;
+ drawSoftShadow(ctx,x,386,54,10,.35);
+ drawItem(ctx,imgs.ver,x,y,136);
+ if(!reduce){ctx.fillStyle='rgba(228,210,170,.7)';for(let n=0;n<4;n++){
+  const f=((t+n*210)%880)/880;
+  ctx.fillRect(x-55-f*30,382-(n%2)*7,Math.max(1,4-f*3),3);
+ }}
+}
+export function createPixelLoader(canvas,{mode='farm',reduced=()=>false,sprite=null}={}){
+ const ctx=canvas?.getContext('2d');
+ if(!ctx)return {start(){},stop(){}};
+ // Wide virtual scene: keeps placements consistent across viewports.
+ const width=960,height=540;canvas.width=width;canvas.height=height;
+ const art=loadArt();
+ // Allow replacing with a uniform horizontal sprite atlas later.
+ let sheet=null;
+ if(sprite?.src){const img=new Image();img.onload=()=>sheet=img;img.src=sprite.src;}
+ let running=false,frameId=0,origin=0;
+ function paint(stamp){
+  if(!running)return;
+  const t=reduced()?6900:stamp-origin;
+  ctx.clearRect(0,0,width,height);ctx.imageSmoothingEnabled=false;
+  if(mode==='ver')sceneVer(ctx,art,t,reduced(),width,height);
+  else sceneFarm(ctx,art,t,reduced(),width,height);
+  // Darken only the lower edge so the logo remains readable above the art.
+  const dusk=ctx.createLinearGradient(0,335,0,height);
+  dusk.addColorStop(0,'rgba(9,26,20,0)');
+  dusk.addColorStop(.62,'rgba(9,26,20,.34)');
+  dusk.addColorStop(1,'rgba(5,22,18,.83)');
+  ctx.fillStyle=dusk;ctx.fillRect(0,315,width,225);
+  if(sheet&&sprite){
+   const n=reduced()?0:Math.floor(t/(sprite.frameMs||160))%(sprite.frames||1);
+   ctx.drawImage(sheet,n*sprite.width,0,sprite.width,sprite.height,360,225,190,190);
+  }
+  frameId=requestAnimationFrame(paint);
+ }
+ return {
+  start(){if(running)return;running=true;origin=performance.now();frameId=requestAnimationFrame(paint);},
+  stop(){running=false;cancelAnimationFrame(frameId);}
+ };
+}
+export function prepareImages(urls,{signal,onProgress=()=>{},timeout=8000}={}){
+ let completed=0;
+ return Promise.all(urls.map(url=>new Promise(resolve=>{
+  const image=new Image();let settled=false;
+  const done=ok=>{if(settled)return;settled=true;clearTimeout(timer);signal?.removeEventListener('abort',abort);image.onload=image.onerror=null;if(!signal?.aborted)onProgress(++completed/urls.length);resolve({url,ok});};
+  const abort=()=>done(false);
+  const timer=setTimeout(()=>done(false),timeout);
+  if(signal?.aborted)return done(false);
+  signal?.addEventListener('abort',abort,{once:true});
+  image.onload=async()=>{try{await image.decode();}catch{}done(true);};
+  image.onerror=()=>done(false);image.src=url;
+ })));
+}
+export function createTravelLoader(host,options={}){
+ const panel=document.createElement('section');panel.className='travel-loader';panel.hidden=true;panel.setAttribute('role','status');panel.setAttribute('aria-label','이동 중');
+ const canvas=document.createElement('canvas');canvas.setAttribute('aria-hidden','true');
+ const title=document.createElement('p');title.textContent='이동 중...';
+ const subtitle=document.createElement('small');subtitle.textContent='베르가 길을 안내하는 중.';
+ panel.append(canvas,title,subtitle);host.append(panel);
+ const animation=createPixelLoader(canvas,{...options,mode:'ver'});
+ return {show(){panel.hidden=false;animation.start();},hide(){panel.hidden=true;animation.stop();},destroy(){animation.stop();panel.remove();}};
 }

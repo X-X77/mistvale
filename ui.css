@@ -341,3 +341,99 @@
   #loading.loading-scene::before {animation:none;}
 }
 #game.reduced-motion #loading.loading-scene::before {animation:none;}
+
+/* MISTVALE v0.4 — animated pixel-art scenery from creator-provided assets */
+#loading.loading-scene {
+  position:relative;
+  isolation:isolate;
+  display:flex;
+  min-height:100svh;
+  align-items:flex-end;
+  justify-content:center;
+  overflow:hidden;
+  padding:0;
+  background:#213b35;
+}
+#loading.loading-scene::before {
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:0;
+  background:#254e40 url("./assets/title.jpg") center / cover no-repeat;
+  filter:brightness(.7);
+  transform:none;
+  animation:none;
+}
+#loading.loading-scene::after {
+  content:"";
+  position:absolute;
+  z-index:1;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(180deg,transparent 52%,rgba(8,24,20,.15) 65%,rgba(7,24,20,.82) 100%);
+}
+#loading .loading-card {
+  width:100%;max-width:none;min-height:100svh;
+  position:relative;z-index:2;display:flex;flex-direction:column;
+  align-items:center;justify-content:flex-end;
+  margin:0;padding:0 28px clamp(48px,7vh,90px);
+  text-align:center;background:none;border:0;box-shadow:none;backdrop-filter:none;
+}
+#loading .loading-card::before {display:none;}
+#loading .pixel-stage {
+  display:block!important;
+  position:absolute;
+  z-index:-1;
+  inset:0;
+  width:100%;height:100%;
+  margin:0;
+  object-fit:cover;
+  image-rendering:pixelated;
+}
+#loading .loading-card h2 {
+  margin:0 0 12px;
+  color:#fff3d1;
+  font:600 clamp(28px,4.5vw,50px)/1.05 'Cormorant Garamond',Georgia,serif;
+  letter-spacing:.18em;
+  text-shadow:0 2px 17px #10241b;
+}
+#loading .loading-caption {
+  min-height:28px;
+  margin:0 0 20px;
+  color:#faf0d9;
+  font:13px/1.8 var(--serif);
+  letter-spacing:.04em;
+  text-shadow:0 2px 10px #0e231d;
+}
+#loading .loading-track {
+  display:flex;align-items:center;gap:15px;
+  width:min(580px,88vw);max-width:100%;margin:0;
+}
+#loading .loading-track>span {color:#dfc98d;font-size:16px;}
+#loading .loading-track>span:last-child {font-size:11px;}
+#loading .loading-track progress {flex:1;width:100%;height:3px;border:0;background:#d8e0c54b;}
+#loading .loading-track progress::-webkit-progress-bar {background:#d8e0c54b;}
+#loading .loading-track progress::-webkit-progress-value {background:linear-gradient(90deg,#9ec193,#f3e4ad);transition:width .18s linear;}
+#loading .loading-track progress::-moz-progress-bar {background:#e8d9a1;}
+#loading .connection {
+  min-height:25px;margin:18px 0 0;
+  color:#ffeac1;font:10px/1.8 ui-monospace,monospace;
+  letter-spacing:2px;white-space:pre-line;text-align:center;
+  text-shadow:0 2px 10px #0b2219;
+}
+#game.blooming #loading .loading-card {animation:ui-dissolve 2.7s ease forwards;}
+.travel-loader {padding:0;overflow:hidden;}
+.travel-loader canvas {
+  width:100%;height:100%;position:absolute;inset:0;
+  object-fit:cover;image-rendering:pixelated;
+}
+.travel-loader p,.travel-loader small {position:relative;z-index:1;text-shadow:0 2px 9px #0b231d;}
+.travel-loader p {margin-top:auto;padding-top:14px;}
+.travel-loader small {margin-bottom:8vh;}
+@media(max-width:600px){
+  #loading .loading-card {padding:0 18px max(72px,12vh);}
+  #loading .loading-card h2 {font-size:clamp(29px,8vw,44px);letter-spacing:.13em;}
+  #loading .loading-caption {font-size:12px;}
+  #loading .loading-track {width:100%;}
+  #loading .pixel-stage {object-position:52% center;}
+}
