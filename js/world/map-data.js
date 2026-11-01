@@ -5,5 +5,5 @@ export const villageMap = {
   description: '지도에서 장소를 선택해 미스트베일의 공간과 인물을 살펴보세요.',
   background: './assets/world/village-map.jpg',
   alt: '초록 들판과 작은 집, 개울이 어우러진 미스트베일 시범 지도',
-  locations: [{ placeId: 'clover', x: 56, y: 49 }],
+  locations: [{ placeId: 'clover', x: 56, y: 49 }, { placeId: 'library', x: 81, y: 52 }],
 };

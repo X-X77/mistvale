@@ -43,7 +43,7 @@ function mountMap() {
     $('map-markers').append(button);
     const card = document.createElement('button'); card.className = 'mv-place-card';
     const title = document.createElement('strong'); title.textContent = place.name;
-    const info = document.createElement('span'); info.textContent = place.hours + ' · ' + place.purpose;
+    const info = document.createElement('span'); info.textContent = (place.hours ? place.hours + ' · ' : '') + place.purpose;
     const arrow = document.createElement('b'); arrow.textContent = '↗'; arrow.setAttribute('aria-hidden', 'true');
     card.append(title, info, arrow); card.addEventListener('click', () => navigate(place.id));
     $('place-list').append(card);
@@ -57,7 +57,7 @@ function mountNpcs(place) {
     button.style.left = bounded(position.x, 5, 95, 50) + '%';
     button.style.top = bounded(position.y, 10, 90, 60) + '%';
     button.style.setProperty('--npc-width', bounded(position.width, 3, 18, 6) + '%');
-    button.setAttribute('aria-label', npc.name + '에게 말 걸기 (외형 미정)');
+    button.setAttribute('aria-label', npc.name + '에게 말 걸기');
     const image = document.createElement('img'); image.alt = npc.small.alt;
     const fallback = document.createElement('span'); fallback.className = 'mv-npc-fallback'; fallback.textContent = '?'; fallback.hidden = true;
     const bubble = document.createElement('span'); bubble.className = 'mv-npc-bubble'; bubble.textContent = '대화'; bubble.setAttribute('aria-hidden', 'true');
@@ -91,12 +91,13 @@ function render(value) {
     const place = places[value];
     $('place-title').textContent = place.name;
     $('place-category').textContent = place.category;
-    $('place-hours').textContent = '영업시간 ' + place.hours;
+    $('place-hours').hidden = !place.hours;
+    $('place-hours').textContent = place.hours ? '영업시간 ' + place.hours : '';
     $('place-purpose').textContent = place.purpose;
     $('place-description').textContent = place.description;
     $('place-art').alt = place.alt;
     loadImage($('place-art'), place.background, $('place-fallback'));
-    mountNpcs(place); setStatus(place.name + '. 점주를 선택하면 대화가 열립니다.');
+    mountNpcs(place); setStatus(place.name + '. 인물을 선택하면 대화가 열립니다.');
     $('place-title').focus({preventScroll:true});
   }
 }
@@ -136,6 +137,8 @@ function openDialogue(npc, source) {
   if (dialog.open || !npc.dialogue?.length) return;
   activeNpc = npc; lineIndex = 0; returnTarget = source;
   $('npc-name').textContent = npc.name; $('npc-note').textContent = npc.note;
+  dialog.dataset.portraitMode = npc.portrait.mode;
+  $('portrait-label').textContent = npc.portrait.mode === 'original' ? '일러스트 초상' : '도트 초상';
   dialog.showModal(); showLine(); $('dialog-next').focus({preventScroll:true});
 }
 function nextLine() {
