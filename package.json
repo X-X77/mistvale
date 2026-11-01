@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test tests/storage.test.js tests/dialogue-timing.test.js tests/loading.test.js",
+    "test": "node --test tests/storage.test.js tests/dialogue-timing.test.js tests/loading.test.js tests/world-data.test.js",
     "serve": "node scripts/serve.mjs"
   }
 }
