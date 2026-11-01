@@ -1,4 +1,4 @@
-import { narrative, results, assets } from './data.js';
+import { narrative, scripts, assets } from './data.js';
 import { readSave, writeSave } from './storage.js';
 import { Sound } from './audio.js';
 import { Music } from './music.js';
@@ -23,7 +23,7 @@ function toggleMusic(){
 }
 const preferences=readSave(), systemMotion=matchMedia('(prefers-reduced-motion: reduce)');
 if(!preferences.bgm)music.setEnabled(false);
-let scene='store',controller=new AbortController(),line=0,typeTimer=0,autoTimer=0;
+let scene='store',controller=new AbortController(),line=0,typeTimer=0,autoTimer=0,script=narrative;
 let fullText='',typing=false,auto=true,choosing=false;
 const reduced=()=>preferences.reducedMotion||systemMotion.matches;
 const farmLoader=createPixelLoader($('farm-animation'),{reduced});
@@ -59,14 +59,15 @@ function scheduleAuto(){
   const expectedLine=line,signal=controller.signal;
   autoTimer=setTimeout(()=>{
     if(!signal.aborted&&line===expectedLine&&auto&&!settings.open&&!document.hidden)advance(false);
-  },readingTime(fullText,narrative[line].speaker,preferences.speed));
+  },readingTime(fullText,script[line].speaker,preferences.speed));
 }
 function setScene(next){
   controller.abort();controller=new AbortController();clearInterval(typeTimer);cancelAuto();typing=false;choosing=false;
   farmLoader.stop();scene=next;game.dataset.scene=next;
   music.setScene(next,{delay: next==='story'?1250:0});
   game.classList.remove('anomaly','blooming','revealing');
-  for(const id of ['store','title','loading','story','notification','result'])$(id).hidden=id!==next;
+  $('exit-veil').classList.remove('on');
+  for(const id of ['store','title','loading','story','notification'])$(id).hidden=id!==next;
   $('skip').hidden=!['loading','transition'].includes(next);
   $('continue').disabled=true;
   $('save-status').textContent='저장 데이터 없음';
@@ -120,7 +121,7 @@ async function transition(){
 }
 async function awaken(fromHistory=false,reveal=false){
   setScene('story');if(!fromHistory)routeHash('#awakening',true);
-  line=0;$('ver-wrap').hidden=true;$('dialogue-shell').hidden=reveal;
+  script=narrative;line=0;$('ver-wrap').hidden=true;$('dialogue-shell').hidden=reveal;
   if(reveal){
     game.classList.add('revealing');const signal=controller.signal;
     if(!(await wait(reduced()?150:2000,signal)))return;
@@ -134,7 +135,7 @@ function finishText(){
 }
 function showLine(){
   clearInterval(typeTimer);cancelAuto();
-  const item=narrative[line];fullText=item.text;
+  const item=script[line];fullText=item.text;
   $('speaker').textContent=item.speaker;$('ver-wrap').hidden=item.speaker!=='베르';
   $('accessible-dialogue').textContent=item.speaker+': '+item.text;
   const delay={slow:65,normal:35,fast:16,instant:0}[preferences.speed];
@@ -149,7 +150,7 @@ function advance(manual=true){
   if(scene!=='story'||settings.open||$('dialogue-shell').hidden)return;
   cancelAuto();if(typing)return finishText();
   if(manual)sound.play();
-  if(++line<narrative.length)showLine();else notify();
+  if(++line<script.length)showLine();else notify();
 }
 function notify(fromHistory=false){
   setScene('notification');
@@ -158,19 +159,27 @@ function notify(fromHistory=false){
 }
 async function choose(button){
   if(scene!=='notification'||choosing)return;
-  choosing=true;const signal=controller.signal;
+  choosing=true;const signal=controller.signal,kind=button.dataset.choice;
   button.classList.add('chosen');sound.play();
   document.querySelectorAll('[data-choice]').forEach(item=>{item.disabled=true;});
-  if(await wait(reduced()?0:230,signal))result(button.dataset.choice);
+  if(!(await wait(reduced()?0:230,signal)))return;
+  if(kind==='village')leaveForVillage();
+  else playScript(kind==='logout'?'logout':'interior');
 }
-async function result(kind,fromHistory=false){
-  if(!results[kind])return notify();
-  setScene('result');const data=results[kind],signal=controller.signal;
-  $('result-label').textContent=data.label;$('result-heading').textContent=data.heading;
-  $('result-description').textContent=data.text;$('result-note').textContent=data.note;
-  $('result-ver').hidden=true;$('result').classList.toggle('error-result',kind==='logout');
-  if(!fromHistory)routeHash('#'+kind);focus($('result-heading'));
-  if(kind==='logout'&&await wait(reduced()?0:700,signal))$('result-ver').hidden=false;
+/* ①·③: 같은 집 배경·대화창·베르 모습으로 짧은 대화를 재생하고, 끝나면 첫 선택지로 돌아갑니다(페이지 이동 없음). */
+function playScript(kind){
+  const next=scripts[kind];if(!next)return notify();
+  setScene('story');script=next;line=0;
+  $('ver-wrap').hidden=true;$('dialogue-shell').hidden=false;
+  showLine();focus($('dialogue'));
+}
+/* ②: 집 밖으로 나서는 전환 뒤에 기존 마을 지도 페이지로 이동합니다. 지도는 이 선택지로만 열립니다. */
+async function leaveForVillage(){
+  const signal=controller.signal;
+  try{sessionStorage.setItem('mistvale.mapUnlocked','1');}catch{}
+  $('exit-veil').classList.add('on');
+  if(!(await wait(reduced()?350:1700,signal)))return;
+  location.assign('./world.html');
 }
 function restoreRoute(){
   const route=location.hash.slice(1);
@@ -178,7 +187,6 @@ function restoreRoute(){
   else if(route==='title')title(true);
   else if(route==='awakening')awaken(true);
   else if(route==='choices')notify(true);
-  else if(results[route])result(route,true);
   else{store(true);routeHash('#store',true);}
 }
 function openSettings(){if(!settings.open){cancelAuto();updateSettings();settings.showModal();}}
@@ -268,7 +276,6 @@ $('auto-toggle').addEventListener('click',()=>{
   $('auto-toggle').setAttribute('aria-pressed',String(auto));scheduleAuto();
 });
 $('story-skip').addEventListener('click',()=>{if(scene==='story')notify();});
-$('back-choices').addEventListener('click',()=>notify());
 document.querySelectorAll('[data-title]').forEach(button=>button.addEventListener('click',()=>title()));
 document.querySelectorAll('[data-choice]').forEach(button=>button.addEventListener('click',()=>choose(button)));
 $('choices').addEventListener('keydown',event=>{
@@ -286,6 +293,8 @@ $('sound').addEventListener('change',event=>{preferences.sound=event.target.chec
 $('motion').addEventListener('change',event=>{preferences.reducedMotion=event.target.checked;updateSettings();persist();if(typing&&reduced())finishText();});
 $('speed').addEventListener('change',event=>{preferences.speed=event.target.value;persist();if(scene==='story')finishText();});
 window.addEventListener('hashchange',restoreRoute);
+// 지도에서 뒤로 돌아왔을 때(bfcache) 전환 막이 남아 있지 않도록 정리합니다.
+window.addEventListener('pageshow',event=>{if(event.persisted){$('exit-veil').classList.remove('on');if(scene==='notification')restoreRoute();}});
 window.addEventListener('keydown',event=>{
   if(event.repeat||settings.open)return;
   if((event.key==='Enter'||event.key===' ')&&scene==='story'&&!['BUTTON','INPUT','SELECT'].includes(document.activeElement.tagName)){event.preventDefault();advance();}
