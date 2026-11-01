@@ -8,15 +8,36 @@
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./ui.css">
   <link rel="stylesheet" href="./pixel-ui.css">
+  <link rel="stylesheet" href="./opening-redesign.css">
   <script type="module" src="./js/app.js"></script>
 </head>
 <body>
-<main id="game" data-scene="title">
+<main id="game" data-scene="store">
   <div class="landscape" aria-hidden="true"></div>
   <div class="room" aria-hidden="true"></div>
   <div class="atmosphere" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
   <div class="clouds" aria-hidden="true"></div><div class="sunbeam" aria-hidden="true"></div>
   <header class="topbar"><span class="wordmark">M <span> / </span> MISTVALE</span><div><span class="chapter">PROLOGUE · 어느 봄날</span><button id="music-toggle" class="bgm-toggle" type="button" aria-label="배경음악 시작 또는 끄기" aria-pressed="false">♫ BGM 시작</button><button id="settings-open" class="icon-button" aria-label="설정 열기">⚙</button></div></header>
+  <section id="store" class="scene store-scene" aria-labelledby="store-title">
+    <header class="store-header"><div class="store-brand"><span class="store-brand-mark">✦</span> <span>EVERGREEN<span class="brand-light"> / LIBRARY</span></span></div><nav aria-label="스토어 메뉴"><span class="store-active">라이브러리</span><span>상점</span><span>커뮤니티</span></nav><div class="store-account"><span class="account-dot"></span> ONLINE</div></header>
+    <div class="store-scroll">
+      <div class="store-container">
+        <div class="store-breadcrumb">라이브러리 <span>›</span> 게임 <span>›</span> <strong>MISTVALE</strong></div>
+        <section class="store-hero" aria-label="미스트베일 게임 정보">
+          <div class="store-art" role="img" aria-label="안개 낀 계곡과 전원 풍경을 담은 미스트베일 게임 표지"><div class="store-art-label"><small>YOUR SECOND LIFE BEGINS HERE</small><span>MISTVALE</span><em>미스트베일</em></div></div>
+          <div class="store-side"><div class="store-kicker">라이브러리에 있는 게임 <span class="store-owned">✓ 구매 완료</span></div><h1 id="store-title">MISTVALE</h1><p class="store-subtitle">미스트베일</p><p class="store-description">안개가 머무는 계곡에서 시작하는 또 하나의 일상. 낡은 농장을 가꾸고, 마을 사람들을 만나고, 아직 발견하지 못한 장소를 찾아보세요. 당신의 하루는 당신이 결정합니다.</p><div class="store-tags"><span>농장 시뮬레이션</span><span>생활 판타지</span><span>샌드박스</span><span>픽셀 아트</span></div><div class="store-meta"><span>플레이 상태</span><strong>실행 준비 완료</strong><span>소유 상태</span><strong>내 라이브러리</strong></div><button id="store-play" class="store-play" type="button"><span aria-hidden="true">▶</span> 게임 실행 <small>PLAY NOW</small></button><p class="store-launch-note">새로운 게임 화면으로 이동합니다.</p></div>
+        </section>
+        <div class="store-scroll-hint">↓ 아래로 내려 게임 소개와 평가를 살펴보세요</div>
+        <div class="store-content-grid">
+          <div class="store-main-column"><section class="store-block" aria-labelledby="store-about"><div class="store-section-head"><h2 id="store-about">이 게임에 대하여</h2><span>ABOUT THIS GAME</span></div><p>어느 날, 당신은 미스트베일이라는 작은 계곡 마을의 농장을 물려받습니다. 이곳에서는 서두를 필요가 없습니다. 땅을 일구거나, 호수에서 낚시를 하거나, 밤늦게 주점에 들를 수도 있죠.</p><div class="store-feature-grid"><div><b>✿</b><strong>농장과 생활</strong><small>씨앗부터 수확까지, 느긋한 하루</small></div><div><b>◇</b><strong>자유로운 탐험</strong><small>숲, 호수, 해안과 숨겨진 장소</small></div><div><b>☾</b><strong>낮과 밤</strong><small>시간에 따라 달라지는 세상</small></div></div></section>
+          <section class="store-block" aria-labelledby="store-images"><div class="store-section-head"><h2 id="store-images">게임 스크린샷</h2><span>GALLERY</span></div><div class="store-gallery"><figure><img src="./assets/title.jpg" alt="미스트베일의 산맥과 계곡 배경"><figcaption>계곡의 아침</figcaption></figure><figure><img src="./assets/loading/farm-scene.webp" alt="농장을 가꾸는 픽셀아트 게임 장면"><figcaption>나만의 농장</figcaption></figure><figure><img src="./assets/loading/valley-scene.webp" alt="초록빛 마을과 계곡 장면"><figcaption>끝없는 산책길</figcaption></figure></div></section>
+          <section class="store-block" aria-labelledby="store-reviews"><div class="store-section-head"><h2 id="store-reviews">플레이어 평가</h2><span>COMMUNITY REVIEWS</span></div><p class="store-review-disclaimer">아래 평가는 미스트베일 세계관을 위한 가상 리뷰입니다.</p><div class="store-reviews"><article class="store-review"><div><strong>추천 <span>✓</span></strong><small>플레이 시간 42.6시간</small></div><p>농사만 하려고 켰는데 어느새 마을 사람들 일상까지 신경 쓰고 있네요. 하루가 너무 짧아요.</p><footer>새벽의감자 · 가상 리뷰</footer></article><article class="store-review"><div><strong>추천 <span>✓</span></strong><small>플레이 시간 18.2시간</small></div><p>낮 분위기가 정말 좋아요. 근데 밤에 숲 쪽으로 가면 분위기가 완전히 달라지더라고요.</p><footer>호숫가산책 · 가상 리뷰</footer></article><article class="store-review"><div><strong>추천 <span>✓</span></strong><small>플레이 시간 63.1시간</small></div><p>베르라는 안내 캐릭터, 친절한 줄 알았는데 제 실수만 기다리는 것 같음. 그래도 귀여워요.</p><footer>양치기아님 · 가상 리뷰</footer></article></div></section></div>
+          <aside class="store-aside" aria-label="게임 세부 정보"><div class="store-aside-block"><h3>게임 정보</h3><dl><div><dt>장르</dt><dd>생활 · 농장 · 판타지</dd></div><div><dt>방식</dt><dd>싱글 플레이</dd></div><div><dt>진행</dt><dd>자유 탐험</dd></div><div><dt>상태</dt><dd>설치 완료</dd></div></dl></div><div class="store-aside-block"><h3>내 라이브러리</h3><p>이 게임은 이미 보유하고 있습니다.</p><button id="store-play-side" type="button">▶ 지금 플레이</button></div></aside>
+        </div>
+        <footer class="store-footer">EVERGREEN LIBRARY · MISTVALE <span>가상의 게임 플랫폼 연출입니다.</span></footer>
+      </div>
+    </div>
+  </section>
   <section id="title" class="scene title-scene" aria-labelledby="logo">
     <div class="title-content"><p class="eyebrow">A QUIET LIFE. AN UNWRITTEN STORY.</p><div class="logo-ornament" aria-hidden="true">✧ ── ❧ ── ✧</div><h1 id="logo">MISTVALE</h1><p class="subtitle">미 스 트 베 일</p><p class="tagline">평화로운 농장, 조용한 마을.<br>그리고 아직 당신만 모르는 이야기.</p>
     <nav class="game-menu" aria-label="게임 메뉴"><button id="new-game" class="primary"><span class="menu-icon">✧</span> NEW GAME <span class="menu-end">새로운 이야기</span></button><button id="continue" disabled><span class="menu-icon">↳</span> CONTINUE <span class="menu-end" id="save-status">저장 기록 없음</span></button><button id="title-settings"><span class="menu-icon">⚙</span> SETTINGS <span class="menu-end">환경 설정</span></button></nav><p class="title-note">당신을 기다리는 작은 세계</p></div>
@@ -26,7 +47,7 @@
   <section id="story" class="scene story-scene" hidden aria-label="농가에서 눈을 뜨다"><div class="location"><small>미스트베일 외곽 농가</small></div><div id="ver-wrap" class="ver-wrap" hidden><img id="ver" src="./assets/ver-illustration.webp" alt="작은 분홍색 뿔과 박쥐 날개를 가진 검은 털복숭이 베르"><span id="ver-fallback" hidden>✦</span></div><div id="dialogue-shell" class="dialogue-shell"><button id="dialogue" class="dialogue" aria-label="대사 완성 또는 다음 대사"><span id="speaker" class="speaker"></span><span id="dialogue-text" class="dialogue-text" aria-hidden="true"></span><span id="accessible-dialogue" class="sr-only" aria-live="polite"></span><span class="next-mark" aria-hidden="true">◆</span></button><div class="dialogue-toolbar"><span class="advance-hint">클릭 또는 Enter로 계속</span><div><button id="auto-toggle" aria-pressed="true" title="대사 자동 진행 켜기 또는 끄기">AUTO ON</button><button id="story-skip" title="대화를 건너뛰고 첫 선택지로 이동">SKIP <span aria-hidden="true">»</span></button></div></div></div></section>
   <section id="notification" class="scene panel-scene" hidden aria-labelledby="system-heading"><article class="parchment registration"><p class="eyebrow">SYSTEM NOTIFICATION</p><h2 id="system-heading">《MISTVALE》 접속 완료</h2><p class="panel-intro">새로운 농장주의 기록이 작성되었습니다.</p><div class="registration-data"><h3>등록 정보</h3><dl class="stats"><div class="stat-location"><dt>위치</dt><dd>미스트베일 외곽 농가</dd></div><div><dt>날짜</dt><dd>1년 차 · 봄 1일</dd></div><div><dt>소지금</dt><dd class="gold">500<span>G</span></dd></div><div class="stat-assets"><dt>소유 자산</dt><dd>낡은 농가와 작은 밭</dd></div></dl></div><p class="choice-caption">이제, 무엇을 할까?</p><div id="choices" class="choices" role="group" aria-label="첫 번째 선택"><button data-choice="farm"><span>01</span>농장집을 둘러본다.<b aria-hidden="true">◆</b></button><button data-choice="village"><span>02</span>창밖의 마을을 바라본다.<b aria-hidden="true">◆</b></button><button data-choice="logout"><span>03</span>로그아웃 버튼을 찾아본다.<b aria-hidden="true">◆</b></button></div><button class="text-button" data-title>타이틀로 돌아가기</button></article></section>
   <section id="result" class="scene panel-scene" hidden aria-labelledby="result-heading"><article class="parchment result-panel"><p id="result-label" class="eyebrow"></p><h2 id="result-heading" tabindex="-1"></h2><p id="result-description" class="result-description"></p><div id="result-ver" hidden><img src="./assets/ver-illustration.webp" alt="베르"><div><strong>베르</strong><p>뭐야, 벌써 도망가려고?</p><p>아직 시작도 안 했는데?</p></div></div><p id="result-note" class="result-note"></p><div class="result-actions"><button id="back-choices" class="primary">선택지로 돌아가기</button><button data-title class="text-button">타이틀로 돌아가기</button></div></article></section>
-  <div class="light-bloom" aria-hidden="true"></div>
+  <div class="light-bloom" aria-hidden="true"></div><div class="reality-veil" aria-hidden="true"></div>
   <button id="skip" class="skip" hidden>연출 건너뛰기 <span>→</span></button>
   <p id="storage-notice" class="storage-notice" role="status" hidden>브라우저 저장이 제한되어 이번 방문 동안만 기록됩니다.</p>
 </main>
