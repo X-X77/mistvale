@@ -24,6 +24,22 @@ let scene='store',controller=new AbortController(),line=0,typeTimer=0,autoTimer=
 let fullText='',typing=false,auto=true,choosing=false;
 const reduced=()=>preferences.reducedMotion||systemMotion.matches;
 const farmLoader=createPixelLoader($('farm-animation'),{reduced});
+/* The marketed game's title art is downsampled into a genuine low-res canvas.
+   Reality scenes continue to use the original high-resolution bedroom artwork. */
+const titleCanvas=$('title-pixel-art');
+if(titleCanvas){
+  const art=new Image();art.src='./assets/title.jpg';
+  art.addEventListener('load',()=>{
+    const ctx=titleCanvas.getContext('2d');
+    if(!ctx)return;
+    ctx.imageSmoothingEnabled=true;
+    const w=titleCanvas.width,h=titleCanvas.height;
+    const scale=Math.max(w/art.naturalWidth,h/art.naturalHeight);
+    const sw=w/scale,sh=h/scale;
+    ctx.drawImage(art,(art.naturalWidth-sw)/2,(art.naturalHeight-sh)/2,sw,sh,0,0,w,h);
+  });
+}
+
 function persist(){ $('storage-notice').hidden=writeSave(preferences); }
 function focus(element){if(!settings.open)element?.focus({preventScroll:true});}
 function updateSettings(){
