@@ -95,13 +95,13 @@ async function launch(){
   $('progress').value=0;$('connection').textContent='';$('loading-caption').textContent='새로운 농장을 불러오는 중...';
   farmLoader.start();focus($('skip'));
   const preparation=prepareImages(Object.values(assets),{signal,onProgress:value=>{ready=value;}});
-  while(!signal.aborted&&(performance.now()-start<minimum||ready<1)){
+  while(!signal.aborted&&performance.now()-start<14000&&(performance.now()-start<minimum||ready<1)){
     if(!(await wait(80,signal)))return;
     const elapsed=Math.min(1,(performance.now()-start)/minimum);
     $('progress').value=Math.min(96,Math.round((elapsed*.65+ready*.35)*96));
   }
   if(signal.aborted)return;
-  await preparation;if(signal.aborted)return;
+  await Promise.race([preparation,wait(1200,signal)]);if(signal.aborted)return;
   $('progress').value=98;game.classList.add('anomaly');
   $('loading-caption').textContent='잠시만요. 무언가 달라지고 있습니다.';
   $('connection').textContent='PLAYER DATA — UNKNOWN';
@@ -185,12 +185,25 @@ settings.addEventListener('close',scheduleAuto);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelAuto();else scheduleAuto();});
 $('store-play').addEventListener('click',()=>{sound.play();title();});
 const slides=[
- {src:'./assets/loading/farm-scene.webp',name:'오래된 농장',detail:'풀숲에 잠긴 작은 농장. 여기서부터 모든 것이 시작됩니다.',alt:'미스트베일의 농장 픽셀아트'},
- {src:'./assets/loading/valley-scene.webp',name:'초록빛 계곡',detail:'산과 들이 이어진 평화로운 생활의 무대.',alt:'푸른 계곡 픽셀아트'},
- {src:'./assets/screenshots/village.svg',name:'아침 마을',detail:'계곡에 자리 잡은 작은 마을과 돌길.',alt:'햇살이 드는 도트 마을 풍경'},
- {src:'./assets/screenshots/moonlit-lake.svg',name:'달빛 호수',detail:'밤이 되면 조용한 호수에 달빛이 내려앉습니다.',alt:'밤의 호수 도트 풍경'},
- {src:'./assets/title.jpg',name:'안개 낀 산맥',detail:'저 멀리 펼쳐진 미스트베일의 계곡.',alt:'안개 낀 산맥과 숲의 전경'}
+ {src:'./assets/loading/farm-scene.webp',name:'오래된 농장',detail:'풀숲에 잠긴 작은 농장. 여기서부터 모든 것이 시작됩니다.',alt:'작은 농장 도트 게임 화면'},
+ {src:'./assets/screenshots/gallery-02.webp',fallback:'./assets/loading/farm-scene.webp',name:'오래된 농가',detail:'안개 낀 계곡 너머 작은 마을을 바라보는 농가.',alt:'계곡과 농가의 전경'},
+ {src:'./assets/screenshots/gallery-03.webp',fallback:'./assets/loading/farm-scene.webp',name:'봄의 밭',detail:'새싹과 꽃이 피어나는 봄날의 농장.',alt:'꽃밭과 밭이 펼쳐진 농장 풍경'},
+ {src:'./assets/screenshots/gallery-04.webp',fallback:'./assets/loading/valley-scene.webp',name:'마을 거리',detail:'시장과 상점이 모인 미스트베일의 거리.',alt:'따뜻한 햇살 아래의 상점 거리'},
+ {src:'./assets/screenshots/gallery-05.webp',fallback:'./assets/loading/valley-scene.webp',name:'달빛 숲',detail:'밤에만 드러나는 숲의 고요한 길.',alt:'달빛이 비치는 어두운 숲'},
+ {src:'./assets/screenshots/gallery-06.webp',fallback:'./assets/loading/valley-scene.webp',name:'호수의 밤',detail:'보름달이 잔잔한 수면 위로 떠오르는 시간.',alt:'밤하늘과 호수 위의 달빛'}
 ];
+const previewImage=$('xx-main-image');
+previewImage.addEventListener('error',()=>{
+ const current=slides[slideIndex];
+ if(current.fallback && previewImage.getAttribute('src')!==current.fallback) previewImage.src=current.fallback;
+});
+document.querySelectorAll('[data-xx-slide]').forEach(button=>{
+ const img=button.querySelector('img');
+ img?.addEventListener('error',()=>{
+  const candidate=slides[Number(button.dataset.xxSlide)];
+  if(candidate?.fallback && img.getAttribute('src')!==candidate.fallback)img.src=candidate.fallback;
+ });
+});
 let slideIndex=0;
 function showSlide(next){
  slideIndex=(next+slides.length)%slides.length;
