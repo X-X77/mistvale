@@ -111,9 +111,9 @@ export function createPixelLoader(canvas,{mode='farm',reduced=()=>false,sprite=n
  // Wide virtual scene: keeps placements consistent across viewports.
  const width=960,height=540;canvas.width=width;canvas.height=height;
  // Render pixel art on a limited logical grid and scale back with nearest-neighbor.
- const lowRes=document.createElement('canvas');
- lowRes.width=480;lowRes.height=270;
- const lowCtx=lowRes.getContext('2d');
+ const lowRes=typeof document!=='undefined'&&document.createElement?document.createElement('canvas'):null;
+ if(lowRes){lowRes.width=480;lowRes.height=270;}
+ const lowCtx=lowRes?.getContext('2d')||null;
  const art=loadArt();
  // Allow replacing with a uniform horizontal sprite atlas later.
  let sheet=null;
