@@ -20,7 +20,7 @@ function toggleMusic(){
   updateMusicButton();
 }
 const preferences=readSave(), systemMotion=matchMedia('(prefers-reduced-motion: reduce)');
-let scene='title',controller=new AbortController(),line=0,typeTimer=0,autoTimer=0;
+let scene='store',controller=new AbortController(),line=0,typeTimer=0,autoTimer=0;
 let fullText='',typing=false,auto=true,choosing=false;
 const reduced=()=>preferences.reducedMotion||systemMotion.matches;
 const farmLoader=createPixelLoader($('farm-animation'),{reduced});
@@ -46,7 +46,7 @@ function setScene(next){
   farmLoader.stop();scene=next;game.dataset.scene=next;
   music.setScene(next,{delay: next==='story'?1250:0});
   game.classList.remove('anomaly','blooming','revealing');
-  for(const id of ['title','loading','story','notification','result'])$(id).hidden=id!==next;
+  for(const id of ['store','title','loading','story','notification','result'])$(id).hidden=id!==next;
   $('skip').hidden=!['loading','transition'].includes(next);
   $('continue').disabled=!preferences.completed;
   $('save-status').textContent=preferences.completed?'낯선 아침에서 계속':'저장 기록 없음';
@@ -61,7 +61,14 @@ function wait(ms,signal){
     signal.addEventListener('abort',cancel,{once:true});
   });
 }
-function title(fromHistory=false){setScene('title');if(!fromHistory)routeHash('#title');focus($('new-game'));}
+function store(fromHistory=false){
+  setScene('store');if(!fromHistory)routeHash('#store');
+  window.scrollTo({top:0,behavior:'instant'});focus($('store-play'));
+}
+function title(fromHistory=false){
+  setScene('title');if(!fromHistory)routeHash('#title');
+  window.scrollTo({top:0,behavior:'instant'});focus($('new-game'));
+}
 async function launch(){
   if(scene!=='title')return;
   sound.play();setScene('loading');routeHash('#opening');
@@ -88,7 +95,7 @@ async function launch(){
 async function transition(){
   setScene('transition');$('loading').hidden=false;
   const signal=controller.signal;game.classList.add('blooming');focus($('skip'));
-  if(!(await wait(reduced()?350:3600,signal)))return;
+  if(!(await wait(reduced()?300:2200,signal)))return;
   awaken(false,true);
 }
 async function awaken(fromHistory=false,reveal=false){
@@ -96,7 +103,7 @@ async function awaken(fromHistory=false,reveal=false){
   line=0;$('ver-wrap').hidden=true;$('dialogue-shell').hidden=reveal;
   if(reveal){
     game.classList.add('revealing');const signal=controller.signal;
-    if(!(await wait(reduced()?150:1700,signal)))return;
+    if(!(await wait(reduced()?150:2000,signal)))return;
     game.classList.remove('revealing');
   }
   $('dialogue-shell').hidden=false;showLine();focus($('dialogue'));
@@ -147,15 +154,19 @@ async function result(kind,fromHistory=false){
 }
 function restoreRoute(){
   const route=location.hash.slice(1);
-  if(route==='awakening')awaken(true);
+  if(route==='store')store(true);
+  else if(route==='title')title(true);
+  else if(route==='awakening')awaken(true);
   else if(route==='choices'&&preferences.completed)notify(true);
   else if(results[route]&&preferences.completed)result(route,true);
-  else{title(true);routeHash('#title',true);}
+  else{store(true);routeHash('#store',true);}
 }
 function openSettings(){if(!settings.open){cancelAuto();settings.showModal();}}
 systemMotion.addEventListener('change',()=>{updateSettings();if(typing&&reduced())finishText();});
 settings.addEventListener('close',scheduleAuto);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelAuto();else scheduleAuto();});
+$('store-play').addEventListener('click',()=>{sound.play();title();});
+$('store-play-side').addEventListener('click',()=>{sound.play();title();});
 $('new-game').addEventListener('click',()=>{music.activate();launch();});
 $('music-toggle').addEventListener('click',toggleMusic);
 $('continue').addEventListener('click',()=>{if(preferences.completed){music.activate();sound.play();awaken();}});
