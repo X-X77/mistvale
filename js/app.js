@@ -20,6 +20,7 @@ function toggleMusic(){
   updateMusicButton();updateSettings();
 }
 const preferences=readSave(), systemMotion=matchMedia('(prefers-reduced-motion: reduce)');
+if(!preferences.bgm)music.setEnabled(false);
 let scene='store',controller=new AbortController(),line=0,typeTimer=0,autoTimer=0;
 let fullText='',typing=false,auto=true,choosing=false;
 const reduced=()=>preferences.reducedMotion||systemMotion.matches;
@@ -265,7 +266,7 @@ $('choices').addEventListener('keydown',event=>{
   }
 });
 [$('settings-open'),$('title-settings'),$('store-settings')].forEach(button=>button.addEventListener('click',openSettings));
-$('bgm').addEventListener('change',event=>{music.setEnabled(event.target.checked);if(event.target.checked)music.activate();updateSettings();});
+$('bgm').addEventListener('change',event=>{music.setEnabled(event.target.checked);if(event.target.checked)music.activate();preferences.bgm=music.enabled;persist();updateSettings();});
 $('sound').addEventListener('change',event=>{preferences.sound=event.target.checked;updateSettings();persist();sound.play();});
 $('motion').addEventListener('change',event=>{preferences.reducedMotion=event.target.checked;updateSettings();persist();if(typing&&reduced())finishText();});
 $('speed').addEventListener('change',event=>{preferences.speed=event.target.value;persist();if(scene==='story')finishText();});
