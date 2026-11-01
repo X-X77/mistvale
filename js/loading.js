@@ -39,16 +39,17 @@ function sceneFarm(ctx,imgs,t,reduce,w,h){
  else{ctx.fillStyle='#244338';ctx.fillRect(0,0,w,h);}
  // The ground plane follows the garden beds in the creator's background.
  const baseY=370, playerX=540;
- const phase=t%7800;
- let state=phase<1750?'idle':phase<4050?'seed':phase<6300?'water':'idle';
+ // Begin working on the very first frame; cycle through planting and watering briskly.
+ const phase=t%4800;
+ let state=phase<2100?'seed':phase<4200?'water':'idle';
  const image=imgs[state];
- const bounce=reduce?0:Math.sin(t/380)*1.3;
+ const bounce=reduce?0:Math.sin(t/155)*3.5;
  const playerHeight=163;
  if(imgs.seedBag?.naturalWidth)drawItem(ctx,imgs.seedBag,440,baseY+2,42,.84);
  // A few seedlings appear only after the planting and watering segments.
  for(let n=0;n<3;n++){
   let x=615+n*42, y=371+n*2;
-  const grow=reduce?1:smooth((phase-5900-n*130)/1000);
+  const grow=reduce?1:smooth((phase-3600-n*110)/720);
   if(grow>.005){drawSoftShadow(ctx,x,y,14,4,.20*grow);ctx.save();ctx.translate(x,y);ctx.scale(.25+grow*.36,.25+grow*.36);ctx.translate(-x,-y);drawItem(ctx,imgs.sprout,x,y+3,64,Math.min(1,grow*1.3));ctx.restore();}
  }
  drawSoftShadow(ctx,playerX,baseY+2,43,10,.34);
@@ -56,7 +57,7 @@ function sceneFarm(ctx,imgs,t,reduce,w,h){
  // Additional tiny pixelated seeds / droplets fill in missing motion frames.
  if(!reduce && state==='seed'){
   ctx.fillStyle='#e4bd70';
-  const local=phase-1750;
+  const local=phase;
   for(let k=0;k<9;k++){
    let u=((local+k*220)%1120)/1120;
    let x=557+u*64+(k%3)*5,y=299+u*u*63+(k%2)*4;
@@ -65,7 +66,7 @@ function sceneFarm(ctx,imgs,t,reduce,w,h){
  }
  if(!reduce && state==='water'){
   ctx.fillStyle='#c2e8e0';
-  const local=phase-4050;
+  const local=phase-2100;
   for(let k=0;k<11;k++){
    let u=((local+k*130)%880)/880;
    let x=570+u*60+(k%3)*3,y=296+u*u*70;
