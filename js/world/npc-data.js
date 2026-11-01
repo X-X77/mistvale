@@ -3,7 +3,7 @@ const assetRoot = new URL('../../assets/npc/', import.meta.url);
 const asset = path => path ? new URL(path, assetRoot).href : './assets/world/npc-placeholder.svg';
 let pack;
 try {
-  const response = await fetch(new URL('characters.json', assetRoot));
+  const response = await fetch(new URL('characters.json?v=edelin-front-20261102', assetRoot), { cache: 'no-cache' });
   if (!response.ok) throw new Error('NPC data unavailable');
   pack = await response.json();
 } catch {
