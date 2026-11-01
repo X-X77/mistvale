@@ -183,6 +183,22 @@ settings.addEventListener('close',scheduleAuto);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelAuto();else scheduleAuto();});
 $('store-play').addEventListener('click',()=>{sound.play();title();});
 $('store-play-side').addEventListener('click',()=>{sound.play();title();});
+const storeArt=document.querySelector('.store-art');
+const artIndex=$('store-art-index');
+const storeImages=['./assets/title.jpg','./assets/loading/farm-scene.webp','./assets/loading/valley-scene.webp'];
+document.querySelectorAll('[data-store-image]').forEach(button=>{
+  button.addEventListener('click',()=>{
+    const index=Number(button.dataset.storeImage);
+    if(!Number.isInteger(index)||!storeImages[index]||!storeArt)return;
+    storeArt.style.backgroundImage='url("'+storeImages[index]+'")';
+    if(artIndex)artIndex.textContent=String(index+1).padStart(2,'0')+' / 03';
+    document.querySelectorAll('[data-store-image]').forEach(item=>{
+      const selected=item===button;
+      item.classList.toggle('is-selected',selected);
+      item.setAttribute('aria-pressed',String(selected));
+    });
+  });
+});
 $('new-game').addEventListener('click',()=>{music.activate();launch();});
 $('music-toggle').addEventListener('click',toggleMusic);
 
