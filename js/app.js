@@ -7,7 +7,8 @@ import { readingTime } from './dialogue-timing.js';
 
 const $ = id => document.getElementById(id);
 const game=$('game'), settings=$('settings'), sound=new Sound();
-const music=new Music({onChange:()=>updateMusicButton()});
+let appReady=false; // updateSettings() touches elements defined further down
+const music=new Music({onChange:()=>{updateMusicButton();if(appReady)updateSettings();}});
 function updateMusicButton(){
   const button=$('music-toggle');if(!button)return;
   const playing=music.isPlaying();
@@ -17,6 +18,7 @@ function updateMusicButton(){
 }
 function toggleMusic(){
   if(music.isPlaying()){music.setEnabled(false);}else{music.setEnabled(true);music.activate();}
+  preferences.bgm=music.enabled;persist();
   updateMusicButton();updateSettings();
 }
 const preferences=readSave(), systemMotion=matchMedia('(prefers-reduced-motion: reduce)');
@@ -46,7 +48,7 @@ function focus(element){if(!settings.open)element?.focus({preventScroll:true});}
 function updateSettings(){
   game.classList.toggle('reduced-motion',reduced());
   $('sound').checked=preferences.sound;$('motion').checked=preferences.reducedMotion;$('speed').value=preferences.speed;
-  $('bgm').checked=music.enabled;
+  $('bgm').checked=music.isPlaying();
   $('motion-note').textContent=systemMotion.matches?'기기의 동작 줄이기 설정이 적용 중입니다.':'빛과 움직임을 차분하게 표시합니다.';
   sound.setEnabled(preferences.sound);
 }
@@ -279,7 +281,7 @@ $('choices').addEventListener('keydown',event=>{
   }
 });
 [$('settings-open'),$('title-settings'),$('store-settings')].forEach(button=>button.addEventListener('click',openSettings));
-$('bgm').addEventListener('change',event=>{music.setEnabled(event.target.checked);if(event.target.checked)music.activate();preferences.bgm=music.enabled;persist();updateSettings();});
+$('bgm').addEventListener('change',event=>{const want=event.target.checked;music.setEnabled(want);if(want)music.activate();preferences.bgm=music.enabled;persist();updateSettings();});
 $('sound').addEventListener('change',event=>{preferences.sound=event.target.checked;updateSettings();persist();sound.play();});
 $('motion').addEventListener('change',event=>{preferences.reducedMotion=event.target.checked;updateSettings();persist();if(typing&&reduced())finishText();});
 $('speed').addEventListener('change',event=>{preferences.speed=event.target.value;persist();if(scene==='story')finishText();});
@@ -294,4 +296,4 @@ for(const [name,url]of Object.entries(assets)){
   image.src=url;
 }
 document.querySelectorAll('#result-ver img').forEach(image=>image.addEventListener('error',()=>{image.hidden=true;}));
-updateSettings();restoreRoute();updateMusicButton();
+appReady=true;updateSettings();restoreRoute();updateMusicButton();

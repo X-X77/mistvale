@@ -40,7 +40,9 @@ function sceneFarm(ctx,imgs,t,reduce,w,h){
  // The ground plane follows the garden beds in the creator's background.
  const baseY=370, playerX=540;
  // Begin working on the very first frame; cycle through planting and watering briskly.
- const phase=t%4800;
+ // Reduced motion shortens the cycle so seed -> water -> rest still visibly progresses in a short load.
+ const cycle=reduce?1500:4800;
+ const phase=reduce?(t%cycle)*(4800/cycle):t%4800;
  let state=phase<2100?'seed':phase<4200?'water':'idle';
  const image=imgs[state];
  const bounce=reduce?0:Math.sin(t/155)*3.5;
@@ -49,7 +51,7 @@ function sceneFarm(ctx,imgs,t,reduce,w,h){
  // A few seedlings appear only after the planting and watering segments.
  for(let n=0;n<3;n++){
   let x=615+n*42, y=371+n*2;
-  const grow=reduce?1:smooth((phase-3600-n*110)/720);
+  const grow=smooth((phase-3600-n*110)/720);
   if(grow>.005){drawSoftShadow(ctx,x,y,14,4,.20*grow);ctx.save();ctx.translate(x,y);ctx.scale(.25+grow*.36,.25+grow*.36);ctx.translate(-x,-y);drawItem(ctx,imgs.sprout,x,y+3,64,Math.min(1,grow*1.3));ctx.restore();}
  }
  drawSoftShadow(ctx,playerX,baseY+2,43,10,.34);

@@ -12,5 +12,5 @@ dialog{border:1px solid #b9a46d;color:#2d4435;background:#f4efdf;width:min(460px
 @media(max-height:650px) and (min-width:601px){.title-content{margin:0}.title-scene{padding:65px 20px 50px}h1{font-size:70px}.logo-ornament{margin:4px 0 -6px}.subtitle{margin:2px 0 12px}.tagline{font-size:12px}.game-menu{margin-top:15px;padding:9px;gap:5px}.game-menu button{min-height:42px;padding:10px}.title-note{margin-top:12px}.ver-wrap{width:190px;bottom:210px}.dialogue{min-height:170px}.location{top:80px}.panel-scene{padding-top:75px}.parchment{margin-bottom:12px}}
 
 .revealing .topbar,.revealing .location{visibility:hidden}
-.loading-scene{animation:scene-in .6s ease-out}
+.loading-scene{animation:scene-in .3s ease-out}
 @keyframes scene-in{from{opacity:0}to{opacity:1}}
