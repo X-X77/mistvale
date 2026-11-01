@@ -187,9 +187,9 @@ $('store-play').addEventListener('click',()=>{sound.play();title();});
 const slides=[
  {src:'./assets/loading/farm-scene.webp',name:'오래된 농장',detail:'풀숲에 잠긴 작은 농장. 여기서부터 모든 것이 시작됩니다.',alt:'미스트베일의 농장 픽셀아트'},
  {src:'./assets/loading/valley-scene.webp',name:'초록빛 계곡',detail:'산과 들이 이어진 평화로운 생활의 무대.',alt:'푸른 계곡 픽셀아트'},
- {src:'./assets/title.jpg',name:'안개 낀 숲길',detail:'오래된 길 끝에서 새로운 하루가 시작됩니다.',alt:'안개 낀 산과 숲'},
- {src:'./assets/loading/farm-scene.webp',name:'농장 가꾸기',detail:'씨앗을 뿌리고 밭을 가꾸는 작은 일상.',alt:'작은 농장의 픽셀아트'},
- {src:'./assets/loading/valley-scene.webp',name:'미스트베일의 아침',detail:'계절이 바뀌면 계곡의 풍경도 달라집니다.',alt:'햇살 비추는 계곡'}
+ {src:'./assets/screenshots/village.svg',name:'아침 마을',detail:'계곡에 자리 잡은 작은 마을과 돌길.',alt:'햇살이 드는 도트 마을 풍경'},
+ {src:'./assets/screenshots/moonlit-lake.svg',name:'달빛 호수',detail:'밤이 되면 조용한 호수에 달빛이 내려앉습니다.',alt:'밤의 호수 도트 풍경'},
+ {src:'./assets/title.jpg',name:'안개 낀 산맥',detail:'저 멀리 펼쳐진 미스트베일의 계곡.',alt:'안개 낀 산맥과 숲의 전경'}
 ];
 let slideIndex=0;
 function showSlide(next){
