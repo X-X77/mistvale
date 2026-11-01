@@ -34,7 +34,7 @@
       "locationId": "small-library",
       "hours": null,
       "sprite": {
-        "idle": "characters/edelin/sprites/idle.png",
+        "idle": "characters/edelin/sprites/idle-front.png",
         "read": "characters/edelin/sprites/read.png",
         "work": "characters/edelin/sprites/work.png",
         "greet": "characters/edelin/sprites/greet.png"
