@@ -17,7 +17,7 @@ function updateMusicButton(){
 }
 function toggleMusic(){
   if(music.isPlaying()){music.setEnabled(false);}else{music.setEnabled(true);music.activate();}
-  updateMusicButton();
+  updateMusicButton();updateSettings();
 }
 const preferences=readSave(), systemMotion=matchMedia('(prefers-reduced-motion: reduce)');
 let scene='store',controller=new AbortController(),line=0,typeTimer=0,autoTimer=0;
@@ -183,7 +183,6 @@ systemMotion.addEventListener('change',()=>{updateSettings();if(typing&&reduced(
 settings.addEventListener('close',scheduleAuto);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelAuto();else scheduleAuto();});
 $('store-play').addEventListener('click',()=>{sound.play();title();});
-$('store-play-side').addEventListener('click',()=>{sound.play();title();});
 const slides=[
  {src:'./assets/loading/farm-scene.webp',name:'오래된 농장',detail:'풀숲에 잠긴 작은 농장. 여기서부터 모든 것이 시작됩니다.',alt:'미스트베일의 농장 픽셀아트'},
  {src:'./assets/loading/valley-scene.webp',name:'초록빛 계곡',detail:'산과 들이 이어진 평화로운 생활의 무대.',alt:'푸른 계곡 픽셀아트'},
