@@ -1,0 +1,20 @@
+
+/* Loading overlay guard: controls stay readable above the moving canvas. */
+#game[data-scene="loading"] #loading .loading-card,
+#game[data-scene="transition"] #loading .loading-card{isolation:isolate;}
+#loading .pixel-stage{z-index:0!important;pointer-events:none;}
+#loading .loading-card h2,#loading .loading-caption,
+#loading .loading-track,#loading .connection{
+  position:relative;z-index:3;flex-shrink:0;
+}
+#loading .loading-card h2{color:#fff7dc;text-shadow:0 3px 10px #0e302a,2px 2px 0 #09261d;}
+#loading .loading-caption,#loading .connection{text-shadow:0 2px 9px #061d17,1px 1px 0 #173c34;}
+#game[data-scene="loading"] #skip,#game[data-scene="transition"] #skip{
+ display:block;position:fixed;z-index:40;right:22px;bottom:22px;
+ min-height:42px;background:#203e39e8;border:2px solid #b4d7bc;color:#fff7dc;
+ padding:10px 15px;border-radius:4px;font-size:12px;box-shadow:0 3px 10px #071e1dcc;
+}
+#game[data-scene="loading"] #skip:hover,#game[data-scene="transition"] #skip:hover{background:#3d6b55;}
+/* Six screenshot slots: one existing game image plus five creator-supplied assets. */
+.xx-thumbnails{grid-template-columns:repeat(6,minmax(0,1fr));}
+@media(max-width:600px){.xx-thumbnails{gap:4px;}}
