@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="./storefront-polish.css">
   <link rel="stylesheet" href="./xxplay.css">
   <link rel="stylesheet" href="./loading-gallery-fix.css">
+  <link rel="stylesheet" href="./world.css">
   <script type="module" src="./js/app.js"></script>
 </head>
 <body>
@@ -25,7 +26,7 @@
   <section id="store" class="scene xx-store" aria-labelledby="store-title">
     <header class="xx-header">
       <div class="xx-brand">X_<span>XPLAY</span></div>
-      <div class="xx-header-right"><span>INDIE GAME STORE</span><button type="button" id="store-settings" aria-label="스토어 환경설정 열기" title="환경설정">⚙</button></div>
+      <div class="xx-header-right"><a class="mv-guide-link" href="./world.html">마을 안내 ↗</a><span>INDIE GAME STORE</span><button type="button" id="store-settings" aria-label="스토어 환경설정 열기" title="환경설정">⚙</button></div>
     </header>
     <div class="xx-container">
       <div class="xx-breadcrumb">스토어 / 시뮬레이션 / 미스트베일</div>
@@ -61,7 +62,7 @@
   <section id="title" class="scene title-scene" aria-labelledby="logo">
     <canvas id="title-pixel-art" width="480" height="270" aria-hidden="true"></canvas>
     <div class="title-content"><p class="eyebrow">A QUIET LIFE. AN UNWRITTEN STORY.</p><div class="logo-ornament" aria-hidden="true">✧ ── ❧ ── ✧</div><h1 id="logo">MISTVALE</h1><p class="subtitle">미 스 트 베 일</p><p class="tagline">평화로운 농장, 조용한 마을.<br>그리고 아직 당신만 모르는 이야기.</p>
-    <nav class="game-menu" aria-label="게임 메뉴"><button id="new-game" class="primary"><span class="menu-icon">✧</span> NEW GAME <span class="menu-end">새로운 이야기</span></button><button id="continue" disabled><span class="menu-icon">↳</span> CONTINUE <span class="menu-end" id="save-status">저장 데이터 없음</span></button><button id="title-settings"><span class="menu-icon">⚙</span> SETTINGS <span class="menu-end">환경 설정</span></button></nav><p class="title-note">당신을 기다리는 작은 세계</p></div>
+    <nav class="game-menu" aria-label="게임 메뉴"><button id="new-game" class="primary"><span class="menu-icon">✧</span> NEW GAME <span class="menu-end">새로운 이야기</span></button><button id="continue" disabled><span class="menu-icon">↳</span> CONTINUE <span class="menu-end" id="save-status">저장 데이터 없음</span></button><button id="title-settings"><span class="menu-icon">⚙</span> SETTINGS <span class="menu-end">환경 설정</span></button></nav><p class="title-note">당신을 기다리는 작은 세계</p><a class="mv-guide-link" href="./world.html" style="margin-top:12px">마을 지도 둘러보기 ↗</a></div>
     <footer><span>✿ SPRING, DAY 01</span><span>OPENING CHAPTER <b>01</b></span><span>© MISTVALE · v0.2</span></footer>
   </section>
   <section id="loading" class="scene loading-scene" hidden aria-label="게임 실행 중"><div class="loading-card"><canvas id="farm-animation" class="pixel-stage" width="160" height="86" role="img" aria-label="익명의 작은 도트 농장주가 씨앗을 뿌리고 물을 주어 새싹을 키우는 애니메이션"></canvas><h2>MISTVALE</h2><p id="loading-caption" class="loading-caption" role="status">새로운 농장을 불러오는 중...</p><div class="loading-track"><span aria-hidden="true">❧</span><span class="ver-progress-rail"><img id="loading-ver" class="loading-ver" src="./assets/loading/ver-run.webp" alt="" aria-hidden="true"><progress id="progress" max="100" value="0" aria-label="농장 준비 진행"></progress></span><span aria-hidden="true">✧</span></div><p id="connection" class="connection" role="status"></p></div></section>
