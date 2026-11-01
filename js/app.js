@@ -17,9 +17,10 @@ function updateMusicButton(){
 }
 function toggleMusic(){
   if(music.isPlaying()){music.setEnabled(false);}else{music.setEnabled(true);music.activate();}
-  updateMusicButton();
+  updateMusicButton();updateSettings();
 }
 const preferences=readSave(), systemMotion=matchMedia('(prefers-reduced-motion: reduce)');
+if(!preferences.bgm)music.setEnabled(false);
 let scene='store',controller=new AbortController(),line=0,typeTimer=0,autoTimer=0;
 let fullText='',typing=false,auto=true,choosing=false;
 const reduced=()=>preferences.reducedMotion||systemMotion.matches;
@@ -45,6 +46,7 @@ function focus(element){if(!settings.open)element?.focus({preventScroll:true});}
 function updateSettings(){
   game.classList.toggle('reduced-motion',reduced());
   $('sound').checked=preferences.sound;$('motion').checked=preferences.reducedMotion;$('speed').value=preferences.speed;
+  $('bgm').checked=music.enabled;
   $('motion-note').textContent=systemMotion.matches?'기기의 동작 줄이기 설정이 적용 중입니다.':'빛과 움직임을 차분하게 표시합니다.';
   sound.setEnabled(preferences.sound);
 }
@@ -177,28 +179,70 @@ function restoreRoute(){
   else if(results[route])result(route,true);
   else{store(true);routeHash('#store',true);}
 }
-function openSettings(){if(!settings.open){cancelAuto();settings.showModal();}}
+function openSettings(){if(!settings.open){cancelAuto();updateSettings();settings.showModal();}}
 systemMotion.addEventListener('change',()=>{updateSettings();if(typing&&reduced())finishText();});
 settings.addEventListener('close',scheduleAuto);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelAuto();else scheduleAuto();});
 $('store-play').addEventListener('click',()=>{sound.play();title();});
-$('store-play-side').addEventListener('click',()=>{sound.play();title();});
-const storeArt=document.querySelector('.store-art');
-const artIndex=$('store-art-index');
-const storeImages=['./assets/title.jpg','./assets/loading/farm-scene.webp','./assets/loading/valley-scene.webp'];
-document.querySelectorAll('[data-store-image]').forEach(button=>{
-  button.addEventListener('click',()=>{
-    const index=Number(button.dataset.storeImage);
-    if(!Number.isInteger(index)||!storeImages[index]||!storeArt)return;
-    storeArt.style.backgroundImage='url("'+storeImages[index]+'")';
-    if(artIndex)artIndex.textContent=String(index+1).padStart(2,'0')+' / 03';
-    document.querySelectorAll('[data-store-image]').forEach(item=>{
-      const selected=item===button;
-      item.classList.toggle('is-selected',selected);
-      item.setAttribute('aria-pressed',String(selected));
-    });
-  });
-});
+const slides=[
+ {src:'./assets/loading/farm-scene.webp',name:'오래된 농장',detail:'풀숲에 잠긴 작은 농장. 여기서부터 모든 것이 시작됩니다.',alt:'미스트베일의 농장 픽셀아트'},
+ {src:'./assets/loading/valley-scene.webp',name:'초록빛 계곡',detail:'산과 들이 이어진 평화로운 생활의 무대.',alt:'푸른 계곡 픽셀아트'},
+ {src:'./assets/screenshots/village.svg',name:'아침 마을',detail:'계곡에 자리 잡은 작은 마을과 돌길.',alt:'햇살이 드는 도트 마을 풍경'},
+ {src:'./assets/screenshots/moonlit-lake.svg',name:'달빛 호수',detail:'밤이 되면 조용한 호수에 달빛이 내려앉습니다.',alt:'밤의 호수 도트 풍경'},
+ {src:'./assets/title.jpg',name:'안개 낀 산맥',detail:'저 멀리 펼쳐진 미스트베일의 계곡.',alt:'안개 낀 산맥과 숲의 전경'}
+];
+let slideIndex=0;
+function showSlide(next){
+ slideIndex=(next+slides.length)%slides.length;
+ const slide=slides[slideIndex];
+ $('xx-main-image').src=slide.src;$('xx-main-image').alt=slide.alt;
+ $('xx-slide-name').textContent=String(slideIndex+1).padStart(2,'0')+'  '+slide.name;
+ $('xx-slide-detail').textContent=slide.detail;
+ document.querySelectorAll('[data-xx-slide]').forEach(button=>{
+  const selected=Number(button.dataset.xxSlide)===slideIndex;
+  button.classList.toggle('selected',selected);button.setAttribute('aria-pressed',String(selected));
+ });
+}
+$('xx-prev').addEventListener('click',()=>showSlide(slideIndex-1));
+$('xx-next').addEventListener('click',()=>showSlide(slideIndex+1));
+document.querySelectorAll('[data-xx-slide]').forEach(button=>button.addEventListener('click',()=>showSlide(Number(button.dataset.xxSlide))));
+const reviews=[
+ ['추천',42.6,'새벽의감자','농사만 하려고 켰는데 어느새 마을 사람들 일상까지 신경 쓰고 있네요. 하루가 너무 짧아요.'],
+ ['추천',18.2,'호숫가산책','낮 분위기가 좋아요. 호수에서 낚시하다 보면 시간 가는 줄 모르겠어요.'],
+ ['추천',63.1,'양치기아님','베르라는 안내 캐릭터, 친절한 줄 알았는데 제 실수만 기다리는 것 같음. 그래도 귀여워요.'],
+ ['추천',12.4,'고구마좋아','심은 작물이 자라는 걸 구경하는 맛이 있어요. 작은 농장을 꾸미는 재미가 큽니다.'],
+ ['비추천',6.3,'아침잠많음','하루가 너무 짧아서 하고 싶은 걸 다 못하겠어요.'],
+ ['추천',89.4,'흐린계곡','낚시하고 요리하고 주민들한테 선물 주는 재미로 계속 켜게 됩니다.'],
+ ['추천',27.1,'풀씨앗','농장 경영이 생각보다 쉽지만은 않네요. 천천히 해보려구요.'],
+ ['추천',54.8,'달빛우물','잔잔한 배경음이 좋아서 계속 돌아다니게 돼요.'],
+ ['비추천',9.7,'바쁜농부','해야 할 일이 너무 많아서 힐링하려다 더 바빠졌어요.'],
+ ['추천',37.3,'숲의손님','숲에 숨겨진 오솔길 찾는 재미가 있네요.'],
+ ['추천',71.2,'마을우체부','주민들이 각자 살아가는 느낌이라 마음에 들어요.'],
+ ['비추천',4.5,'초보농장주','초반에 돈이 잘 안 모여서 조금 답답합니다.'],
+ ['추천',45.9,'푸른모자','비 오는 날 농장 풍경이 특히 예쁘더라고요.'],
+ ['추천',21.6,'주점단골','금요일 저녁에 주점 가보세요. 분위기가 달라요.'],
+ ['비추천',7.8,'낚시초보','원하는 물고기를 잡는 게 꽤 어려워요.'],
+ ['비추천',11.3,'늦은봄','지도에 없는 길이 많아 처음에는 헤맸어요.']
+];
+let reviewPage=0;const reviewSize=3;
+function renderReviews(){
+ const totalPages=Math.ceil(reviews.length/reviewSize);
+ const items=reviews.slice(reviewPage*reviewSize,(reviewPage+1)*reviewSize);
+ $('xx-review-list').replaceChildren(...items.map(([vote,hours,user,body])=>{
+  const article=document.createElement('article');article.className='xx-review-card';
+  const v=document.createElement('strong');v.className='xx-review-vote'+(vote==='비추천'?' negative':'');v.textContent=vote==='추천'?'✓ 추천':'− 비추천';
+  const h=document.createElement('span');h.className='xx-review-hours';h.textContent='플레이 시간 '+hours+'시간';
+  const p=document.createElement('p');p.textContent=body;
+  const footer=document.createElement('footer');footer.textContent=user+' · 사용자 평가';
+  article.append(v,h,p,footer);return article;
+ }));
+ $('xx-review-page-label').textContent='전체 '+reviews.length+'개 중 '+(reviewPage*reviewSize+1)+'–'+Math.min((reviewPage+1)*reviewSize,reviews.length)+' 표시';
+ $('xx-review-prev').disabled=reviewPage===0;
+ $('xx-review-next').disabled=reviewPage===totalPages-1;
+}
+$('xx-review-prev').addEventListener('click',()=>{reviewPage=Math.max(0,reviewPage-1);renderReviews();});
+$('xx-review-next').addEventListener('click',()=>{reviewPage=Math.min(Math.ceil(reviews.length/reviewSize)-1,reviewPage+1);renderReviews();});
+renderReviews();
 $('new-game').addEventListener('click',()=>{music.activate();launch();});
 $('music-toggle').addEventListener('click',toggleMusic);
 
@@ -221,7 +265,8 @@ $('choices').addEventListener('keydown',event=>{
     focus(buttons[next]);
   }
 });
-[$('settings-open'),$('title-settings')].forEach(button=>button.addEventListener('click',openSettings));
+[$('settings-open'),$('title-settings'),$('store-settings')].forEach(button=>button.addEventListener('click',openSettings));
+$('bgm').addEventListener('change',event=>{music.setEnabled(event.target.checked);if(event.target.checked)music.activate();preferences.bgm=music.enabled;persist();updateSettings();});
 $('sound').addEventListener('change',event=>{preferences.sound=event.target.checked;updateSettings();persist();sound.play();});
 $('motion').addEventListener('change',event=>{preferences.reducedMotion=event.target.checked;updateSettings();persist();if(typing&&reduced())finishText();});
 $('speed').addEventListener('change',event=>{preferences.speed=event.target.value;persist();if(scene==='story')finishText();});

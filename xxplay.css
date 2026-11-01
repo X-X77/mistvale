@@ -1,0 +1,113 @@
+/* X_XPLAY — fictional PC storefront, matched to creator-provided reference. */
+#game[data-scene="store"]{background:#1b252b;overflow:visible;}
+#game[data-scene="store"] .store-scene{display:none;}
+#game[data-scene="store"] .xx-store{display:block;color:#e4e7e5;min-height:100svh;background:#1b252b;font-family:'Noto Sans KR',sans-serif;}
+.xx-header{height:54px;background:#243139;border-bottom:1px solid #46545a;display:flex;justify-content:space-between;align-items:center;padding:0 clamp(18px,3vw,36px);}
+.xx-brand{font:900 21px/1 'Noto Sans KR',sans-serif;letter-spacing:.02em;color:#fff;}
+.xx-brand span{color:#a4cdb7;}
+.xx-header-right{display:flex;align-items:center;gap:20px;color:#bac7c8;font:700 11px/1.2 Arial,sans-serif;letter-spacing:.07em;}
+#store-settings{min-width:36px;min-height:34px;border:1px solid #638077;background:#324b4b;color:#d6e9da;border-radius:3px;font-size:19px;}
+#store-settings:hover{background:#486860;}
+.xx-container{width:min(1110px,100%);margin:0 auto;padding:24px 24px 42px;}
+.xx-breadcrumb{font-size:12px;color:#9eb8b8;margin-bottom:16px;letter-spacing:.02em;}
+.xx-titleline{display:flex;align-items:end;justify-content:space-between;gap:14px;margin-bottom:20px;}
+.xx-titleline h1{font:900 clamp(27px,3.5vw,39px)/1.2 'Noto Sans KR',sans-serif;letter-spacing:.025em;text-shadow:none;color:#f3f4ef;}
+.xx-titleline h1 span{font:500 13px 'Noto Sans KR',sans-serif;color:#9cbab0;letter-spacing:0;}
+.xx-titleline p{margin:4px 0 0;color:#b6c6c4;font:13px/1.6 'Noto Sans KR',sans-serif;}
+.xx-titleline .xx-genre{white-space:nowrap;color:#c0d2c9;font-size:11px;padding-bottom:3px;}
+.xx-hero{display:grid;grid-template-columns:minmax(0,2.15fr) minmax(230px,1fr);gap:17px;align-items:start;}
+.xx-gallery{min-width:0;}
+.xx-image-viewport{position:relative;aspect-ratio:16/10;background:#0b2020;border:1px solid #3c5456;overflow:hidden;}
+#xx-main-image{width:100%;height:100%;display:block;object-fit:cover;image-rendering:pixelated;}
+.xx-arrow{position:absolute;top:50%;transform:translateY(-50%);height:42px;width:31px;background:#10242ac7;border:1px solid #4a6267;color:#fff;font:700 28px/1 Arial,sans-serif;}
+.xx-arrow:hover{background:#3a635b;}
+.xx-prev{left:7px}.xx-next{right:7px}
+.xx-slide-desc{background:#27383f;border:1px solid #3c5358;border-top:0;padding:12px 14px 10px;min-height:66px;}
+.xx-slide-desc strong{display:block;color:#f7faf8;font-size:13px;}
+.xx-slide-desc p{margin:3px 0 0;color:#b6d9ce;font-size:11px;line-height:1.55;}
+.xx-thumbnails{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-top:9px;}
+.xx-thumb{height:auto;aspect-ratio:16/9;background:#10232a;border:2px solid transparent;padding:0;overflow:hidden;}
+.xx-thumb img{width:100%;height:100%;object-fit:cover;display:block;image-rendering:pixelated;opacity:.65;}
+.xx-thumb:hover img,.xx-thumb.selected img{opacity:1;}
+.xx-thumb.selected{border-color:#97c7a5;}
+.xx-thumb:focus-visible{outline:2px solid #d6f1c0;outline-offset:2px;}
+.xx-gallery-help{margin-top:10px;font-size:11px;color:#8eaba9;}
+.xx-overview{border:1px solid #46595b;background:#2a3a40;overflow:hidden;}
+.xx-overview-head{padding:20px 20px 19px;}
+.xx-overview-head small{font:700 11px Arial,sans-serif;letter-spacing:.08em;color:#94c7ad;}
+.xx-overview-head h2{font:800 clamp(19px,2vw,23px)/1.33 'Noto Sans KR',sans-serif;letter-spacing:-.035em;color:#fff9f1;margin:10px 0 8px;}
+.xx-overview-head p{font-size:12px;line-height:1.83;color:#d4dfde;}
+.xx-overview-score{border-top:1px solid #4c5f61;border-bottom:1px solid #4c5f61;padding:15px 20px;}
+.xx-overview-score small{display:block;color:#9bb2af;font-size:11px;}
+.xx-overview-score p{margin:5px 0 0;font-size:12px;color:#c1d2c9;}
+.xx-overview-score strong{color:#9dddba;font-size:13px;}
+.xx-overview-score span{font-size:11px;}
+.xx-overview-details{padding:15px 20px 14px;}
+.xx-overview-details dl{margin:0;display:grid;gap:11px;}
+.xx-overview-details dl>div{display:flex;gap:7px;justify-content:space-between;align-items:center;font-size:12px;}
+.xx-overview-details dt{color:#9db5b5;}
+.xx-overview-details dd{margin:0;color:#edf0eb;text-align:right;font-weight:500;}
+.xx-adult-mark{display:inline-grid;place-items:center;width:25px;height:25px;border:2px solid #c2a87b;border-radius:4px;color:#ffe5b0;background:#654d40;font-weight:900;font-size:13px;margin-right:4px;}
+.xx-rating-details{margin-top:14px;border-top:1px solid #536563;padding-top:11px;color:#b4d0c5;font-size:11px;}
+.xx-rating-details summary{cursor:pointer;font-weight:700;}
+.xx-rating-details p{margin-top:8px;color:#d1ddd6;line-height:1.6;}
+.xx-owned{background:#25363b;border-top:1px solid #425958;padding:16px 20px 20px;}
+.xx-owned>span{display:block;color:#b1d7c4;font-size:11px;margin-bottom:10px;}
+#store-play{width:100%;min-height:50px;background:linear-gradient(105deg,#8ccc9a,#b0df96);border:1px solid #c4ecc0;border-radius:3px;color:#173a31;display:flex;align-items:center;justify-content:space-between;padding:10px 15px;}
+#store-play strong{font:900 16px 'Noto Sans KR',sans-serif;}
+#store-play small{font:700 11px Arial,sans-serif;letter-spacing:.13em;}
+#store-play:hover{background:#c0efad;}
+.xx-section{background:#223239;border:1px solid #3d5055;padding:23px 22px;margin-top:30px;}
+.xx-section-title{display:flex;justify-content:space-between;align-items:baseline;gap:8px;border-bottom:1px solid #485c5e;padding-bottom:13px;margin-bottom:17px;}
+.xx-section-title h2{font:800 19px 'Noto Sans KR',sans-serif;color:#f4f5f1;}
+.xx-section-title>span{font:700 11px Arial,sans-serif;color:#91aeae;letter-spacing:.04em;}
+.xx-about>p{font-size:13px;line-height:1.9;color:#c7d7d4;word-break:keep-all;}
+.xx-features{display:flex;flex-wrap:wrap;gap:10px;margin-top:17px;}
+.xx-features span{background:#304950;border:1px solid #50656b;padding:7px 12px;font-size:12px;color:#b8d7c7;}
+.xx-review-summary{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:#1b2b32;border:1px solid #3d555c;padding:12px 15px;margin-bottom:15px;}
+.xx-review-summary strong{color:#9addba;font-size:16px;}
+.xx-review-summary span{font-size:12px;color:#c9d5d1;}
+.xx-review-summary small{margin-left:auto;color:#92a8a8;font-size:10px;}
+.xx-review-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}
+.xx-review-card{background:#293e48;border:1px solid #47616a;padding:16px 15px;display:flex;flex-direction:column;min-height:180px;}
+.xx-review-card .xx-review-vote{font-weight:800;font-size:12px;color:#a8e2c4;}
+.xx-review-card .xx-review-vote.negative{color:#f0c6a3;}
+.xx-review-card .xx-review-hours{font-size:10px;color:#9db3bf;margin-top:3px;}
+.xx-review-card p{margin:14px 0 15px;color:#e1e8e3;font-size:12px;line-height:1.8;word-break:keep-all;flex:1;}
+.xx-review-card footer{font-size:10px;color:#a8bcc0;border-top:1px solid #496069;padding-top:9px;}
+.xx-review-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:15px;color:#a5b8bd;font-size:12px;}
+.xx-review-footer>div{display:flex;gap:6px;}
+.xx-review-footer button{border:1px solid #4f6e70;background:#344f54;color:#e8f5e8;font-size:20px;width:38px;height:32px;}
+.xx-review-footer button:disabled{opacity:.35;cursor:not-allowed;}
+.xx-footer{display:flex;justify-content:space-between;gap:10px;margin-top:25px;padding-top:16px;border-top:1px solid #374c52;color:#91aaa9;font-size:10px;}
+/* Custom pixel pickaxe cursor within the game experience. */
+#game[data-scene="store"],#game[data-scene="title"],#game[data-scene="loading"]{
+ cursor:url('./assets/pickaxe-cursor.svg') 5 4,auto;
+}
+#game[data-scene="store"] button,#game[data-scene="title"] button,#game[data-scene="loading"] button{
+ cursor:url('./assets/pickaxe-cursor.svg') 5 4,pointer;
+}
+@media(max-width:790px){
+ .xx-hero{grid-template-columns:1fr;}
+ .xx-container{padding:20px 14px 35px;}
+ .xx-titleline{display:block;}
+ .xx-titleline .xx-genre{margin-top:8px;}
+ .xx-image-viewport{aspect-ratio:16/9;}
+ .xx-overview-head{padding:17px;}
+ .xx-review-list{grid-template-columns:1fr;}
+ .xx-review-card{min-height:0;}
+ .xx-review-summary small{margin-left:0;}
+}
+@media(max-width:480px){
+ .xx-header{padding:0 13px;}
+ .xx-header-right{gap:10px;font-size:9px;}
+ .xx-titleline h1{font-size:28px;}
+ .xx-titleline h1 span{display:block;margin-top:3px;}
+ .xx-image-viewport{aspect-ratio:4/3;}
+ .xx-slide-desc{padding:10px;}
+ .xx-thumbnails{gap:4px;}
+ .xx-thumb{border-width:1px;}
+ .xx-section{padding:16px;margin-top:18px;}
+ .xx-review-summary{align-items:start;flex-direction:column;gap:4px;}
+ .xx-footer{display:block;}
+}

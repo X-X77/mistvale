@@ -18,7 +18,7 @@ test('unavailable storage is nonfatal', () => {
 test('only settings survive a round trip',()=>{
  let saved;
  globalThis.localStorage={getItem:()=>saved,setItem:(_key,value)=>{saved=value;}};
- const value={sound:true,reducedMotion:true,speed:'fast'};
+ const value={sound:true,reducedMotion:true,speed:'fast',bgm:false};
  assert.equal(writeSave({...value,completed:true}),true);
  assert.deepEqual(readSave(),value);
  assert.equal(Object.hasOwn(JSON.parse(saved),'completed'),false);

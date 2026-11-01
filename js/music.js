@@ -70,13 +70,13 @@ export class Music {
   activate() {
     if (!this.enabled) return;
     this.unlocked = true;
-    if (this.scene === 'transition') return;
+    if (this.scene === 'transition' || this.scene === 'store') return;
     this.playTrack(this.scene === 'title' || this.scene === 'loading' ? 'title' : 'awakening');
   }
 
   setScene(scene, { delay = 0 } = {}) {
     this.scene = scene;
-    if (scene === 'transition') {
+    if (scene === 'transition' || scene === 'store') {
       ++this.sequence;
       this.clearTimers();
       const seq = this.sequence;
