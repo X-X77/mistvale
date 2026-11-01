@@ -287,7 +287,7 @@ $('choices').addEventListener('keydown',event=>{
     focus(buttons[next]);
   }
 });
-[$('settings-open'),$('title-settings'),$('store-settings')].forEach(button=>button.addEventListener('click',openSettings));
+[$('settings-open'),$('title-settings')].forEach(button=>button.addEventListener('click',openSettings));
 $('bgm').addEventListener('change',event=>{const want=event.target.checked;music.setEnabled(want);if(want)music.activate();preferences.bgm=music.enabled;persist();updateSettings();});
 $('sound').addEventListener('change',event=>{preferences.sound=event.target.checked;updateSettings();persist();sound.play();});
 $('motion').addEventListener('change',event=>{preferences.reducedMotion=event.target.checked;updateSettings();persist();if(typing&&reduced())finishText();});
