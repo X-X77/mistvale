@@ -121,7 +121,8 @@ export function createPixelLoader(canvas,{mode='farm',reduced=()=>false,sprite=n
  let running=false,frameId=0,origin=0;
  function paint(stamp){
   if(!running)return;
-  const t=reduced()?6900:stamp-origin;
+  // Reduced-motion keeps the farming actions progressing; only decorative bouncing/particles are removed.
+  const t=stamp-origin;
   ctx.clearRect(0,0,width,height);ctx.imageSmoothingEnabled=false;
   if(mode==='ver')sceneVer(ctx,art,t,reduced(),width,height);
   else sceneFarm(ctx,art,t,reduced(),width,height);
