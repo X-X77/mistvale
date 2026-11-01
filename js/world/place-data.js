@@ -1,3 +1,7 @@
+// 장소 데이터. 장소에 서 있는 인물은 여기에 적지 않습니다.
+// assets/npc/characters.json 의 각 NPC 'placeId' 가 이 장소의 id 와 같으면 자동으로 나타납니다.
+//   background : 완성된 내부 그림이 있으면 경로, 없으면 null (CSS 분위기 배경이 대신 표시되고 '배경 준비 중'으로 알립니다)
+//   mood       : 장소마다 다른 분위기. a(위)→b(아래) 그라데이션, glow(빛 번짐)
 export const places = {
   clover: {
     id:'clover', name:'클로버 잡화점', category:'생활과 준비', hours:'09:00–18:00',
@@ -5,14 +9,120 @@ export const places = {
     description:'미스트베일의 생활에 필요한 물건을 소개하는 장소입니다.',
     background:'./assets/world/clover-interior.jpg',
     alt:'나무 선반과 생활 잡화, 계산대가 놓인 클로버 잡화점 시범 내부',
-    npcs:[{npcId:'rowen',x:57,y:68}],
+    mood:{ a:'#3b2c1c', b:'#6d5334', glow:'#ffe2a0' },
   },
   library: {
     id:'library', name:'작은 도서관', category:'책과 이야기', hours:null,
-    purpose:'작은 도서관 사서 · 에델린',
-    description:'에델린을 만나 이야기를 나눌 수 있는 작은 도서관입니다.',
+    purpose:'조용히 책을 읽고 빌리는 마을 도서관',
+    description:'사서 에델린이 지키는 작은 도서관입니다.',
     background:'./assets/world/library-interior.svg',
     alt:'책장과 창문, 독서 테이블이 놓인 작은 도서관 시범 내부',
-    npcs:[{npcId:'edelin',x:57,y:72}],
+    mood:{ a:'#2a3128', b:'#50563a', glow:'#f1e2b0' },
+  },
+  forge: {
+    id:'forge', name:'검은모루 대장간', category:'도구와 불', hours:null,
+    purpose:'농기구와 도구를 두드려 만들고 고치는 대장간',
+    description:'화덕의 열기와 쇠 냄새가 가득한 대장간입니다.',
+    background:null, alt:'화덕과 모루가 놓인 대장간 분위기',
+    mood:{ a:'#24140f', b:'#5e2f19', glow:'#ff9340' },
+  },
+  workshop: {
+    id:'workshop', name:'참나무 공방', category:'나무와 손길', hours:null,
+    purpose:'가구와 집수리를 맡는 목공방',
+    description:'톱밥 냄새와 따뜻한 나뭇결이 머무는 공방입니다.',
+    background:null, alt:'작업대와 목재가 놓인 공방 분위기',
+    mood:{ a:'#3a2a1b', b:'#7a5732', glow:'#f6cd85' },
+  },
+  ranch: {
+    id:'ranch', name:'푸른목초 목장', category:'가축과 초원', hours:null,
+    purpose:'가축을 기르고 우유와 치즈를 만드는 목장',
+    description:'풍차가 돌아가는 너른 초원의 목장입니다.',
+    background:null, alt:'울타리와 초원이 펼쳐진 목장 분위기',
+    mood:{ a:'#34552f', b:'#a2bf68', glow:'#fff3b8' },
+  },
+  pub: {
+    id:'pub', name:'달맞이 주점', category:'저녁의 사랑방', hours:null,
+    purpose:'마을 소문과 이야기가 모이는 주점',
+    description:'해가 지면 등불이 켜지고 사람들이 모여드는 주점입니다.',
+    background:null, alt:'등불이 켜진 주점 분위기',
+    mood:{ a:'#1d1731', b:'#4a2b3c', glow:'#f7b95e' },
+  },
+  inn: {
+    id:'inn', name:'안개꽃 여관', category:'쉼과 머묾', hours:null,
+    purpose:'여행자와 새 이웃이 쉬어 가는 여관',
+    description:'안개꽃 향이 은은한 단정한 여관입니다.',
+    background:null, alt:'안개꽃이 놓인 여관 로비 분위기',
+    mood:{ a:'#2b3b3a', b:'#74867a', glow:'#ffe8b8' },
+  },
+  clinic: {
+    id:'clinic', name:'은방울 진료소', category:'치료와 안전', hours:null,
+    purpose:'치료와 응급 처치를 맡는 마을 진료소',
+    description:'깨끗하게 정돈된 은방울 진료소입니다.',
+    background:null, alt:'깨끗한 진료실 분위기',
+    mood:{ a:'#2a4249', b:'#cfe1df', glow:'#ffffff' },
+  },
+  apothecary: {
+    id:'apothecary', name:'보랏빛 약방', category:'약초와 포션', hours:null,
+    purpose:'포션과 약초를 다루는 작은 약방',
+    description:'말린 약초와 작은 병들이 빼곡한 약방입니다.',
+    background:null, alt:'약초와 포션 병이 놓인 약방 분위기',
+    mood:{ a:'#241a35', b:'#5e3f7a', glow:'#c9a6ff' },
+  },
+  hall: {
+    id:'hall', name:'마을 회관', category:'마을의 일', hours:null,
+    purpose:'마을 행사와 공동 의뢰를 관리하는 회관',
+    description:'마을의 행사와 약속이 모이는 회관입니다.',
+    background:null, alt:'긴 탁자와 게시판이 있는 마을 회관 분위기',
+    mood:{ a:'#2b303b', b:'#6c6b5b', glow:'#f4e4b2' },
+  },
+  bakery: {
+    id:'bakery', name:'햇살 제과점', category:'빵과 달콤함', hours:null,
+    purpose:'갓 구운 빵과 과자를 파는 제과점',
+    description:'버터와 설탕 냄새가 따뜻하게 퍼지는 제과점입니다.',
+    background:null, alt:'빵과 과자가 진열된 제과점 분위기',
+    mood:{ a:'#5c3b22', b:'#e5ad6e', glow:'#fff1c6' },
+  },
+  post: {
+    id:'post', name:'우체국', category:'편지와 소식', hours:null,
+    purpose:'편지와 소포를 마을 구석구석 배달하는 우체국',
+    description:'분류함과 편지 더미가 쌓인 작은 우체국입니다.',
+    background:null, alt:'분류함과 소포가 놓인 우체국 분위기',
+    mood:{ a:'#2a414c', b:'#7ba3ab', glow:'#fff6d8' },
+  },
+  tailor: {
+    id:'tailor', name:'재봉실·의상실', category:'옷과 바느질', hours:null,
+    purpose:'옷을 짓고 고치는 재봉실이자 의상실',
+    description:'원단과 리본, 레이스가 가득한 의상실입니다.',
+    background:null, alt:'원단과 마네킹이 놓인 의상실 분위기',
+    mood:{ a:'#4b2d3f', b:'#d9a3ba', glow:'#ffe5ef' },
+  },
+  // ---- 마을 밖 : 지도의 길 입구로 드는 서식지 ----
+  'whisper-forest': {
+    id:'whisper-forest', name:'속삭임 숲', category:'마을 밖 · 숲', hours:null,
+    purpose:'안개가 짙게 낀 깊은 숲. 마녀와 숲의 주민들이 머문다',
+    description:'속삭이는 바람 소리를 따라 숲 안쪽으로 들어갑니다. 거미줄 둥지, 정령의 공터, 버섯 군락지, 버려진 온실이 흩어져 있습니다.',
+    background:null, alt:'안개가 낀 짙은 숲 분위기',
+    mood:{ a:'#0e271f', b:'#2f5c47', glow:'#b9f2cc' },
+  },
+  'blue-coast': {
+    id:'blue-coast', name:'푸른물결 해안', category:'마을 밖 · 해안', hours:null,
+    purpose:'등대와 암초, 밀물 동굴이 있는 해안',
+    description:'등대가 서 있고, 암초 너머로 안개 낀 바다가 이어집니다. 밤 밀물 때에는 동굴 쪽에서 푸른 빛이 일렁입니다.',
+    background:null, alt:'등대와 암초가 보이는 해안 분위기',
+    mood:{ a:'#0f2a47', b:'#4f89ab', glow:'#d2efff' },
+  },
+  'wet-cave': {
+    id:'wet-cave', name:'숲의 습한 동굴', category:'마을 밖 · 동굴', hours:null,
+    purpose:'안개 온천 외곽으로 이어지는 습한 동굴',
+    description:'절벽 아래 물소리가 울리는 동굴입니다. 바닥이 젖어 있고 안개가 낮게 깔려 있습니다.',
+    background:null, alt:'물이 떨어지는 습한 동굴 분위기',
+    mood:{ a:'#0c1d1b', b:'#214b46', glow:'#7ed8b2' },
+  },
+  'silver-lake': {
+    id:'silver-lake', name:'은빛 호수', category:'마을 밖 · 호수', hours:null,
+    purpose:'은빛으로 반짝이는 호수의 습지와 물가',
+    description:'잔잔한 물결과 갈대밭이 이어지는 호수입니다. 물가는 늘 촉촉합니다.',
+    background:null, alt:'잔잔하게 반짝이는 호숫가 분위기',
+    mood:{ a:'#1a3046', b:'#92b5cb', glow:'#f3fbff' },
   },
 };

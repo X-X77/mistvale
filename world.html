@@ -4,7 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#203b32">
   <title>마을 안내 · MISTVALE</title>
-  <meta name="description" content="미스트베일 세계관을 둘러보는 인터랙티브 마을 안내. 첫 번째 장소, 클로버 잡화점.">
+  <meta name="description" content="미스트베일 세계관을 둘러보는 인터랙티브 마을 안내. 마을 시설과 숲·해안·호수, 그곳의 인물들을 만나 보세요.">
   <link rel="icon" href="./assets/pickaxe-cursor.svg" type="image/svg+xml">
   <script>
   // 지도는 오프닝 첫 선택지 ②('마을을 살펴보러 간다')로만 열립니다. 직접 주소로 들어오면 스토어로 돌려보냅니다.
@@ -27,19 +27,19 @@
   <section id="map-view" class="mv-view" aria-labelledby="map-title">
     <div class="mv-heading"><p class="mv-overline">마을 안내</p><h1 id="map-title">미스트베일</h1><p id="map-subtitle"></p></div>
     <div class="mv-stage mv-map-stage" id="map-stage"><img id="map-art" class="mv-background" alt=""><div id="map-markers"></div><span class="mv-compass" aria-hidden="true">N<br>✧</span><p id="map-fallback" class="mv-fallback" hidden>지도 이미지를 불러오지 못했습니다.<br>장소 표시나 아래 목록으로 들어갈 수 있습니다.</p></div>
-    <div class="mv-map-bottom"><div><p class="mv-overline">둘러볼 수 있는 장소</p><p class="mv-map-hint">장소 표시를 선택해 안으로 들어가 보세요.</p></div><div id="place-list"></div></div>
+    <div class="mv-map-bottom"><div><p class="mv-overline">둘러볼 수 있는 장소</p><p class="mv-map-hint">장소 표시를 선택해 안으로 들어가 보세요.</p></div><div id="place-list"><section id="place-group-town" aria-labelledby="town-label"><h2 id="town-label" class="mv-group-label">마을 시설</h2><div id="place-list-town" class="mv-place-grid"></div></section><section id="place-group-outside" aria-labelledby="outside-label"><h2 id="outside-label" class="mv-group-label">마을 밖 · 숲, 해안, 동굴, 호수</h2><div id="place-list-outside" class="mv-place-grid"></div></section></div></div>
   </section>
   <section id="place-view" class="mv-view" hidden aria-labelledby="place-title">
     <div class="mv-place-heading"><div><p id="place-category" class="mv-overline"></p><h1 id="place-title" tabindex="-1"></h1></div><span id="place-hours" class="mv-hours"></span></div>
-    <div class="mv-stage mv-place-stage" id="place-stage"><img id="place-art" class="mv-background" alt=""><div id="npc-layer"></div><p id="place-fallback" class="mv-fallback" hidden>내부 배경을 불러오지 못했습니다.<br>인물 자리 표시를 눌러 대화를 확인할 수 있습니다.</p><span class="mv-scene-note">시범 배경 · NPC 테스트</span></div>
-    <div class="mv-place-info"><div><p id="place-purpose"></p><p id="place-description"></p></div><span class="mv-talk-hint">인물을 선택하면 대화가 열립니다.</span></div>
+    <div class="mv-stage mv-place-stage" id="place-stage"><img id="place-art" class="mv-background" alt=""><div id="npc-layer"></div><p id="place-fallback" class="mv-fallback" hidden>내부 배경을 불러오지 못했습니다.<br>인물 카드를 눌러 대화를 확인할 수 있습니다.</p><span id="scene-note" class="mv-scene-note"></span></div>
+    <div class="mv-place-info"><div><p id="place-purpose"></p><p id="place-description"></p></div><span class="mv-talk-hint">인물 카드를 선택하면 대화가 열립니다.</span></div>
   </section>
-  <footer class="mv-world-footer"><span>케이브덕 캐릭터 시뮬레이션 · 세계관 안내</span><span>시범 공개 · 클로버 잡화점 / 작은 도서관</span></footer>
+  <footer class="mv-world-footer"><span>케이브덕 캐릭터 시뮬레이션 · 세계관 안내</span><span>시범 공개 · 마을 시설 13곳 · 숲·해안·동굴·호수 · 인물 23명</span></footer>
   <div class="mv-transition" aria-hidden="true"></div>
   <p id="world-status" class="mv-sr-only" role="status"></p>
 </main>
 <dialog id="npc-dialog" class="mv-npc-dialog" aria-labelledby="npc-name">
-  <div class="mv-dialog-content"><div class="mv-portrait-area"><img id="npc-portrait" alt=""><span id="portrait-fallback" class="mv-portrait-fallback" hidden aria-label="초상을 불러오지 못했습니다">?</span></div>
+  <div class="mv-dialog-content"><div class="mv-portrait-area"><img id="npc-portrait" alt=""><span id="portrait-fallback" class="mv-portrait-fallback" hidden aria-label="원화 준비 중"><i>?</i><em>원화 준비 중</em></span></div>
   <div class="mv-dialog-box"><header><div><h2 id="npc-name"></h2><small id="npc-note"></small></div><button id="dialog-close" aria-label="대화 닫기">×</button></header><button id="npc-text-next" class="mv-dialog-text-button" aria-label="대사 완성 또는 다음 대사"><span id="npc-text" aria-hidden="true"></span><span id="npc-accessible-text" class="mv-sr-only" aria-live="polite"></span></button><footer><span>클릭 / Enter로 계속</span><button id="dialog-next">다음 대사 <span aria-hidden="true">▸</span></button></footer></div></div>
 </dialog>
 <noscript>마을 안내의 장소 선택과 대화를 사용하려면 JavaScript를 켜 주세요.</noscript>

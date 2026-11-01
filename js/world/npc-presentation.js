@@ -1,8 +1,7 @@
 // 개별 배치값(선택). 대부분의 NPC는 여기에 아무것도 추가하지 않아도 됩니다.
-// 인외처럼 신체 구조가 다른 캐릭터만 필요한 항목을 추가하세요.
-//   spriteScale  : 공통 크기에 곱하는 배율 (기본 1)
-//   spriteFootY  : 발끝 위치 직접 지정, 스프라이트 높이 대비 0~1 (기본: 이미지에서 자동 계산)
-//   portraitFit  : 'contain'(기본, 전체 표시) | 'cover'
-//   portraitPosition : 원화 정렬 위치, 예: 'center top'
-// 예) export const npcPresentation = { someMonster: { spriteScale: 1.4, spriteFootY: 0.9 } };
+// 원화는 비율을 유지한 채 표시하며, 잘라내거나 늘리지 않습니다.
+//   portraitFit      : 대화창 원화. 'contain'(기본, 전체 표시) | 'cover'
+//   portraitPosition : 대화창 원화 정렬 위치, 예: 'center top'
+//   cardPosition     : 장소 화면 카드(세로 2:3)에서 보여 줄 부분, 예: 'center 20%' (기본 'center top')
+// 예) export const npcPresentation = { someMonster: { cardPosition: 'center 30%' } };
 export const npcPresentation = {};
