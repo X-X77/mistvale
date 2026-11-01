@@ -64,8 +64,8 @@ function setScene(next){
   game.classList.remove('anomaly','blooming','revealing');
   for(const id of ['store','title','loading','story','notification','result'])$(id).hidden=id!==next;
   $('skip').hidden=!['loading','transition'].includes(next);
-  $('continue').disabled=!preferences.completed;
-  $('save-status').textContent=preferences.completed?'낯선 아침에서 계속':'저장 기록 없음';
+  $('continue').disabled=true;
+  $('save-status').textContent='저장 데이터 없음';
   document.querySelectorAll('[data-choice]').forEach(button=>{button.disabled=false;button.classList.remove('chosen');});
 }
 function routeHash(hash,replace=false){if(location.hash!==hash)history[replace?'replaceState':'pushState'](null,'',hash);}
@@ -148,7 +148,7 @@ function advance(manual=true){
   if(++line<narrative.length)showLine();else notify();
 }
 function notify(fromHistory=false){
-  setScene('notification');preferences.completed=true;persist();
+  setScene('notification');
   if(!fromHistory)routeHash('#choices',true);
   focus(document.querySelector('[data-choice]'));if(!fromHistory)sound.play('arrival');
 }
@@ -173,8 +173,8 @@ function restoreRoute(){
   if(route==='store')store(true);
   else if(route==='title')title(true);
   else if(route==='awakening')awaken(true);
-  else if(route==='choices'&&preferences.completed)notify(true);
-  else if(results[route]&&preferences.completed)result(route,true);
+  else if(route==='choices')notify(true);
+  else if(results[route])result(route,true);
   else{store(true);routeHash('#store',true);}
 }
 function openSettings(){if(!settings.open){cancelAuto();settings.showModal();}}
@@ -185,7 +185,7 @@ $('store-play').addEventListener('click',()=>{sound.play();title();});
 $('store-play-side').addEventListener('click',()=>{sound.play();title();});
 $('new-game').addEventListener('click',()=>{music.activate();launch();});
 $('music-toggle').addEventListener('click',toggleMusic);
-$('continue').addEventListener('click',()=>{if(preferences.completed){music.activate();sound.play();awaken();}});
+
 $('skip').addEventListener('click',()=>{if(['loading','transition'].includes(scene))awaken();});
 $('dialogue').addEventListener('click',()=>advance());
 $('auto-toggle').addEventListener('click',()=>{
