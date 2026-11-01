@@ -1,31 +1,17 @@
 {
-  "version": 1,
-  "note": "First usable test pack. Rowen work/greet were omitted after extraction damaged the hair/face; only idle is approved. Edelin has standalone poses, not production-ready animated frames. B portraits retain sheet background.",
+  "version": 2,
+  "note": "NPC 등록은 sprite(장소 화면용 작은 전신 도트) + portrait(대화용 원화) 두 이미지면 됩니다. 경로는 assets/npc/ 기준. 개별 배치가 필요한 캐릭터(인외 등)만 js/world/npc-presentation.js 에 값을 추가하세요.",
   "npc": {
     "rowen": {
       "name": "로웬",
       "role": "클로버 잡화점 주인",
       "locationId": "clover-general-store",
       "hours": "09:00–18:00",
-      "sprite": {
-        "idle": "characters/rowen/sprites/idle.png"
-      },
-      "portrait": {
-        "default": "characters/rowen/portraits/default.png",
-        "playful": "characters/rowen/portraits/playful.png",
-        "thoughtful": "characters/rowen/portraits/thoughtful.png",
-        "surprised": "characters/rowen/portraits/surprised.png"
-      },
-      "originalPortrait": "characters/rowen/original/illustration.jpg",
+      "sprite": "characters/rowen/sprites/idle.png",
+      "portrait": "characters/rowen/original/illustration.jpg",
       "lines": [
-        {
-          "speaker": "로웬",
-          "text": "어서 오세요, 농장주님. 필요한 게 있으면 천천히 둘러보세요."
-        },
-        {
-          "speaker": "로웬",
-          "text": "씨앗을 찾으시나요? 이번에 들어온 물건도 한번 보여드릴까요?"
-        }
+        { "speaker": "로웬", "text": "어서 오세요, 농장주님. 필요한 게 있으면 천천히 둘러보세요." },
+        { "speaker": "로웬", "text": "씨앗을 찾으시나요? 이번에 들어온 물건도 한번 보여드릴까요?" }
       ]
     },
     "edelin": {
@@ -33,28 +19,11 @@
       "role": "작은 도서관 사서",
       "locationId": "small-library",
       "hours": null,
-      "sprite": {
-        "idle": "characters/edelin/sprites/idle-front.png",
-        "read": "characters/edelin/sprites/read.png",
-        "work": "characters/edelin/sprites/work.png",
-        "greet": "characters/edelin/sprites/greet.png"
-      },
-      "portrait": {
-        "default": "characters/edelin/portraits/default.png",
-        "surprised": "characters/edelin/portraits/surprised.png",
-        "shy": "characters/edelin/portraits/shy.png",
-        "serious": "characters/edelin/portraits/serious.png"
-      },
-      "originalPortrait": "characters/edelin/original/illustration.jpg",
+      "sprite": "characters/edelin/sprites/front.png",
+      "portrait": "characters/edelin/original/illustration.jpg",
       "lines": [
-        {
-          "speaker": "에델린",
-          "text": "저, 그… 어서 오세요, {{user}}님. 찾으시는 책이 있으신가요?"
-        },
-        {
-          "speaker": "에델린",
-          "text": "죄송해요, 서가를 조금 정리하느라… 천천히 둘러보셔도 괜찮아요."
-        }
+        { "speaker": "에델린", "text": "저, 그… 어서 오세요, {{user}}님. 찾으시는 책이 있으신가요?" },
+        { "speaker": "에델린", "text": "죄송해요, 서가를 조금 정리하느라… 천천히 둘러보셔도 괜찮아요." }
       ]
     }
   }
