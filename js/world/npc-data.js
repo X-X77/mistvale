@@ -1,27 +1,30 @@
-// Deliberately provisional: do not assign a canonical name, gender or appearance.
-export const npcs = {
-  'clover-keeper': {
-    id: 'clover-keeper',
-    name: '잡화점 점주',
-    note: '임시 대화 · 이름과 외형 미정',
-    small: {
-      image: './assets/world/npc-placeholder.svg',
-      frames: [
-        './assets/world/npc-placeholder.svg',
-        './assets/world/npc-placeholder-idle.svg',
-      ],
-      frameMs: 650,
-      alt: '정식 외형이 정해지지 않은 점주의 작은 도트 자리 표시',
-    },
+import { npcPresentation } from './npc-presentation.js';
+const assetRoot = new URL('../../assets/npc/', import.meta.url);
+const asset = path => path ? new URL(path, assetRoot).href : './assets/world/npc-placeholder.svg';
+let pack;
+try {
+  const response = await fetch(new URL('characters.json', assetRoot));
+  if (!response.ok) throw new Error('NPC data unavailable');
+  pack = await response.json();
+} catch {
+  pack = { npc: {
+    rowen: { name:'로웬', role:'클로버 잡화점 주인', lines:[{text:'캐릭터 정보를 불러오지 못했습니다. 잠시 후 다시 방문해 주세요.'}] },
+    edelin: { name:'에델린', role:'작은 도서관 사서', lines:[{text:'캐릭터 정보를 불러오지 못했습니다. 잠시 후 다시 방문해 주세요.'}] },
+  }};
+}
+export const npcs = Object.fromEntries(Object.entries(pack.npc).map(([id, data]) => {
+  const presentation = npcPresentation[id] || {};
+  const original = presentation.portraitMode === 'original';
+  const pixelDefault = data.portrait?.[presentation.expression] || data.portrait?.default;
+  return [id, {
+    id, name:data.name, note:data.role,
+    small: { image:asset(data.sprite?.idle), frames:[], alt:data.name+' 전신 도트', poses:Object.fromEntries(Object.entries(data.sprite || {}).map(([key,path])=>[key,asset(path)])) },
     portrait: {
-      default: './assets/world/npc-placeholder.svg',
-      expressions: { neutral: './assets/world/npc-placeholder.svg' },
-      alt: '작은 도트와 같은 점주의 큰 도트 자리 표시',
+      default:asset(original ? data.originalPortrait : pixelDefault),
+      expressions:original ? {} : Object.fromEntries(Object.entries(data.portrait || {}).map(([key,path])=>[key,asset(path)])),
+      mode:original ? 'original' : 'pixel',
+      alt:data.name+' 대화용 '+(original ? '일러스트' : '도트 초상'),
     },
-    dialogue: [
-      { expression: 'neutral', text: '클로버 잡화점에 오신 것을 환영합니다.' },
-      { expression: 'neutral', text: '이곳에서는 씨앗과 농기구, 생활에 필요한 잡화를 취급합니다.' },
-      { expression: 'neutral', text: '영업시간은 오전 9시부터 오후 6시까지입니다. 마을을 둘러보실 때 참고해 주세요.' },
-    ],
-  },
-};
+    dialogue:(data.lines || []).map(line=>({...line,text:line.text.replace(/\{\{user\}\}님/g,'방문자님').replace(/\{\{user\}\}/g,'방문자')})),
+  }];
+}));
