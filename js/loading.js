@@ -110,6 +110,10 @@ export function createPixelLoader(canvas,{mode='farm',reduced=()=>false,sprite=n
  if(!ctx)return {start(){},stop(){}};
  // Wide virtual scene: keeps placements consistent across viewports.
  const width=960,height=540;canvas.width=width;canvas.height=height;
+ // Render pixel art on a limited logical grid and scale back with nearest-neighbor.
+ const lowRes=typeof document!=='undefined'&&document.createElement?document.createElement('canvas'):null;
+ if(lowRes){lowRes.width=480;lowRes.height=270;}
+ const lowCtx=lowRes?.getContext('2d')||null;
  const art=loadArt();
  // Allow replacing with a uniform horizontal sprite atlas later.
  let sheet=null;
@@ -130,6 +134,14 @@ export function createPixelLoader(canvas,{mode='farm',reduced=()=>false,sprite=n
   if(sheet&&sprite){
    const n=reduced()?0:Math.floor(t/(sprite.frameMs||160))%(sprite.frames||1);
    ctx.drawImage(sheet,n*sprite.width,0,sprite.width,sprite.height,360,225,190,190);
+  }
+  if(lowCtx){
+    lowCtx.clearRect(0,0,lowRes.width,lowRes.height);
+    lowCtx.imageSmoothingEnabled=false;
+    lowCtx.drawImage(canvas,0,0,lowRes.width,lowRes.height);
+    ctx.clearRect(0,0,width,height);
+    ctx.imageSmoothingEnabled=false;
+    ctx.drawImage(lowRes,0,0,width,height);
   }
   if(mode==='farm')syncVerOnProgressBar();
   frameId=requestAnimationFrame(paint);
