@@ -1,0 +1,17 @@
+name: Recover stuck Pages deployment
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+jobs:
+  cancel-stale-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel the stale Pages deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --method POST \
+            "repos/${{ github.repository }}/pages/deployments/5393014d84f9f6661798b54b69e1cefa368bdf04/cancel"
+          echo "Cancellation request accepted."
