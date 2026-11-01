@@ -1,0 +1,11 @@
+/* 첫 선택지 ② '마을을 살펴보러 간다' — 집 밖으로 나서는 짧은 전환 연출 */
+.exit-veil{position:fixed;inset:0;z-index:60;display:grid;align-content:center;justify-items:center;gap:12px;text-align:center;padding:24px;
+  background:radial-gradient(circle at 50% 44%,#f7f4e4 0,#e4ecd9 55%,#cbdac4 100%);opacity:0;pointer-events:none;visibility:hidden;
+  transition:opacity .9s ease,visibility 0s linear .9s}
+.exit-veil.on{opacity:1;pointer-events:auto;visibility:visible;transition:opacity .9s ease,visibility 0s}
+.exit-veil p{margin:0;font:500 18px/1.8 var(--serif,'Noto Serif KR',serif);letter-spacing:1px;color:#2c4a3a;opacity:0;transform:translateY(6px);transition:opacity .6s ease .45s,transform .6s ease .45s}
+.exit-veil small{font:12px/1.8 var(--sans,'Noto Sans KR',sans-serif);color:#5a7366;opacity:0;transition:opacity .6s ease .8s}
+.exit-veil.on p{opacity:1;transform:none}
+.exit-veil.on small{opacity:1}
+.reduced-motion .exit-veil,.reduced-motion .exit-veil p,.reduced-motion .exit-veil small{transition:none}
+@media(max-width:600px){.exit-veil p{font-size:16px}}
