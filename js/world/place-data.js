@@ -23,7 +23,7 @@ export const places = {
     id:'forge', name:'검은모루 대장간', category:'도구와 불', hours:null,
     purpose:'농기구와 도구를 두드려 만들고 고치는 대장간',
     description:'화덕의 열기와 쇠 냄새가 가득한 대장간입니다.',
-    background:null, alt:'화덕과 모루가 놓인 대장간 분위기',
+    background:'./assets/world/forge-interior.jpg', alt:'화덕의 불빛과 모루, 작업 도구가 놓인 검은모루 대장간 내부',
     mood:{ a:'#24140f', b:'#5e2f19', glow:'#ff9340' },
   },
   workshop: {
