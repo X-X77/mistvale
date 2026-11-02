@@ -1,4 +1,4 @@
-# MISTVALE | NPC 등록 방법 (23명 등록 완료 · 원화는 2명 적용)
+# MISTVALE | NPC 등록 방법 (23명 등록 · 원화 23장 적용)
 
 NPC 한 명 = `characters.json` 의 항목 한 개 + 원화 한 장. 장소 화면의 카드, 대화창, 장소별 인물 목록은 공통 코드가 만듭니다.
 
@@ -8,12 +8,12 @@ NPC 한 명 = `characters.json` 의 항목 한 개 + 원화 한 장. 장소 화�
 - 원화는 잘리거나 늘어나지 않습니다. `illustration` 이 `null` 이면 '원화 준비 중' 카드가 나오며 **다른 그림으로 대신하지 않습니다.**
 
 ## 새 NPC 추가 (또는 원화 교체)
-1. 원화를 `assets/npc/characters/<id>/original/illustration.jpg` 로 둡니다(세로형 JPG/PNG).
-2. `assets/npc/characters.json` 에 항목을 추가하거나, 기존 항목의 `illustration` 을 `null` → `"characters/<id>/original/illustration.jpg"` 로 바꿉니다.
+1. 원화를 `assets/characters/portraits/<이름>.png` 로 둡니다(세로형 PNG/JPG, 영문 소문자 파일명).
+2. `assets/npc/characters.json` 에 항목을 추가하거나, 기존 항목의 `illustration` 을 `"../characters/portraits/<이름>.png"` 로 바꿉니다(경로는 `assets/npc/` 기준).
    ```json
    "<id>": { "name":"이름", "kind":"human", "role":"직업/종족", "placeId":"library", "spot":"세부 장소",
              "speech":{ "style":"말투", "first":"초면 호칭", "later":"이후 호칭" },
-             "illustration":"characters/<id>/original/illustration.jpg",
+             "illustration":"../characters/portraits/<이름>.png",
              "lines":[ "첫 대사", "다음 대사" ] }
    ```
 3. `placeId` 가 `js/world/place-data.js` 의 장소 id 와 같으면 **그 장소에 자동으로 나타납니다.** 장소 파일에 인물을 적을 필요가 없습니다.
@@ -31,5 +31,6 @@ NPC 한 명 = `characters.json` 의 항목 한 개 + 원화 한 장. 장소 화�
 `js/world/npc-presentation.js` 에 해당 id만 추가합니다. (`portraitFit`, `portraitPosition`, `cardPosition`)
 
 ## 에셋 메모
+- 이전 시범 원화 `assets/npc/characters/{edelin,rowen}/original/illustration.jpg` 는 더 이상 참조하지 않지만 삭제하지 않았습니다.
 - 에델린·로웬의 `sprites/`(도트)와 `portraits/`(도트 초상)는 장소 화면에서 더 이상 쓰지 않지만 삭제하지 않았습니다.
 - 에델린 도서관 영업시간은 정해지지 않아 표시하지 않습니다.

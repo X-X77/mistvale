@@ -3,7 +3,7 @@ const assetRoot = new URL('../../assets/npc/', import.meta.url);
 const asset = path => path ? new URL(path, assetRoot).href : '';
 let pack;
 try {
-  const response = await fetch(new URL('characters.json?v=npc-roster-20261102', assetRoot), { cache: 'no-cache' });
+  const response = await fetch(new URL('characters.json?v=npc-art-20261102', assetRoot), { cache: 'no-cache' });
   if (!response.ok) throw new Error('NPC data unavailable');
   pack = await response.json();
 } catch {

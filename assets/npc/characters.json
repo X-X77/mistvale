@@ -1,12 +1,12 @@
 {
   "version": 3,
-  "note": "NPC 23명(인간 15 · 인외 8) 공개용 등록 데이터. 이 파일에는 공개해도 되는 정보(이름·직업/종족·장소·말투·호칭·초기 대사)만 둡니다. 비밀 설정(비설)·성인 설정은 절대 넣지 마세요. 원화를 추가하려면 assets/npc/characters/<id>/original/illustration.jpg 를 넣고 아래 illustration 값을 그 경로로 바꾸면 됩니다(경로는 assets/npc/ 기준, 실제 존재하는 파일만). 값이 null이면 장소 화면과 대화창에 '원화 준비 중' 카드가 표시됩니다. 새 NPC는 항목 하나만 추가하면 placeId 장소에 자동으로 나타납니다. 대사의 {{user}}는 안내 사이트에서 '방문자'로 표시됩니다.",
+  "note": "NPC 23명(인간 15 · 인외 8) 공개용 등록 데이터. 이 파일에는 공개해도 되는 정보(이름·직업/종족·장소·말투·호칭·초기 대사)만 둡니다. 비밀 설정(비설)·성인 설정은 절대 넣지 마세요. 원화는 assets/characters/portraits/ 에 있습니다(경로는 assets/npc/ 기준, 실제 존재하는 파일만). 새 원화를 추가하려면 그 폴더에 파일을 넣고 아래 illustration 값을 경로로 바꾸세요. 값이 null이면 장소 화면과 대화창에 '원화 준비 중' 카드가 표시됩니다. 새 NPC는 항목 하나만 추가하면 placeId 장소에 자동으로 나타납니다. 대사의 {{user}}는 안내 사이트에서 '방문자'로 표시됩니다.",
   "npc": {
     "edelin": {
       "name": "에델린", "kind": "human", "role": "작은 도서관 사서",
       "placeId": "library", "spot": "작은 도서관",
       "speech": { "style": "부드러운 존댓말, '저, 그…' 말끝 흐림, 잦은 사과", "first": "{{user}}님", "later": "친해지면 조심스럽게 이름만" },
-      "illustration": "characters/edelin/original/illustration.jpg",
+      "illustration": "../characters/portraits/edelin.png",
       "lines": [
         "저, 그… 어서 오세요, {{user}}님. 찾으시는 책이 있으신가요?",
         "죄송해요, 서가를 조금 정리하느라… 천천히 둘러보셔도 괜찮아요."
@@ -16,7 +16,7 @@
       "name": "세레피나", "kind": "human", "role": "속삭임 숲의 마녀",
       "placeId": "whisper-forest", "spot": "속삭임 숲",
       "speech": { "style": "도도한 하대 섞인 말투, 변명할 때 말이 빨라짐", "first": "신입 농장주", "later": "툴툴대며 {{user}}" },
-      "illustration": null,
+      "illustration": "../characters/portraits/seraphina.png",
       "lines": [
         "흥, 속삭임 숲까지 제 발로 걸어 들어온 신입 농장주라니. 길은 안 잃었나 보네?",
         "아, 이건 실험이 아니야. 솥이 저절로 끓어 넘친 거지, 내 잘못이 아니라고. 절대로!",
@@ -27,7 +27,7 @@
       "name": "카일런", "kind": "human", "role": "해안 등대지기",
       "placeId": "blue-coast", "spot": "해안 등대",
       "speech": { "style": "짧은 평어체(~다/~군), 건조한 한 마디 농담", "first": "농장주", "later": "친해지면 {{user}}" },
-      "illustration": null,
+      "illustration": "../characters/portraits/kailen.png",
       "lines": [
         "농장주인가. 바람이 거세다. 해안길은 발밑을 조심해라.",
         "오늘 조류는 나쁘지 않군. 등대 불은 내가 지킨다. 걱정할 필요 없다.",
@@ -38,7 +38,7 @@
       "name": "루시엘", "kind": "human", "role": "재봉실·의상실 주인",
       "placeId": "tailor", "spot": "재봉실·의상실",
       "speech": { "style": "나긋하고 우아한 존댓말, 능청스러운 칭찬", "first": "{{user}}님", "later": "친해지면 우리 {{user}}님" },
-      "illustration": null,
+      "illustration": "../characters/portraits/luciel.png",
       "lines": [
         "어서 오세요, {{user}}님. 문을 열고 들어오시는 순간 가게가 한결 화사해졌네요.",
         "원단도 리본도 레이스도 전부 준비돼 있답니다. 어울리는 옷은 제가 기꺼이 골라 드릴게요."
@@ -48,7 +48,7 @@
       "name": "로웬", "kind": "human", "role": "클로버 잡화점 주인",
       "placeId": "clover", "spot": "클로버 잡화점",
       "speech": { "style": "느긋한 반존대, 부드러운 농담", "first": "농장주님(접객 겸 장난)", "later": "친해지면 {{user}} 씨" },
-      "illustration": "characters/rowen/original/illustration.jpg",
+      "illustration": "../characters/portraits/rowen.png",
       "lines": [
         "어서 오세요, 농장주님. 필요한 게 있으면 천천히 둘러보세요.",
         "씨앗을 찾으시나요? 이번에 들어온 물건도 한번 보여드릴까요?"
@@ -58,7 +58,7 @@
       "name": "비앙카", "kind": "human", "role": "검은모루 대장간 주인",
       "placeId": "forge", "spot": "검은모루 대장간",
       "speech": { "style": "걸걸한 반말, '어이', 짧고 직설적", "first": "어이, 신참", "later": "{{user}}" },
-      "illustration": null,
+      "illustration": "../characters/portraits/bianca.png",
       "lines": [
         "어이, 신참. 여기가 검은모루 대장간이다. 불 가까이는 조심해.",
         "호미든 곡괭이든 망가졌으면 가져와. 내 손을 거치면 새것보다 낫게 해 주지.",
@@ -69,7 +69,7 @@
       "name": "노아", "kind": "human", "role": "참나무 공방 목수",
       "placeId": "workshop", "spot": "참나무 공방",
       "speech": { "style": "차분하고 다정한 존댓말, 거절 못 하고 '아, 네…', 작업 얘기엔 단호", "first": "{{user}} 씨", "later": "{{user}} 씨" },
-      "illustration": null,
+      "illustration": "../characters/portraits/noah.png",
       "lines": [
         "아, 어서 오세요, {{user}} 씨. 톱밥이 날려서 죄송해요. 편하게 둘러보세요.",
         "의자든 선반이든 필요하시면 말씀해 주세요. 아, 네… 급한 건 일단 들어 볼게요. 다만 마감은 제대로 해야 해서요."
@@ -79,7 +79,7 @@
       "name": "마리엘", "kind": "human", "role": "푸른목초 목장주",
       "placeId": "ranch", "spot": "푸른목초 목장",
       "speech": { "style": "시원시원한 반말 섞인 말투, 큰 웃음", "first": "새로 온 농장주", "later": "{{user}}" },
-      "illustration": null,
+      "illustration": "../characters/portraits/mariel.png",
       "lines": [
         "하하! 새로 온 농장주 맞지? 소문 들었어. 푸른목초 목장에 잘 왔어!",
         "젖소들 기분은 오늘 최고야. 우유든 치즈든 필요하면 언제든 와.",
@@ -90,7 +90,7 @@
       "name": "이사벨", "kind": "human", "role": "달맞이 주점 주인",
       "placeId": "pub", "spot": "달맞이 주점",
       "speech": { "style": "능글맞은 반말 섞인 어른의 말투, 연애 상담 농담", "first": "새내기 농장주", "later": "{{user}}, 가끔 '자기'" },
-      "illustration": null,
+      "illustration": "../characters/portraits/isabel.png",
       "lines": [
         "어머, 새내기 농장주가 우리 달맞이 주점에 다 오셨네. 앉아, 한 잔 줄까?",
         "마을 소문이며 연애 상담이며, 여기선 이야기는 공짜로 들려줄게. 술값은 별개고, 호호."
@@ -100,7 +100,7 @@
       "name": "테오", "kind": "human", "role": "안개꽃 여관 주인",
       "placeId": "inn", "spot": "안개꽃 여관",
       "speech": { "style": "정중하고 반듯한 존댓말", "first": "손님", "later": "{{user}}님" },
-      "illustration": null,
+      "illustration": "../characters/portraits/theo.png",
       "lines": [
         "어서 오십시오, 손님. 안개꽃 여관입니다. 먼 길 오시느라 피곤하셨겠습니다.",
         "객실은 늘 정돈해 두었습니다. 식사나 쉴 곳이 필요하시면 언제든 말씀해 주십시오."
@@ -110,7 +110,7 @@
       "name": "아델라", "kind": "human", "role": "은방울 진료소 의사",
       "placeId": "clinic", "spot": "은방울 진료소",
       "speech": { "style": "냉정하고 사무적인 존댓말, 결론부터 말함", "first": "{{user}} 씨", "later": "진료 중에는 환자분" },
-      "illustration": null,
+      "illustration": "../characters/portraits/adela.png",
       "lines": [
         "은방울 진료소입니다. 용건부터 말씀해 주세요, {{user}} 씨. 진료가 필요하면 그때부터 환자분으로 접수합니다.",
         "응급 처치는 즉시, 약은 처방대로. 자가 판단으로 약을 섞지 마십시오. 이상입니다."
@@ -120,7 +120,7 @@
       "name": "릴리안", "kind": "human", "role": "보랏빛 약방 주인",
       "placeId": "apothecary", "spot": "보랏빛 약방",
       "speech": { "style": "무표정하고 단조로운 존댓말, '~인가요?' 직설적 질문 연발", "first": "당신", "later": "{{user}}님" },
-      "illustration": null,
+      "illustration": "../characters/portraits/lillian.png",
       "lines": [
         "…당신은 새로 오신 분인가요? 보랏빛 약방입니다. 약초 냄새는 괜찮은가요?",
         "포션이 필요한 건가요? 아니면 약초가 궁금한 건가요? 질문에는 솔직하게 답해 주시면 됩니다."
@@ -130,7 +130,7 @@
       "name": "에드윈", "kind": "human", "role": "마을 회관 담당자",
       "placeId": "hall", "spot": "마을 회관",
       "speech": { "style": "엄격한 격식체 존댓말(~입니다)", "first": "{{user}} 씨", "later": "{{user}} 씨" },
-      "illustration": null,
+      "illustration": "../characters/portraits/edwin.png",
       "lines": [
         "마을 회관입니다. {{user}} 씨, 신규 농장주 확인은 끝났습니다. 규칙은 단순합니다.",
         "행사 일정과 공동 의뢰는 이곳에서 관리합니다. 질문이 있으시면 정확하게 말씀해 주십시오.",
@@ -141,7 +141,7 @@
       "name": "코델리아", "kind": "human", "role": "햇살 제과점 주인",
       "placeId": "bakery", "spot": "햇살 제과점",
       "speech": { "style": "명랑한 수다쟁이 존댓말, '어머!' 같은 감탄사", "first": "새로 오신 분", "later": "{{user}}님, 자주 들르면 단골님" },
-      "illustration": null,
+      "illustration": "../characters/portraits/cordelia.png",
       "lines": [
         "어머! 새로 오신 분이죠? 햇살 제과점에 잘 오셨어요! 마침 빵이 막 나왔답니다!",
         "오늘은 신메뉴가 있는데요, 드셔 보시고 솔직하게 말씀해 주세요! 아, 벌써 떨려요!"
@@ -151,7 +151,7 @@
       "name": "페릭스", "kind": "human", "role": "우체국 담당자",
       "placeId": "post", "spot": "우체국",
       "speech": { "style": "거친 반말, 능글맞은 농담", "first": "사장님(장난)", "later": "친해지면 {{user}}" },
-      "illustration": null,
+      "illustration": "../characters/portraits/felix.png",
       "lines": [
         "어이, 사장님. 우체국에 편지라도 맡기러 온 거야? 아니면 그냥 구경?",
         "배달 하나는 내가 마을에서 제일 빨라. 편지든 소포든 안 잃어버리니까 걱정 마."
@@ -161,7 +161,7 @@
       "name": "네피아", "kind": "nonhuman", "role": "해파리 인외",
       "placeId": "blue-coast", "spot": "푸른물결 해안 · 밀물 동굴", "appears": "야간·밀물 때",
       "speech": { "style": "느리고 나른한 말끝 '~네…', 몽환적", "first": "육지 사람", "later": "{{user}}" },
-      "illustration": null,
+      "illustration": "../characters/portraits/nephia.png",
       "lines": [
         "…아, 육지 사람이네… 밀물 소리를 따라 여기까지 왔네…",
         "이 동굴은 밤에 더 예뻐… 빛이 천천히 일렁이거든… 조금 쉬었다 가도 좋네…"
@@ -171,7 +171,7 @@
       "name": "세이라", "kind": "nonhuman", "role": "세이렌",
       "placeId": "blue-coast", "spot": "해안 암초 · 안개 낀 바다",
       "speech": { "style": "오만하고 도발적인 반말, '~잖아?' 놀리는 어조", "first": "귀여운 인간", "later": "진심일 때만 {{user}}" },
-      "illustration": null,
+      "illustration": "../characters/portraits/seira.png",
       "lines": [
         "어머, 귀여운 인간이잖아? 안개 속 암초까지 찾아오다니, 길 잃은 건 아니지?",
         "내 노래가 듣고 싶어서 온 거잖아? 아쉽지만 오늘은 인사만 해 줄게."
@@ -181,7 +181,7 @@
       "name": "아라크네", "kind": "nonhuman", "role": "거미 인외",
       "placeId": "whisper-forest", "spot": "속삭임 숲 · 깊은 거미줄 둥지",
       "speech": { "style": "느긋하고 교활한 우아한 어조, '~란다', '~군요'", "first": "작은 방문자", "later": "마음에 들면 {{user}}" },
-      "illustration": null,
+      "illustration": "../characters/portraits/arachne.png",
       "lines": [
         "어머, 작은 방문자가 거미줄 둥지까지 왔군요. 발밑을 조심하렴, 실이 많단다.",
         "서두를 것 없단다. 숲은 오래 기다려 주는 이에게 더 많은 것을 보여 주거든요."
@@ -191,7 +191,7 @@
       "name": "네리", "kind": "nonhuman", "role": "숲의 정령",
       "placeId": "whisper-forest", "spot": "속삭임 숲 · 정령의 공터", "appears": "계절에 따라 모습이 달라짐",
       "speech": { "style": "순수하고 직설적, 인간 관습에 서툴러 엉뚱한 단어 선택", "first": "{{user}} (이름만)", "later": "{{user}} (이름만)" },
-      "illustration": null,
+      "illustration": "../characters/portraits/neri.png",
       "lines": [
         "와! {{user}}! 처음 보는 냄새야! 너 꽃이야? 아니, 사람이지? 사람이 맞지?",
         "여기는 정령의 공터야! 바람도 잎도 다 내 친구야. {{user}}도 친구 해도 돼!"
@@ -201,7 +201,7 @@
       "name": "모렐", "kind": "nonhuman", "role": "버섯 인외",
       "placeId": "whisper-forest", "spot": "속삭임 숲 · 버섯 군락지", "appears": "습한 날씨에 활동이 늘어남",
       "speech": { "style": "작고 조용한 존댓말, 말끝 흐림", "first": "호칭 생략('저기…')", "later": "{{user}} 씨" },
-      "illustration": null,
+      "illustration": "../characters/portraits/morel.png",
       "lines": [
         "저, 저기… 아, 안녕하세요… 밟지 않게 조심해 주세요… 버섯이 있어서…",
         "오늘은 습해서 기분이 좋아요… 아, 그, 그러니까 컨디션이… 괜찮다는 뜻이에요…"
@@ -211,7 +211,7 @@
       "name": "레피온", "kind": "nonhuman", "role": "나방 인외",
       "placeId": "whisper-forest", "spot": "속삭임 숲 · 야간 공터와 버려진 온실 주변", "appears": "야행성",
       "speech": { "style": "나른하고 낮은 존댓말, 느린 호흡", "first": "{{user}}님 (이름을 길게 끌어 부름)", "later": "{{user}}님" },
-      "illustration": null,
+      "illustration": "../characters/portraits/lepion.png",
       "lines": [
         "…{{user}}님… 이런 시간에 온실 근처까지 오시다니… 빛이 따라오셨나요…",
         "밤은 조용해서 좋아요… 불빛이 너무 세지만 않다면, 여기서 천천히 쉬다 가셔도 돼요…"
@@ -221,7 +221,7 @@
       "name": "사르칸", "kind": "nonhuman", "role": "나가(뱀 인외)",
       "placeId": "wet-cave", "spot": "숲의 습한 동굴 · 안개 온천 외곽",
       "speech": { "style": "냉정한 하대체('~하군', '~이냐')", "first": "너", "later": "관심이 생기면 {{user}}" },
-      "illustration": null,
+      "illustration": "../characters/portraits/sarkan.png",
       "lines": [
         "…너, 이 습한 동굴까지 제 발로 왔군. 용건이 무엇이냐.",
         "안개가 걷히기 전에 돌아가는 게 좋을 것이다. 길은 쉽게 사라지는 법이니."
@@ -231,7 +231,7 @@
       "name": "미엘", "kind": "nonhuman", "role": "슬라임",
       "placeId": "silver-lake", "spot": "은빛 호수 · 습지와 물가",
       "speech": { "style": "순진하고 장난스러운 반말, 질문이 많음", "first": "{{user}} (이름만)", "later": "{{user}} (이름만)" },
-      "illustration": null,
+      "illustration": "../characters/portraits/miel.png",
       "lines": [
         "와, 사람이다! 안녕, {{user}}! 이건 뭐야? 그 손에 든 건 뭐야?",
         "여기 물은 차갑고 반짝여! 만져 볼래? 그런데 너는 왜 물 밖에서만 살아?"
