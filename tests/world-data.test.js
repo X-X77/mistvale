@@ -24,13 +24,15 @@ test('모든 NPC가 이름·직업·장소·말투·호칭·초기 대사를 갖
   }
 });
 
-test('원화 경로는 실제로 존재하는 파일만 참조한다 (없으면 null)', () => {
-  const missing = [];
+test('원화 23장이 모두 연결되어 있고, 실제 파일이며, 서로 다른 파일이다', () => {
+  const used = new Map();
   for (const [id, n] of entries) {
-    if (n.illustration === null) { missing.push(n.name); continue; }
+    assert.ok(n.illustration, id + ' 원화 미연결');
     assert.ok(existsSync(new URL('assets/npc/' + n.illustration, root)), id + ' 원화 파일 없음: ' + n.illustration);
+    assert.ok(!used.has(n.illustration), id + ' 와 ' + used.get(n.illustration) + ' 가 같은 원화를 씀');
+    used.set(n.illustration, id);
   }
-  console.log('원화 준비 중(' + missing.length + '명): ' + missing.join(', '));
+  assert.equal(used.size, 23);
 });
 
 test('지도 핀은 모든 장소를 가리키고 서로 겹치지 않는다', () => {
