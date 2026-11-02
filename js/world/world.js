@@ -109,6 +109,8 @@ function featureNpc(npc) {
   else { image.hidden = true; image.removeAttribute('src'); $('featured-fallback').hidden = false; }
   for (const item of $('npc-layer').querySelectorAll('[data-npc]')) item.setAttribute('aria-pressed', String(item.dataset.npc === npc.id));
 }
+// 원화 가장자리를 배경에 풀어 줄 때 그림의 실제 비율을 씁니다(표시만 바뀝니다).
+$('featured-art').addEventListener('load', event => { const i = event.target; if (i.naturalHeight) i.style.setProperty('--art-ratio', String(i.naturalWidth / i.naturalHeight)); });
 $('featured-npc').addEventListener('click', () => { if (featuredNpc) openDialogue(featuredNpc, $('featured-npc')); });
 function emptyArt() {
   const box = document.createElement('span'); box.className = 'mv-card-wait'; box.setAttribute('aria-hidden', 'true');
