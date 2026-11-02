@@ -1,6 +1,7 @@
 import { villageMap } from './map-data.js';
 import { places } from './place-data.js';
-import { npcs, npcsAt } from './npc-data.js';
+import { npcs, npcsAt } from './npc-data.js?v=first-meetings-20261102';
+import { hasMet, completeFirstMeeting } from './encounter-session.js';
 import { readSave } from '../storage.js';
 
 const $ = id => document.getElementById(id);
@@ -106,6 +107,8 @@ function emptyArt() {
 }
 function render(value) {
   current = value;
+  app.dataset.place = value === 'forge' ? 'forge' : '';
+  if (value === 'forge') window.scrollTo({top:0, behavior:'instant'});
   app.dataset.view = value === 'map' ? 'map' : 'place';
   $('map-view').hidden = value !== 'map';
   $('place-view').hidden = value === 'map';
@@ -172,7 +175,11 @@ function showLine() {
 }
 function openDialogue(npc, source) {
   if (dialog.open || !npc.dialogue?.length) return;
-  activeNpc = npc; lineIndex = 0; returnTarget = source;
+  const firstMeeting = !hasMet(npc.id) && Boolean(npc.firstMeeting?.length);
+  const lines = firstMeeting ? npc.firstMeeting : (npc.repeatDialogue?.length ? npc.repeatDialogue : npc.dialogue);
+  activeNpc = { ...npc, dialogue: lines, firstMeeting };
+  lineIndex = 0; returnTarget = source;
+  dialog.dataset.place = current;
   $('npc-name').textContent = npc.name; $('npc-note').textContent = npc.note;
   $('npc-portrait').dataset.src = '__reset__'; $('place-view').classList.add('mv-talking');
   dialog.showModal(); showLine(); $('dialog-next').focus({preventScroll:true});
@@ -180,7 +187,10 @@ function openDialogue(npc, source) {
 function nextLine() {
   if (!dialog.open || !activeNpc) return;
   if (typing) return finishLine();
-  if (++lineIndex >= activeNpc.dialogue.length) { dialog.close(); return; }
+  if (++lineIndex >= activeNpc.dialogue.length) {
+    if (activeNpc.firstMeeting) completeFirstMeeting(activeNpc.id);
+    dialog.close(); return;
+  }
   showLine();
 }
 dialog.addEventListener('close', () => { clearTyping(); typing = false; activeNpc = null; $('place-view').classList.remove('mv-talking'); returnTarget?.focus({preventScroll:true}); });

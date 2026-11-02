@@ -1,3 +1,4 @@
+import { firstMeetings } from './first-meetings.js';
 import { npcPresentation } from './npc-presentation.js';
 const assetRoot = new URL('../../assets/npc/', import.meta.url);
 const asset = path => path ? new URL(path, assetRoot).href : '';
@@ -18,6 +19,8 @@ export const npcs = Object.fromEntries(Object.entries(pack.npc).map(([id, data])
   note:[data.role, data.kind === 'nonhuman' ? data.spot : '', data.appears].filter(Boolean).join(' · '),
   illustration: { src:asset(data.illustration), alt:data.name + ' 원화', ready:Boolean(data.illustration) },
   layout: npcPresentation[id] || {},
+  firstMeeting:(firstMeetings[id]?.firstMeeting || []).map(text => ({text})),
+  repeatDialogue:(firstMeetings[id]?.repeat || []).map(text => ({text})),
   dialogue:(data.lines || []).map(line => ({ text: visitor(typeof line === 'string' ? line : line.text) })),
 }]));
 // 장소 id → 그 장소에 있는 NPC 목록 (characters.json 순서)
