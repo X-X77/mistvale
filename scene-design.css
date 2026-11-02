@@ -1,0 +1,85 @@
+/* Shared encounter composition. The opening and the map keep their own styles. */
+.mv-world-app[data-view="place"]{background:#101a17;--scene-height:max(720px,100svh)}
+.mv-world-app[data-view="place"] .mv-world-header{height:72px;padding:0 4vw;background:linear-gradient(#0c1716dc,#0c171600)}
+.mv-world-app[data-view="place"] .mv-world-header nav a,.mv-world-app[data-view="place"] .mv-world-header nav button{font-size:14px}
+#place-view{display:block;min-height:var(--scene-height);height:var(--scene-height);padding:0;overflow:hidden}
+#place-stage{border-radius:0}
+#place-stage .mv-background{opacity:1;object-position:center;filter:saturate(.86) brightness(.88)}
+#place-stage:before{background:linear-gradient(90deg,#071610a6,transparent 57%),linear-gradient(0deg,#091713ef,transparent 36%,transparent 73%,#09171355)}
+#place-stage:after{background:radial-gradient(ellipse at 68% 42%,color-mix(in srgb,var(--mood-glow) 10%,transparent),transparent 60%);box-shadow:inset 0 0 100px #07161244}
+.mv-location-copy{position:absolute;align-self:auto;left:5vw;top:120px;width:35%;max-width:480px;padding:0;z-index:2;pointer-events:none}
+.mv-place-heading{margin:0 0 24px}
+.mv-place-heading h1{font-size:clamp(30px,2.5vw,42px);line-height:1.35;letter-spacing:-.7px;text-shadow:0 2px 18px #000b}
+.mv-place-heading .mv-overline{font-size:13px;letter-spacing:2px;margin-bottom:12px!important;color:#e6d8b9}
+.mv-hours{font-size:13px;margin-top:12px}
+.mv-place-info{max-width:360px;text-shadow:0 2px 12px #000}
+#place-purpose{font-size:17px;line-height:1.8;color:#f6ecd6}
+#place-description{font-size:14px;line-height:1.9;color:#ddd8c8;margin-top:14px}
+.mv-location-rule{display:none}
+.mv-featured-npc{position:absolute;right:8%;bottom:160px;width:49%;max-width:800px;height:auto;display:block;align-self:auto;isolation:isolate}
+.mv-featured-frame{height:min(60svh,760px);min-height:350px;filter:drop-shadow(0 14px 20px #08100d70);transform:none!important;transition:filter .2s}
+.mv-featured-frame img{object-fit:contain;object-position:center bottom;border-radius:0;transform:scale(var(--character-scale,1));transform-origin:center bottom}
+.mv-featured-npc[data-art="cutout"] .mv-featured-frame img{mask-image:linear-gradient(#000 0 88%,transparent 100%)}
+.mv-featured-npc[data-art="original"] .mv-featured-frame img{filter:saturate(.92)}
+.mv-featured-npc[data-art="cutout"]:before{content:"";position:absolute;bottom:48px;left:20%;right:20%;height:32px;background:#07120a70;border-radius:50%;filter:blur(16px);z-index:-1}
+.mv-featured-npc:hover .mv-featured-frame{filter:drop-shadow(0 12px 25px #060d0a99)}
+.mv-featured-caption{position:relative;max-width:540px;margin:0 auto;padding:0 14px;min-height:60px;gap:18px;text-shadow:0 2px 10px #000}
+.mv-featured-caption strong{font-size:24px;letter-spacing:.5px}
+.mv-featured-caption small{font-size:13px;line-height:1.6;color:#e0d8c1;margin-top:5px}
+.mv-talk-action{font-size:14px;padding:12px 20px;border-radius:2px;background:#172a22dc;border-color:#c5b17f99}
+.mv-talk-action b{font-size:17px}
+.mv-encounters{position:absolute;left:5vw;right:5vw;bottom:25px;display:block;padding:14px 0 0;border-top:1px solid #cfbd833d}
+.mv-encounters-label{font-size:13px;letter-spacing:.6px;margin-bottom:12px!important}
+#npc-layer{flex-wrap:nowrap!important;overflow-x:auto;padding:4px 3px 8px!important;gap:10px!important;scrollbar-width:thin;scrollbar-color:#b5a27b #17271f}
+#npc-layer .mv-npc-card{flex:0 0 auto;min-width:145px;max-width:250px;padding:8px 14px;gap:10px;border-radius:2px;background:#13251dc9}
+#npc-layer .mv-card-art{width:30px;height:42px}
+#npc-layer .mv-card-name strong{font-size:14px}
+#npc-layer .mv-card-name small{font-size:12px;line-height:1.5}
+#place-view[data-residents="1"] .mv-encounters{display:none}
+#place-view[data-residents="1"] .mv-featured-npc{bottom:65px}
+.mv-talking .mv-featured-npc{opacity:1;pointer-events:none}
+.mv-talking .mv-featured-caption,.mv-talking .mv-encounters{visibility:hidden}
+.mv-talking .mv-location-copy{opacity:1}
+.mv-talking .mv-place-info,.mv-talking .mv-hours{opacity:0}
+.mv-npc-dialog{inset:auto 0 24px;width:min(1440px,90vw);max-height:43svh;overflow:visible;margin:0 auto}
+.mv-npc-dialog::backdrop{background:#07110d18}
+.mv-dialog-content{display:block!important;max-height:none;filter:none}
+.mv-portrait-area{display:none!important}
+.mv-dialog-box{background:linear-gradient(110deg,#14261ff7,#20291ff7);border:1px solid #c6b17b99;border-radius:3px;max-height:43svh;overflow:auto;box-shadow:0 15px 50px #0007}
+.mv-dialog-box>header{padding:18px 26px 0}
+.mv-dialog-box h2{font-size:22px}
+.mv-dialog-box small{font-size:13px;line-height:1.6}
+.mv-dialog-text-button{font-size:19px!important;line-height:1.85!important;padding:16px 26px;min-height:90px}
+.mv-dialog-box>footer{padding:2px 26px 16px}
+.mv-dialog-box>footer>span,#dialog-next{font-size:13px}
+#dialog-next{min-height:44px;padding:10px 12px}
+#dialog-close{min-width:44px;min-height:44px}
+@media(min-width:1700px){.mv-location-copy{left:calc((100vw - 1600px)/2)}.mv-featured-npc{right:calc((100vw - 1560px)/2)}.mv-encounters{left:calc((100vw - 1600px)/2);right:calc((100vw - 1600px)/2)}}
+@media(max-width:900px){.mv-location-copy{width:42%;left:4vw}.mv-featured-npc{right:3%;width:55%}#place-description{font-size:13px}.mv-featured-caption{padding:0}.mv-talk-action{padding:10px 13px}}
+@media(max-width:700px){
+ .mv-world-app[data-view="place"]{--scene-height:max(760px,100svh)}
+ .mv-world-app[data-view="place"] .mv-world-header{height:64px;padding:0 12px}
+ .mv-world-app[data-view="place"] .mv-world-header nav a,.mv-world-app[data-view="place"] .mv-world-header nav button{font-size:12px;padding:10px 7px}
+ #place-stage .mv-background{object-position:55% center}
+ #place-stage:before{background:linear-gradient(180deg,#091710c9,transparent 42%,#09171333 65%,#091713ed)}
+ .mv-location-copy{top:85px;left:22px;right:22px;width:auto;max-width:none}
+ .mv-place-heading{margin:0 0 12px}.mv-place-heading h1{font-size:29px;line-height:1.35;letter-spacing:-.6px}
+ .mv-place-heading .mv-overline{font-size:12px;margin-bottom:7px!important}
+ .mv-hours{font-size:12px;margin-top:6px;padding:0}
+ .mv-place-info{max-width:100%}#place-purpose{font-size:14px;line-height:1.6}#place-description{display:none}
+ .mv-featured-npc,#place-view[data-residents="1"] .mv-featured-npc{right:5%;bottom:150px;width:90%;max-width:none}
+ #place-view[data-residents="1"] .mv-featured-npc{bottom:45px}
+ .mv-featured-frame{height:min(49svh,480px);min-height:300px}
+ .mv-featured-caption{min-height:58px;max-width:420px;padding:0 6px;gap:8px}
+ .mv-featured-caption strong{font-size:21px}.mv-featured-caption small{font-size:12px;max-width:195px}
+ .mv-talk-action{font-size:13px;padding:10px 12px;gap:8px}
+ .mv-encounters{left:20px;right:20px;bottom:16px;padding-top:10px}.mv-encounters-label{font-size:12px;margin-bottom:6px!important}
+ #npc-layer .mv-npc-card{min-width:140px;max-width:210px;flex:0 0 auto;padding:6px 10px}.mv-card-name small{font-size:12px!important}
+ .mv-talking .mv-featured-npc{bottom:170px!important}.mv-talking .mv-featured-frame{height:min(43svh,390px);min-height:260px}
+ .mv-npc-dialog{bottom:12px;width:calc(100% - 24px);max-height:44svh}
+ .mv-dialog-box{max-height:44svh}.mv-dialog-box>header{padding:12px 16px 0}.mv-dialog-box h2{font-size:20px}.mv-dialog-box small{font-size:12px}
+ .mv-dialog-text-button{font-size:17px!important;line-height:1.8!important;min-height:88px;padding:12px 16px}
+ .mv-dialog-box>footer{padding:0 16px 12px;gap:6px}.mv-dialog-box>footer>span{font-size:12px}#dialog-next{font-size:13px;padding:8px 6px}
+}
+@media(max-height:600px) and (min-width:701px){.mv-world-app[data-view="place"]{--scene-height:650px}.mv-featured-frame{height:370px}.mv-npc-dialog{bottom:8px;max-height:55svh}.mv-dialog-box{max-height:55svh}.mv-dialog-text-button{min-height:50px;padding-top:8px;padding-bottom:8px}}
+@media(prefers-reduced-motion:reduce){.mv-world *,.mv-world *:before,.mv-world *:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}

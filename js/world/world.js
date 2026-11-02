@@ -1,6 +1,6 @@
 import { villageMap } from './map-data.js';
 import { places } from './place-data.js';
-import { npcs, npcsAt } from './npc-data.js?v=first-meetings-20261102';
+import { npcs, npcsAt } from './npc-data.js?v=unified-scenes-20261102';
 import { hasMet, completeFirstMeeting } from './encounter-session.js';
 import { readSave } from '../storage.js';
 
@@ -61,6 +61,7 @@ function mountNpcs(place) {
   const layer = $('npc-layer'); layer.replaceChildren();
   const here = npcsAt(place.id);
   $('featured-npc').hidden = !here.length;
+  $('place-view').dataset.residents = String(here.length);
   if (here.length) featureNpc(here[0]);
   layer.dataset.count = String(Math.min(here.length, 6)); layer.style.setProperty('--n', String(Math.max(here.length, 1)));
   if (!here.length) {
@@ -96,7 +97,15 @@ function featureNpc(npc) {
   button.setAttribute('aria-label', npc.name + ' · 이야기 나누기');
   $('featured-name').textContent = npc.name; $('featured-role').textContent = npc.role;
   image.alt = npc.illustration.alt;
-  if (npc.illustration.ready) loadImage(image, npc.illustration.src, $('featured-fallback'));
+  button.dataset.art = npc.scene?.src ? 'cutout' : 'original';
+  button.style.setProperty('--character-scale', npc.scene?.scale || '1');
+  if (npc.illustration.ready) {
+    loadImage(image, npc.scene?.src || npc.illustration.src, $('featured-fallback'));
+    if (npc.scene?.src) image.onerror = () => {
+      button.dataset.art = 'original';
+      loadImage(image, npc.illustration.src, $('featured-fallback'));
+    };
+  }
   else { image.hidden = true; image.removeAttribute('src'); $('featured-fallback').hidden = false; }
   for (const item of $('npc-layer').querySelectorAll('[data-npc]')) item.setAttribute('aria-pressed', String(item.dataset.npc === npc.id));
 }
@@ -107,8 +116,8 @@ function emptyArt() {
 }
 function render(value) {
   current = value;
-  app.dataset.place = value === 'forge' ? 'forge' : '';
-  if (value === 'forge') window.scrollTo({top:0, behavior:'instant'});
+  app.dataset.place = value === 'map' ? '' : value;
+  if (value !== 'map') window.scrollTo({top:0, behavior:'instant'});
   app.dataset.view = value === 'map' ? 'map' : 'place';
   $('map-view').hidden = value !== 'map';
   $('place-view').hidden = value === 'map';

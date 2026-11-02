@@ -1,0 +1,189 @@
+{
+  "cutoutPrompt": "Use case: background-extraction. The supplied image is the edit target. Remove ONLY the scenery background to actual transparent alpha. Preserve the exact existing character identity, face, expression, hair, hands, fingers, pose, all clothing and carried props. Preserve every visible nonhuman anatomical structure including tentacles, spider limbs, wings, antennae, fin ears, snake body, translucent body and slime. Do not mistake any of these for background. Preserve the original framing and existing crops. Do not invent missing body parts, do not extend the image. Do not redraw, restyle, beautify, recolor or alter proportions. Output the existing character and carried props on transparency, with clean hair edges and no colored halo.",
+  "backgroundPromptTemplate": "Use case: stylized-concept. Asset type: wide 16:9 MISTVALE cozy fantasy visual novel background. Detailed hand-painted anime-game environment, eye-level, tangible lived-in furnishings. No people or text. Clear lower center/right for character compositing, furnishings toward sides/back, muted natural light. No neon, UI or decorative arch.",
+  "places": {
+    "apothecary": "a small violet herbal apothecary: shelves of glass potion bottles, hanging dried herbs, scales, worn walnut counter, soft lavender magical light and warm candles",
+    "library": "an intimate village library: tall walnut bookshelves, reading table with open books, warm afternoon sunlight through a tall window, quiet honey-brown light",
+    "whisper-forest": "an ancient misty forest clearing: mossy trunks and roots, small mushrooms, delicate spider webs between distant branches, soft green and blue dusk light, magical but grounded woodland",
+    "blue-coast": "a rugged coastal inlet: wet rocks, quiet blue sea, a small distant lighthouse, entrance of a tidal cave on the side, silver mist and cool blue twilight",
+    "clover": "a cozy village general store, olive and honey wood, seed packets without text, baskets, gardening tools and household goods on shelves, small counter, warm daylight",
+    "workshop": "an oak carpenter workshop with timber, wood shavings, carefully arranged hand tools and unfinished chairs, golden morning light",
+    "ranch": "a sunny green meadow ranch with wooden fence, red barn, distant windmill, hay bales, lush grass, no animals in foreground",
+    "pub": "a burgundy village tavern with dark wooden bar, stools, copper cups, candlelit tables, intimate evening warmth",
+    "inn": "a tidy village inn lobby, wooden reception desk, cream flowers in a vase, warm lanterns, stairway and resting chairs",
+    "clinic": "a clean fantasy village clinic, pale cream and sage walls, medicine cabinet, wooden desk, folded linen, gentle cool daylight",
+    "hall": "a village meeting hall, long timber table, paper ledgers, notice board with no legible text, tall windows, restrained olive and gold",
+    "bakery": "a cozy village bakery with fresh bread and buns in baskets, flour on wooden counter, oven, honey sunlight and buttery cream colors",
+    "post": "a small village post office with pigeonhole mail sorting shelves, letters, parcels and wooden desk, teal and warm wood daylight",
+    "tailor": "an elegant village sewing studio, fabric rolls, ribbons and lace, dress form, wooden sewing table, muted rose and cream warm light",
+    "wet-cave": "a damp forest cave with dark stone formations, shallow still water and wet rock ledges, pale green reflected light and low mist, no treasures",
+    "silver-lake": "a tranquil silver lake wetland with reeds, damp mossy shore, rippling water and soft moonlit silver blue reflections, no buildings"
+  },
+  "cutoutSources": [
+    {
+      "id": "bianca",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-437a8d7d-e78e-49e9-81ea-dd81590b23b3.png"
+    },
+    {
+      "id": "edelin",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-553f349f-be0e-4afc-8b2b-c3a062b00652.png"
+    },
+    {
+      "id": "lillian",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-c0f16c8e-cd91-457c-903f-99affe458cf0.png"
+    },
+    {
+      "id": "arachne",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-a6835d12-6a94-45a7-b63e-9b505a514efc.png"
+    },
+    {
+      "id": "seraphina",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-a5538963-b68e-41f8-b772-0e4dbc7bae9a.png"
+    },
+    {
+      "id": "kailen",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-142a7cfc-441c-4997-a42f-1645229ebdfe.png"
+    },
+    {
+      "id": "luciel",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-77ecd36e-3d18-41a2-87d8-8fc17fa865ee.png"
+    },
+    {
+      "id": "rowen",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-f202c069-d6e8-46e3-bb15-00569bfe014a.png"
+    },
+    {
+      "id": "noah",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-087cdc6e-5790-4baf-a003-72f45f135481.png"
+    },
+    {
+      "id": "mariel",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-d58bb6b3-4cef-4d81-bdeb-3bd883b0ed9e.png"
+    },
+    {
+      "id": "isabel",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-d20873eb-3010-44a1-88a4-53d247754e30.png"
+    },
+    {
+      "id": "theo",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-a278318a-468f-4011-9049-b9e361cd6fce.png"
+    },
+    {
+      "id": "adela",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-68bbdae7-b43d-4f6d-923b-f90969cf4596.png"
+    },
+    {
+      "id": "edwin",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-59aa652c-9b9c-4075-8ed5-900535b068d3.png"
+    },
+    {
+      "id": "cordelia",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-2ce08a03-179c-4567-a424-74c59d3bd594.png"
+    },
+    {
+      "id": "felix",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-e2be6e69-65da-495e-a156-8e6ba8cb9f11.png"
+    },
+    {
+      "id": "nephia",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-ebd64c4f-2fc8-49e3-9a4b-9eb64d4510a8.png"
+    },
+    {
+      "id": "seira",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-11abb274-7689-496c-9446-d718b4edcb9b.png"
+    },
+    {
+      "id": "neri",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-61d48a08-48a0-4d8a-ba7a-60af0ebecbb2.png"
+    },
+    {
+      "id": "morel",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-e4356e24-dcb1-4eee-848d-f54c40e95755.png"
+    },
+    {
+      "id": "lepion",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-94f2c904-9a1e-496c-81d8-3ee703622c7a.png"
+    },
+    {
+      "id": "sarkan",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-ea093da5-8776-4347-90c7-6b49622ede6a.png"
+    },
+    {
+      "id": "miel",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-67446742-a9ff-4fda-9de8-f4a04a8bab24.png"
+    }
+  ],
+  "backgroundSources": [
+    {
+      "id": "apothecary",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-ceeb1fbb-5675-4858-9f92-8f565f2fee67.png"
+    },
+    {
+      "id": "library",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-e3e139dd-f09b-417e-9280-5ba353942e0b.png"
+    },
+    {
+      "id": "whisper-forest",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-b103ff89-4807-4664-b98d-fdc996445043.png"
+    },
+    {
+      "id": "blue-coast",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-35d8fe36-d238-4577-b095-ccf346605126.png"
+    },
+    {
+      "id": "clover",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-6eb04b5d-2aa5-4db5-9799-8724adcbf019.png"
+    },
+    {
+      "id": "workshop",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-e485543e-4666-468b-a1f7-96a1129aa249.png"
+    },
+    {
+      "id": "ranch",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-97518fb6-f2ad-4b03-880e-3212a5cd7cb3.png"
+    },
+    {
+      "id": "pub",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-35ad8fe0-03f3-422b-94a3-d2b0fa067492.png"
+    },
+    {
+      "id": "inn",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-5be3497b-98d7-4d11-af14-475edd705383.png"
+    },
+    {
+      "id": "clinic",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-008c0b96-90f2-4524-9eb9-1d8e0278cbec.png"
+    },
+    {
+      "id": "hall",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-7afe1d0e-641c-4b1a-97da-99a49b70d121.png"
+    },
+    {
+      "id": "bakery",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-bcd0cd73-9e46-4f2a-b07c-46de70d1aa96.png"
+    },
+    {
+      "id": "post",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-6036119a-070c-4f6b-a6f4-7589bb4eafa3.png"
+    },
+    {
+      "id": "tailor",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-e14e80c2-a001-429e-b5a9-fdec770a5d0c.png"
+    },
+    {
+      "id": "wet-cave",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-70a12081-c08a-42d9-8701-3dfe5c185fc9.png"
+    },
+    {
+      "id": "silver-lake",
+      "path": "C:\\Users\\Sea\\.codex\\generated_images\\01a19229-304b-7cb3-95b8-db756996584e\\exec-53d21006-8259-4912-bbbc-d9e19f84df2b.png"
+    }
+  ],
+  "rejected": {
+    "nephia": "반투명 머리카락/부속 구조와 배경 경계 잔여물로 정밀 분리 보류",
+    "neri": "머리카락과 반투명 잎/날개 주변 밝은 잔여물",
+    "lepion": "촉각과 흰 머리카락 주변 배경 잔여물",
+    "sarkan": "뱀 몸통의 감긴 부분이 배경으로 제거됨",
+    "miel": "반투명 몸과 의상 경계의 밝은 잔여물 및 투명도 보존 불확실"
+  }
+}

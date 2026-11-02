@@ -1,3 +1,4 @@
+import { sceneArt } from './scene-art.js';
 import { firstMeetings } from './first-meetings.js';
 import { npcPresentation } from './npc-presentation.js';
 const assetRoot = new URL('../../assets/npc/', import.meta.url);
@@ -18,6 +19,7 @@ export const npcs = Object.fromEntries(Object.entries(pack.npc).map(([id, data])
   spot:data.spot || '', appears:data.appears || '',
   note:[data.role, data.kind === 'nonhuman' ? data.spot : '', data.appears].filter(Boolean).join(' · '),
   illustration: { src:asset(data.illustration), alt:data.name + ' 원화', ready:Boolean(data.illustration) },
+  scene: sceneArt[id] || null,
   layout: npcPresentation[id] || {},
   firstMeeting:(firstMeetings[id]?.firstMeeting || []).map(text => ({text})),
   repeatDialogue:(firstMeetings[id]?.repeat || []).map(text => ({text})),
