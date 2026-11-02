@@ -1,0 +1,232 @@
+[
+  {
+    "id": "rowen",
+    "place": "clover",
+    "lineCount": 3,
+    "repeatChanged": true,
+    "bg": true,
+    "loaded": true,
+    "overflow": false,
+    "src": "./assets/characters/cutouts/rowen.png"
+  },
+  {
+    "id": "edelin",
+    "place": "library",
+    "lineCount": 3,
+    "repeatChanged": true,
+    "bg": true,
+    "loaded": true,
+    "overflow": false,
+    "src": "./assets/characters/cutouts/edelin.png"
+  },
+  {
+    "id": "edwin",
+    "place": "hall",
+    "lineCount": 3,
+    "repeatChanged": true,
+    "bg": true,
+    "loaded": true,
+    "overflow": false,
+    "src": "./assets/characters/cutouts/edwin.png"
+  },
+  {
+    "id": "adela",
+    "place": "clinic",
+    "lineCount": 3,
+    "repeatChanged": true,
+    "bg": true,
+    "loaded": true,
+    "overflow": false,
+    "src": "./assets/characters/cutouts/adela.png"
+  },
+  {
+    "id": "luciel",
+    "place": "tailor",
+    "lineCount": 3,
+    "repeatChanged": true,
+    "bg": true,
+    "loaded": true,
+    "overflow": false,
+    "src": "./assets/characters/cutouts/luciel.png"
+  },
+  {
+    "id": "theo",
+    "place": "inn",
+    "lineCount": 3,
+    "repeatChanged": true,
+    "bg": true,
+    "loaded": true,
+    "overflow": false,
+    "src": "./assets/characters/cutouts/theo.png"
+  },
+  {
+    "id": "noah",
+    "place": "workshop",
+    "lineCount": 3,
+    "repeatChanged": true,
+    "bg": true,
+    "loaded": true,
+    "overflow": false,
+    "src": "./assets/characters/cutouts/noah.png"
+  },
+  {
+    "id": "isabel",
+    "place": "pub",
+    "lineCount": 3,
+    "repeatChanged": true,
+    "bg": true,
+    "loaded": true,
+    "overflow": false,
+    "src": "./assets/characters/cutouts/isabel.png"
+  },
+  {
+    "id": "cordelia",
+    "place": "bakery",
+    "lineCount": 3,
+    "repeatChanged": true,
+    "bg": true,
+    "loaded": true,
+    "overflow": false,
+    "src": "./assets/characters/cutouts/cordelia.png"
+  },
+  {
+    "id": "felix",
+    "place": "post",
+    "lineCount": 3,
+    "repeatChanged": true,
+    "bg": true,
+    "loaded": true,
+    "overflow": false,
+    "src": "./assets/characters/cutouts/felix.png"
+  },
+  {
+    "id": "lillian",
+    "place": "apothecary",
+    "lineCount": 3,
+    "repeatChanged": true,
+    "bg": true,
+    "loaded": true,
+    "overflow": false,
+    "src": "./assets/characters/cutouts/lillian.png"
+  },
+  {
+    "id": "mariel",
+    "place": "ranch",
+    "lineCount": 3,
+    "repeatChanged": true,
+    "bg": true,
+    "loaded": true,
+    "overflow": false,
+    "src": "./assets/characters/cutouts/mariel.png"
+  },
+  {
+    "id": "bianca",
+    "place": "forge",
+    "lineCount": 3,
+    "repeatChanged": true,
+    "bg": true,
+    "loaded": true,
+    "overflow": false,
+    "src": "./assets/characters/cutouts/bianca.png"
+  },
+  {
+    "id": "serepina",
+    "place": "whisper-forest",
+    "lineCount": 3,
+    "repeatChanged": true,
+    "bg": true,
+    "loaded": true,
+    "overflow": false,
+    "src": "./assets/characters/cutouts/seraphina.png"
+  },
+  {
+    "id": "arachne",
+    "place": "whisper-forest",
+    "lineCount": 3,
+    "repeatChanged": true,
+    "bg": true,
+    "loaded": true,
+    "overflow": false,
+    "src": "./assets/characters/cutouts/arachne.png"
+  },
+  {
+    "id": "neri",
+    "place": "whisper-forest",
+    "lineCount": 3,
+    "repeatChanged": true,
+    "bg": true,
+    "loaded": true,
+    "overflow": false,
+    "src": "http://127.0.0.1:4174/mistvale/assets/characters/portraits/neri.png"
+  },
+  {
+    "id": "morel",
+    "place": "whisper-forest",
+    "lineCount": 3,
+    "repeatChanged": true,
+    "bg": true,
+    "loaded": true,
+    "overflow": false,
+    "src": "./assets/characters/cutouts/morel.png"
+  },
+  {
+    "id": "lepion",
+    "place": "whisper-forest",
+    "lineCount": 3,
+    "repeatChanged": true,
+    "bg": true,
+    "loaded": true,
+    "overflow": false,
+    "src": "http://127.0.0.1:4174/mistvale/assets/characters/portraits/lepion.png"
+  },
+  {
+    "id": "sarkan",
+    "place": "wet-cave",
+    "lineCount": 3,
+    "repeatChanged": true,
+    "bg": true,
+    "loaded": true,
+    "overflow": false,
+    "src": "http://127.0.0.1:4174/mistvale/assets/characters/portraits/sarkan.png"
+  },
+  {
+    "id": "miel",
+    "place": "silver-lake",
+    "lineCount": 3,
+    "repeatChanged": true,
+    "bg": true,
+    "loaded": true,
+    "overflow": false,
+    "src": "http://127.0.0.1:4174/mistvale/assets/characters/portraits/miel.png"
+  },
+  {
+    "id": "kylen",
+    "place": "blue-coast",
+    "lineCount": 3,
+    "repeatChanged": true,
+    "bg": true,
+    "loaded": true,
+    "overflow": false,
+    "src": "./assets/characters/cutouts/kailen.png"
+  },
+  {
+    "id": "nepia",
+    "place": "blue-coast",
+    "lineCount": 3,
+    "repeatChanged": true,
+    "bg": true,
+    "loaded": true,
+    "overflow": false,
+    "src": "http://127.0.0.1:4174/mistvale/assets/characters/portraits/nephia.png"
+  },
+  {
+    "id": "seira",
+    "place": "blue-coast",
+    "lineCount": 3,
+    "repeatChanged": true,
+    "bg": true,
+    "loaded": true,
+    "overflow": false,
+    "src": "./assets/characters/cutouts/seira.png"
+  }
+]
