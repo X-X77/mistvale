@@ -8,6 +8,7 @@ const app = $('world'), dialog = $('npc-dialog');
 const preferences = readSave(), motion = matchMedia('(prefers-reduced-motion: reduce)');
 const reduced = () => preferences.reducedMotion || motion.matches;
 let current = 'map', generation = 0, typingTimer = 0;
+let featuredNpc = null;
 let activeNpc = null, lineIndex = 0, typing = false, fullText = '', returnTarget = null;
 const bounded = (value, min, max, fallback) => Number.isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback;
 
@@ -53,11 +54,13 @@ function mountMap() {
   $('place-group-outside').hidden = !groups.route.children.length;
 }
 // ---- NPC 표시 (모든 NPC 공통) -------------------------------------------------
-// 장소 화면: 이 장소에 있는 인물을 원화 카드로 보여 줍니다(점 캐릭터 없음).
-// 카드를 누르면 같은 대화창(원화 + 대사 상자)이 열립니다. 원화가 없으면 '원화 준비 중' 카드가 나옵니다.
+// 장소 화면: 큰 원화와 하단 인물 선택 버튼이 같은 원화·대화 데이터를 사용합니다.
+// 원화 또는 선택 버튼을 누르면 기존 대화창을 엽니다. 미등록 원화는 대체 안내로 표시합니다.
 function mountNpcs(place) {
   const layer = $('npc-layer'); layer.replaceChildren();
   const here = npcsAt(place.id);
+  $('featured-npc').hidden = !here.length;
+  if (here.length) featureNpc(here[0]);
   layer.dataset.count = String(Math.min(here.length, 6)); layer.style.setProperty('--n', String(Math.max(here.length, 1)));
   if (!here.length) {
     const empty = document.createElement('p'); empty.className = 'mv-empty-note';
@@ -80,10 +83,23 @@ function mountNpcs(place) {
     const small = document.createElement('small'); small.textContent = npc.role;
     name.append(strong, small);
     button.append(art, name);
-    button.addEventListener('click', () => openDialogue(npc, button));
+    button.addEventListener('click', () => { featureNpc(npc); openDialogue(npc, button); });
+    button.setAttribute('aria-pressed', String(npc.id === featuredNpc?.id));
     layer.append(button);
   }
 }
+// Presentation only: use the same original artwork and existing dialogue handler.
+function featureNpc(npc) {
+  featuredNpc = npc;
+  const button = $('featured-npc'), image = $('featured-art');
+  button.setAttribute('aria-label', npc.name + ' · 이야기 나누기');
+  $('featured-name').textContent = npc.name; $('featured-role').textContent = npc.role;
+  image.alt = npc.illustration.alt;
+  if (npc.illustration.ready) loadImage(image, npc.illustration.src, $('featured-fallback'));
+  else { image.hidden = true; image.removeAttribute('src'); $('featured-fallback').hidden = false; }
+  for (const item of $('npc-layer').querySelectorAll('[data-npc]')) item.setAttribute('aria-pressed', String(item.dataset.npc === npc.id));
+}
+$('featured-npc').addEventListener('click', () => { if (featuredNpc) openDialogue(featuredNpc, $('featured-npc')); });
 function emptyArt() {
   const box = document.createElement('span'); box.className = 'mv-card-wait'; box.setAttribute('aria-hidden', 'true');
   box.innerHTML = '<i>?</i><em>원화 준비 중</em>'; return box;
@@ -107,11 +123,11 @@ function render(value) {
     $('place-description').textContent = place.description;
     const stage = $('place-stage');
     stage.style.setProperty('--mood-a', place.mood?.a || '#344b3e'); stage.style.setProperty('--mood-b', place.mood?.b || '#304739'); stage.style.setProperty('--mood-glow', place.mood?.glow || '#ffffff');
-    stage.dataset.place = place.id; stage.dataset.title = place.name; stage.classList.toggle('mv-no-art', !place.background);
+    stage.dataset.place = place.id; stage.classList.toggle('mv-no-art', !place.background);
     $('place-art').alt = place.alt;
     if (place.background) loadImage($('place-art'), place.background, $('place-fallback'));
     else { $('place-art').hidden = true; $('place-art').removeAttribute('src'); $('place-fallback').hidden = true; }
-    $('scene-note').textContent = place.background ? '시범 배경' : '배경 일러스트 준비 중 · 분위기만 표시';
+    $('scene-note').textContent = '';
     mountNpcs(place); setStatus(place.name + '. 인물을 선택하면 대화가 열립니다.');
     $('place-title').focus({preventScroll:true});
   }
