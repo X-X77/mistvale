@@ -1,0 +1,42 @@
+/* Same place, two presentation modes. The dialogue assets are independent of chibis. */
+.mv-chibi-world #npc-layer{transition:opacity .18s ease,visibility 0s;visibility:visible}
+.mv-chibi-world .mv-talking #npc-layer{opacity:0;visibility:hidden;transition:opacity .18s ease,visibility 0s .18s;pointer-events:none}
+.mv-chibi-world .mv-talking .mv-location-copy{opacity:0;transition:opacity .18s ease}
+.mv-chibi-world #npc-dialog{position:fixed;inset:74px 0 16px;width:min(1280px,94vw);height:calc(100svh - 90px);max-height:none;margin:0 auto;padding:0;border:0;border-radius:0;background:transparent;overflow:visible;box-shadow:none;pointer-events:none;color:#f4e7cb;opacity:1;transition:opacity .18s ease}
+.mv-chibi-world #npc-dialog::backdrop{background:#06100c30}
+.mv-chibi-world #npc-dialog[data-closing]{opacity:0}
+.mv-chibi-world .mv-dialog-content{display:grid!important;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;gap:0;height:100%;max-height:none;position:relative;filter:none}
+.mv-chibi-world .mv-portrait-area{display:flex!important;grid-column:1;grid-row:1;justify-self:stretch;max-width:none;position:relative;inset:auto;justify-content:flex-end;align-items:flex-end;min-height:0;min-width:0;width:100%;height:100%;margin:0;padding:0 12% 0 0;overflow:hidden;background:none;border:0;box-shadow:none;pointer-events:none;animation:mv-vn-in .24s ease both}
+.mv-chibi-world #npc-portrait{position:static;display:block;width:auto;height:100%;max-width:75%;max-height:100%;object-fit:contain!important;object-position:center bottom!important;border:0;border-radius:0;mask-image:none;-webkit-mask-image:none;filter:drop-shadow(0 5px 14px #0a110d55);transform:none}
+.mv-chibi-world #npc-portrait[hidden],.mv-chibi-world #portrait-fallback[hidden]{display:none!important}
+.mv-chibi-world #portrait-fallback{position:static;display:grid;place-content:center;align-self:center;margin:auto 12% auto auto;width:min(280px,60%);height:140px;background:#14241bd9;color:#e2d5b7;font-size:14px;border:1px solid #a98b4b55;border-radius:3px}
+.mv-chibi-world #portrait-fallback i{display:none}
+.mv-chibi-world #portrait-fallback em{font-style:normal}
+.mv-chibi-world .mv-dialog-box{display:block;position:relative;min-height:0;max-height:34svh;overflow:auto;pointer-events:auto;background:linear-gradient(110deg,#10231eee,#241f22ee);border:1px solid #bca16c88;border-radius:4px;box-shadow:0 8px 30px #0005;animation:mv-vn-in .2s ease both;scrollbar-width:thin}
+.mv-chibi-world .mv-dialog-box>header{padding:16px 60px 0 24px;margin:0;border:0;min-height:0;background:transparent}
+.mv-chibi-world .mv-dialog-box>header>div{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.mv-chibi-world .mv-dialog-box h2{font-size:22px;line-height:1.4;margin:0;letter-spacing:.3px}
+.mv-chibi-world .mv-dialog-box h2:after{content:' |';color:#ad9466;font-weight:400;margin-left:10px}
+.mv-chibi-world .mv-dialog-box small{font-size:12px;line-height:1.5;color:#c8c1af;margin:0}
+.mv-chibi-world .mv-dialog-text-button{display:block;width:100%;min-height:72px;padding:14px 24px 10px;text-align:left;font-size:19px;line-height:1.75;color:#fff1d7;background:none;border:0;word-break:keep-all;overflow-wrap:anywhere}
+.mv-chibi-world .mv-dialog-box>footer{padding:0 18px 10px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.mv-chibi-world #dialog-close{position:absolute;top:8px;right:10px;width:44px;height:44px;min-width:44px;min-height:44px;margin:0;padding:0;font-size:25px}
+.mv-chibi-world #dialog-next{min-height:44px;padding:9px 14px;font-size:14px}
+@keyframes mv-vn-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@media(max-width:700px){
+ .mv-chibi-world #npc-dialog{inset:72px 0 10px;width:calc(100% - 20px);height:calc(100svh - 82px);max-height:none}
+ .mv-chibi-world .mv-portrait-area{justify-content:center;padding:8px 0 0}
+ .mv-chibi-world #npc-portrait{max-width:100%;height:100%;width:auto}
+ .mv-chibi-world #portrait-fallback{margin:auto;width:70%}
+ .mv-chibi-world .mv-dialog-box{max-height:43svh}
+ .mv-chibi-world .mv-dialog-box>header{padding:12px 52px 0 16px}
+ .mv-chibi-world .mv-dialog-box>header>div{gap:5px 10px}
+ .mv-chibi-world .mv-dialog-box h2{font-size:19px}.mv-chibi-world .mv-dialog-box small{font-size:11px}
+ .mv-chibi-world .mv-dialog-text-button{font-size:16px;line-height:1.7;min-height:62px;padding:12px 16px 8px}
+ .mv-chibi-world .mv-dialog-box>footer{padding:0 8px 8px 16px;gap:4px}
+ .mv-chibi-world .mv-dialog-box>footer>span{font-size:10px}
+}
+@media(max-height:600px){.mv-chibi-world #npc-dialog{inset:50px 0 8px;height:calc(100svh - 58px)}.mv-chibi-world .mv-dialog-box{max-height:49svh}.mv-chibi-world .mv-dialog-text-button{min-height:45px;padding-top:8px;font-size:15px}.mv-chibi-world .mv-dialog-box>header{padding-top:8px}}
+@media(prefers-reduced-motion:reduce){.mv-chibi-world #npc-layer,.mv-chibi-world #npc-dialog,.mv-chibi-world .mv-talking #npc-layer,.mv-chibi-world .mv-talking .mv-location-copy{transition:none}.mv-chibi-world .mv-portrait-area,.mv-chibi-world .mv-dialog-box{animation:none}}
+html.mv-reduced-motion .mv-chibi-world #npc-layer,html.mv-reduced-motion .mv-chibi-world #npc-dialog,html.mv-reduced-motion .mv-chibi-world .mv-talking #npc-layer{transition:none}
+html.mv-reduced-motion .mv-chibi-world .mv-portrait-area,html.mv-reduced-motion .mv-chibi-world .mv-dialog-box{animation:none}
