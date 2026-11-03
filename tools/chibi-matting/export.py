@@ -9,13 +9,15 @@ for f in sorted(glob.glob('matted2/*.png')):
     al=a[:,:,3]/255; H,W=al.shape
     cut=[]
     F=64
+    BIG={'serepina':150}.get(id,F)
     for side,line in (('L',al[:,0]),('R',al[:,-1]),('T',al[0,:]),('B',al[-1,:])):
         if (line>.16).sum()>30: cut.append(side)
     ramp=np.clip(np.arange(F)/F,0,1)**1.6
     for s in cut:
-        if s=='L': al[:,:F]*=ramp[None,:]
-        if s=='R': al[:,-F:]*=ramp[::-1][None,:]
-        if s=='T': al[:F,:]*=ramp[:,None]
+        rb=np.clip(np.arange(BIG)/BIG,0,1)**1.6
+        if s=='L': al[:,:BIG]*=rb[None,:]
+        if s=='R': al[:,-BIG:]*=rb[::-1][None,:]
+        if s=='T': al[:BIG,:]*=rb[:,None]
         if s=='B': al[-F:,:]*=ramp[::-1][:,None]
     if len(cut)>=2 and ('T' in cut or 'B' in cut) and ('L' in cut or 'R' in cut):
         R=0.30*min(W,H); yy,xx=np.mgrid[0:H,0:W].astype(np.float64)
