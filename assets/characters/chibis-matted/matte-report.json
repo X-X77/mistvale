@@ -1,13 +1,13 @@
 {
  "adela": {
   "file": "adela.webp",
-  "width": 551,
+  "width": 549,
   "height": 900,
   "sourceCutSides": []
  },
  "arachne": {
   "file": "arachne.webp",
-  "width": 651,
+  "width": 652,
   "height": 900,
   "sourceCutSides": [
    "L",
@@ -16,7 +16,7 @@
  },
  "bianca": {
   "file": "bianca.webp",
-  "width": 506,
+  "width": 513,
   "height": 900,
   "sourceCutSides": []
  },
@@ -28,7 +28,7 @@
  },
  "edelin": {
   "file": "edelin.webp",
-  "width": 641,
+  "width": 642,
   "height": 900,
   "sourceCutSides": []
  },
@@ -52,13 +52,13 @@
  },
  "kylen": {
   "file": "kylen.webp",
-  "width": 584,
+  "width": 579,
   "height": 900,
   "sourceCutSides": []
  },
  "lepion": {
   "file": "lepion.webp",
-  "width": 645,
+  "width": 647,
   "height": 900,
   "sourceCutSides": [
    "L",
@@ -67,7 +67,7 @@
  },
  "lillian": {
   "file": "lillian.webp",
-  "width": 528,
+  "width": 526,
   "height": 900,
   "sourceCutSides": []
  },
@@ -79,7 +79,7 @@
  },
  "mariel": {
   "file": "mariel.webp",
-  "width": 629,
+  "width": 628,
   "height": 900,
   "sourceCutSides": []
  },
@@ -91,18 +91,13 @@
  },
  "morel": {
   "file": "morel.webp",
-  "width": 611,
+  "width": 615,
   "height": 900,
-  "sourceCutSides": [
-   "L",
-   "R",
-   "T",
-   "B"
-  ]
+  "sourceCutSides": []
  },
  "nepia": {
   "file": "nepia.webp",
-  "width": 695,
+  "width": 699,
   "height": 900,
   "sourceCutSides": []
  },
@@ -117,7 +112,7 @@
  },
  "noah": {
   "file": "noah.webp",
-  "width": 544,
+  "width": 545,
   "height": 900,
   "sourceCutSides": []
  },
@@ -135,7 +130,7 @@
  },
  "seira": {
   "file": "seira.webp",
-  "width": 611,
+  "width": 612,
   "height": 900,
   "sourceCutSides": [
    "L",
@@ -144,18 +139,17 @@
  },
  "serepina": {
   "file": "serepina.webp",
-  "width": 618,
+  "width": 605,
   "height": 900,
   "sourceCutSides": [
    "L",
    "R",
-   "T",
-   "B"
+   "T"
   ]
  },
  "theo": {
   "file": "theo.webp",
-  "width": 580,
+  "width": 577,
   "height": 900,
   "sourceCutSides": []
  }

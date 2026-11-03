@@ -1,7 +1,7 @@
 import sys,os,glob,time,numpy as np,cv2
 from PIL import Image
 from pymatting import estimate_alpha_cf, estimate_foreground_ml
-ORIG='/home/claude/x-x77/mistvale/assets/characters/chibi-originals/'
+ORIG='/home/claude/work/src/'
 IDS={'네리':'neri','네피아':'nepia','노아':'noah','레피온':'lepion','로웬':'rowen','루시엘':'luciel','릴리안':'lillian','마리엘':'mariel','모렐':'morel','미엘':'miel','비앙카':'bianca','사르칸':'sarkan','세레피나':'serepina','세이라':'seira','아델라':'adela','아라크네':'arachne','에델린':'edelin','에드윈':'edwin','이사벨':'isabel','카일런':'kylen','코델리아':'cordelia','테오':'theo','페릭스':'felix'}
 NARROW={'neri','luciel','miel','sarkan'}   # 배경이 흰색이 아닌 그림: 바깥 확장 폭을 줄여 배경을 줍지 않음
 def run(kr):
