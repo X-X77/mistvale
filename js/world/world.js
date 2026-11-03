@@ -3,7 +3,7 @@ import { places } from './place-data.js';
 import { npcs, npcsAt } from './npc-data.js?v=unified-scenes-20261102';
 import { hasMet, completeFirstMeeting } from './encounter-session.js';
 import { readSave } from '../storage.js';
-import { spriteTest, testSprites } from './sprite-test.js';
+import { chibiResidents } from './chibi-data.js';
 
 const $ = id => document.getElementById(id);
 const app = $('world'), dialog = $('npc-dialog');
@@ -61,63 +61,26 @@ function mountMap() {
 function mountNpcs(place) {
   const layer = $('npc-layer'); layer.replaceChildren();
   const here = npcsAt(place.id);
-  $('featured-npc').hidden = !here.length;
+  $('featured-npc').hidden = true;
   $('place-view').dataset.residents = String(here.length);
-  if (here.length) featureNpc(here[0]);
-  layer.dataset.count = String(Math.min(here.length, 6)); layer.style.setProperty('--n', String(Math.max(here.length, 1)));
-  if (!here.length) {
-    const empty = document.createElement('p'); empty.className = 'mv-empty-note';
-    empty.textContent = Object.keys(npcs).length ? '지금은 이곳에서 만날 수 있는 인물이 없습니다.' : '인물 정보를 불러오지 못했습니다. 잠시 후 다시 방문해 주세요.';
-    layer.append(empty); return;
-  }
+  layer.setAttribute('aria-label', place.name + '의 주민');
   for (const npc of here) {
-    const button = document.createElement('button'); button.className = 'mv-npc-card'; button.dataset.npc = npc.id;
-    if (npc.kind === 'nonhuman') button.classList.add('mv-nonhuman');
-    button.setAttribute('aria-label', npc.name + '(' + npc.role + ')에게 말 걸기' + (npc.illustration.ready ? '' : ', 원화 준비 중'));
-    const art = document.createElement('span'); art.className = 'mv-card-art';
-    if (npc.illustration.ready) {
-      const image = document.createElement('img'); image.alt = ''; image.draggable = false; image.decoding = 'async';
-      image.style.objectPosition = npc.layout.cardPosition || 'center top';
-      image.onerror = () => { image.remove(); art.classList.add('mv-card-empty'); art.append(emptyArt()); };
-      image.src = npc.illustration.src; art.append(image);
-    } else { art.classList.add('mv-card-empty'); art.append(emptyArt()); }
-    const name = document.createElement('span'); name.className = 'mv-card-name';
-    const strong = document.createElement('strong'); strong.textContent = npc.name;
-    const small = document.createElement('small'); small.textContent = npc.role;
-    name.append(strong, small);
-    button.append(art, name);
-    button.addEventListener('click', () => { featureNpc(npc); openDialogue(npc, button); });
-    button.setAttribute('aria-pressed', String(npc.id === featuredNpc?.id));
+    const config = chibiResidents[npc.id];
+    const button = document.createElement('button');
+    button.className = 'mv-chibi'; button.dataset.npc = npc.id;
+    button.dataset.background = config?.background || 'original-preserved';
+    button.setAttribute('aria-label', npc.name + ' · ' + npc.role + ' · 이야기 나누기');
+    button.title = [npc.name, npc.spot, npc.appears].filter(Boolean).join(' · ');
+    for (const [key, value] of Object.entries({x:config?.x ?? 65, ground:config?.ground ?? 78, h:config?.height ?? 28, mx:config?.mobileX ?? 60, mg:config?.mobileGround ?? 65, mh:config?.mobileHeight ?? 24})) button.style.setProperty('--' + key, value);
+    const image = document.createElement('img');
+    image.alt = ''; image.draggable = false; image.decoding = 'async';
+    image.src = config?.src || npc.illustration.src;
+    const name = document.createElement('span'); name.className = 'mv-chibi-name'; name.textContent = npc.name;
+    image.addEventListener('error', () => { image.hidden = true; button.classList.add('mv-chibi-missing'); });
+    button.append(image, name);
+    button.addEventListener('click', () => openDialogue(npc, button));
     layer.append(button);
   }
-}
-// Presentation only: use the same original artwork and existing dialogue handler.
-function featureNpc(npc) {
-  featuredNpc = npc;
-  const button = $('featured-npc'), image = $('featured-art');
-  const sprite = spriteTest && testSprites[npc.id];
-  button.classList.toggle('mv-sprite-test', Boolean(sprite));
-  button.setAttribute('aria-label', npc.name + ' · 이야기 나누기');
-  $('featured-name').textContent = npc.name; $('featured-role').textContent = npc.role;
-  image.alt = sprite ? npc.name + ' 도트 테스트' : npc.illustration.alt;
-  button.dataset.art = npc.scene?.src ? 'cutout' : 'original';
-  button.style.setProperty('--character-scale', npc.scene?.scale || '1');
-  if (npc.illustration.ready) {
-    loadImage(image, sprite || npc.scene?.src || npc.illustration.src, $('featured-fallback'));
-    if (npc.scene?.src) image.onerror = () => {
-      button.dataset.art = 'original';
-      loadImage(image, npc.illustration.src, $('featured-fallback'));
-    };
-  }
-  else { image.hidden = true; image.removeAttribute('src'); $('featured-fallback').hidden = false; }
-  for (const item of $('npc-layer').querySelectorAll('[data-npc]')) item.setAttribute('aria-pressed', String(item.dataset.npc === npc.id));
-}
-// 원화 가장자리를 배경에 풀어 줄 때 그림의 실제 비율을 씁니다(표시만 바뀝니다).
-$('featured-art').addEventListener('load', event => { const i = event.target; if (i.naturalHeight) i.style.setProperty('--art-ratio', String(i.naturalWidth / i.naturalHeight)); });
-$('featured-npc').addEventListener('click', () => { if (featuredNpc) openDialogue(featuredNpc, $('featured-npc')); });
-function emptyArt() {
-  const box = document.createElement('span'); box.className = 'mv-card-wait'; box.setAttribute('aria-hidden', 'true');
-  box.innerHTML = '<i>?</i><em>원화 준비 중</em>'; return box;
 }
 function render(value) {
   current = value;
@@ -196,7 +159,7 @@ function openDialogue(npc, source) {
   dialog.dataset.place = current;
   $('npc-name').textContent = npc.name; $('npc-note').textContent = npc.note;
   $('npc-portrait').dataset.src = '__reset__'; $('place-view').classList.add('mv-talking');
-  dialog.showModal(); showLine(); $('dialog-next').focus({preventScroll:true});
+  source?.classList.add('is-speaking'); dialog.showModal(); showLine(); $('dialog-next').focus({preventScroll:true});
 }
 function nextLine() {
   if (!dialog.open || !activeNpc) return;
@@ -207,7 +170,7 @@ function nextLine() {
   }
   showLine();
 }
-dialog.addEventListener('close', () => { clearTyping(); typing = false; activeNpc = null; $('place-view').classList.remove('mv-talking'); returnTarget?.focus({preventScroll:true}); });
+dialog.addEventListener('close', () => { clearTyping(); typing = false; activeNpc = null; $('place-view').classList.remove('mv-talking'); returnTarget?.classList.remove('is-speaking'); returnTarget?.focus({preventScroll:true}); });
 $('dialog-close').addEventListener('click', () => dialog.close());
 $('dialog-next').addEventListener('click', nextLine);
 $('npc-text-next').addEventListener('click', nextLine);
