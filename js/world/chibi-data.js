@@ -1,7 +1,7 @@
 // Percent positions and viewport-height sizes; preserve the existing NPC/place IDs.
 export const chibiResidents = {
   "edelin": {
-    "src": "./assets/characters/chibis/edelin.png",
+    "src": "./assets/characters/chibis-refined/edelin.png",
     "background": "edge-connected-neutral",
     "x": 68,
     "ground": 78,
@@ -11,7 +11,7 @@ export const chibiResidents = {
     "mobileHeight": 24
   },
   "serepina": {
-    "src": "./assets/characters/chibis/serepina.png",
+    "src": "./assets/characters/chibis-refined/serepina.png",
     "background": "original-preserved",
     "x": 18,
     "ground": 76,
@@ -21,7 +21,7 @@ export const chibiResidents = {
     "mobileHeight": 19
   },
   "kylen": {
-    "src": "./assets/characters/chibis/kylen.png",
+    "src": "./assets/characters/chibis-refined/kylen.png",
     "background": "edge-connected-neutral",
     "x": 29,
     "ground": 78,
@@ -31,7 +31,7 @@ export const chibiResidents = {
     "mobileHeight": 22
   },
   "luciel": {
-    "src": "./assets/characters/chibis/luciel.png",
+    "src": "./assets/characters/chibis-refined/luciel.png",
     "background": "original-preserved",
     "x": 68,
     "ground": 78,
@@ -41,7 +41,7 @@ export const chibiResidents = {
     "mobileHeight": 25
   },
   "rowen": {
-    "src": "./assets/characters/chibis/rowen.png",
+    "src": "./assets/characters/chibis-refined/rowen.png",
     "background": "edge-connected-neutral",
     "x": 62,
     "ground": 78,
@@ -51,7 +51,7 @@ export const chibiResidents = {
     "mobileHeight": 25
   },
   "bianca": {
-    "src": "./assets/characters/chibis/bianca.png",
+    "src": "./assets/characters/chibis-refined/bianca.png",
     "background": "edge-connected-neutral",
     "x": 66,
     "ground": 80,
@@ -61,7 +61,7 @@ export const chibiResidents = {
     "mobileHeight": 25
   },
   "noah": {
-    "src": "./assets/characters/chibis/noah.png",
+    "src": "./assets/characters/chibis-refined/noah.png",
     "background": "edge-connected-neutral",
     "x": 67,
     "ground": 79,
@@ -71,7 +71,7 @@ export const chibiResidents = {
     "mobileHeight": 25
   },
   "mariel": {
-    "src": "./assets/characters/chibis/mariel.png",
+    "src": "./assets/characters/chibis-refined/mariel.png",
     "background": "edge-connected-neutral",
     "x": 62,
     "ground": 80,
@@ -81,7 +81,7 @@ export const chibiResidents = {
     "mobileHeight": 25
   },
   "isabel": {
-    "src": "./assets/characters/chibis/isabel.png",
+    "src": "./assets/characters/chibis-refined/isabel.png",
     "background": "edge-connected-neutral",
     "x": 68,
     "ground": 78,
@@ -91,7 +91,7 @@ export const chibiResidents = {
     "mobileHeight": 25
   },
   "theo": {
-    "src": "./assets/characters/chibis/theo.png",
+    "src": "./assets/characters/chibis-refined/theo.png",
     "background": "edge-connected-neutral",
     "x": 65,
     "ground": 79,
@@ -101,7 +101,7 @@ export const chibiResidents = {
     "mobileHeight": 25
   },
   "adela": {
-    "src": "./assets/characters/chibis/adela.png",
+    "src": "./assets/characters/chibis-refined/adela.png",
     "background": "edge-connected-neutral",
     "x": 65,
     "ground": 77,
@@ -111,7 +111,7 @@ export const chibiResidents = {
     "mobileHeight": 25
   },
   "lillian": {
-    "src": "./assets/characters/chibis/lillian.png",
+    "src": "./assets/characters/chibis-refined/lillian.png",
     "background": "edge-connected-neutral",
     "x": 66,
     "ground": 78,
@@ -121,7 +121,7 @@ export const chibiResidents = {
     "mobileHeight": 25
   },
   "edwin": {
-    "src": "./assets/characters/chibis/edwin.png",
+    "src": "./assets/characters/chibis-refined/edwin.png",
     "background": "edge-connected-neutral",
     "x": 65,
     "ground": 79,
@@ -131,7 +131,7 @@ export const chibiResidents = {
     "mobileHeight": 25
   },
   "cordelia": {
-    "src": "./assets/characters/chibis/cordelia.png",
+    "src": "./assets/characters/chibis-refined/cordelia.png",
     "background": "edge-connected-neutral",
     "x": 64,
     "ground": 78,
@@ -141,7 +141,7 @@ export const chibiResidents = {
     "mobileHeight": 25
   },
   "felix": {
-    "src": "./assets/characters/chibis/felix.png",
+    "src": "./assets/characters/chibis-refined/felix.png",
     "background": "edge-connected-neutral",
     "x": 65,
     "ground": 79,
@@ -151,7 +151,7 @@ export const chibiResidents = {
     "mobileHeight": 25
   },
   "nepia": {
-    "src": "./assets/characters/chibis/nepia.png",
+    "src": "./assets/characters/chibis-refined/nepia.png",
     "background": "edge-connected-neutral",
     "x": 56,
     "ground": 83,
@@ -161,7 +161,7 @@ export const chibiResidents = {
     "mobileHeight": 22
   },
   "seira": {
-    "src": "./assets/characters/chibis/seira.png",
+    "src": "./assets/characters/chibis-refined/seira.png",
     "background": "original-preserved",
     "x": 80,
     "ground": 78,
@@ -171,7 +171,7 @@ export const chibiResidents = {
     "mobileHeight": 22
   },
   "arachne": {
-    "src": "./assets/characters/chibis/arachne.png",
+    "src": "./assets/characters/chibis-refined/arachne.png",
     "background": "edge-connected-neutral",
     "x": 36,
     "ground": 82,
@@ -181,7 +181,7 @@ export const chibiResidents = {
     "mobileHeight": 19
   },
   "neri": {
-    "src": "./assets/characters/chibis/neri.png",
+    "src": "./assets/characters/chibis-refined/neri.png",
     "background": "original-preserved",
     "x": 53,
     "ground": 72,
@@ -191,7 +191,7 @@ export const chibiResidents = {
     "mobileHeight": 18
   },
   "morel": {
-    "src": "./assets/characters/chibis/morel.png",
+    "src": "./assets/characters/chibis-refined/morel.png",
     "background": "edge-connected-neutral",
     "x": 70,
     "ground": 81,
@@ -201,7 +201,7 @@ export const chibiResidents = {
     "mobileHeight": 18
   },
   "lepion": {
-    "src": "./assets/characters/chibis/lepion.png",
+    "src": "./assets/characters/chibis-refined/lepion.png",
     "background": "edge-connected-neutral",
     "x": 86,
     "ground": 73,
@@ -211,7 +211,7 @@ export const chibiResidents = {
     "mobileHeight": 18
   },
   "sarkan": {
-    "src": "./assets/characters/chibis/sarkan.png",
+    "src": "./assets/characters/chibis-refined/sarkan.png",
     "background": "edge-connected-neutral",
     "x": 62,
     "ground": 79,
@@ -221,7 +221,7 @@ export const chibiResidents = {
     "mobileHeight": 27
   },
   "miel": {
-    "src": "./assets/characters/chibis/miel.png",
+    "src": "./assets/characters/chibis-refined/miel.png",
     "background": "original-preserved",
     "x": 65,
     "ground": 78,

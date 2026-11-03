@@ -1,6 +1,6 @@
 import { villageMap } from './map-data.js';
 import { places } from './place-data.js';
-import { npcs, npcsAt } from './npc-data.js?v=unified-scenes-20261102';
+import { npcs, npcsAt } from './npc-data.js?v=visual-novel-20261103';
 import { hasMet, completeFirstMeeting } from './encounter-session.js';
 import { readSave } from '../storage.js';
 import { chibiResidents } from './chibi-data.js';
@@ -12,6 +12,7 @@ const reduced = () => preferences.reducedMotion || motion.matches;
 let current = 'map', generation = 0, typingTimer = 0;
 let featuredNpc = null;
 let activeNpc = null, lineIndex = 0, typing = false, fullText = '', returnTarget = null;
+let closeTimer = 0, closing = false;
 const bounded = (value, min, max, fallback) => Number.isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback;
 
 function loadImage(image, source, fallback) {
@@ -65,7 +66,7 @@ function mountNpcs(place) {
   $('place-view').dataset.residents = String(here.length);
   layer.setAttribute('aria-label', place.name + '의 주민');
   for (const npc of here) {
-    const config = chibiResidents[npc.id];
+    const config = npc.chibi;
     const button = document.createElement('button');
     button.className = 'mv-chibi'; button.dataset.npc = npc.id;
     button.dataset.background = config?.background || 'original-preserved';
@@ -83,7 +84,7 @@ function mountNpcs(place) {
   }
 }
 function render(value) {
-  current = value;
+  current = value; app.dataset.mode = 'explore';
   app.dataset.place = value === 'map' ? '' : value;
   if (value !== 'map') window.scrollTo({top:0, behavior:'instant'});
   app.dataset.view = value === 'map' ? 'map' : 'place';
@@ -114,7 +115,7 @@ function render(value) {
 }
 async function navigate(value, { fromHistory = false, immediate = false } = {}) {
   const target = places[value] ? value : 'map', ticket = ++generation;
-  if (dialog.open) { returnTarget = null; dialog.close(); clearTyping(); }
+  if (dialog.open) { returnTarget = null; closeDialogue(true); }
   app.inert = false; app.classList.add('mv-changing'); app.setAttribute('aria-busy', 'true');
   app.inert = true;
   if (!immediate && !reduced()) await new Promise(resolve => setTimeout(resolve, 220));
@@ -132,15 +133,24 @@ function showLine() {
   const line = activeNpc.dialogue[lineIndex];
   fullText = line.text;
   $('npc-accessible-text').textContent = activeNpc.name + ': ' + fullText;
-  const portrait = $('npc-portrait'), art = activeNpc.illustration;
-  if (portrait.dataset.src !== art.src) {
-    portrait.dataset.src = art.src;
-    if (art.ready) loadImage(portrait, art.src, $('portrait-fallback'));
-    else { portrait.hidden = true; portrait.removeAttribute('src'); $('portrait-fallback').hidden = false; }
+  const portrait = $('npc-portrait'), art = activeNpc.portrait || {};
+  const key = activeNpc.id + ':' + (art.src || 'missing');
+  if (portrait.dataset.src !== key) {
+    portrait.dataset.src = key;
+    const fallback = $('portrait-fallback');
+    portrait.hidden = true; fallback.hidden = false;
+    const sources = [...new Set([art.src, art.fallback].filter(Boolean))];
+    let attempt = 0;
+    const next = () => {
+      if (portrait.dataset.src !== key) return;
+      if (attempt >= sources.length) { portrait.hidden = true; portrait.removeAttribute('src'); fallback.hidden = false; return; }
+      portrait.src = sources[attempt++];
+    };
+    portrait.onload = () => { if (portrait.dataset.src === key) { portrait.hidden = false; fallback.hidden = true; } };
+    portrait.onerror = next;
+    portrait.alt = art.alt || activeNpc.name + ' 대화 원화';
+    next();
   }
-  portrait.alt = art.alt;
-  portrait.style.objectFit = activeNpc.layout.portraitFit || 'contain';
-  portrait.style.objectPosition = activeNpc.layout.portraitPosition || 'center';
   const speed = { slow:65, normal:35, fast:16, instant:0 }[preferences.speed] ?? 35;
   if (!speed || reduced()) { finishLine(); return; }
   let count = 0; typing = true; $('npc-text').textContent = '';
@@ -151,33 +161,47 @@ function showLine() {
   }, speed);
 }
 function openDialogue(npc, source) {
-  if (dialog.open || !npc.dialogue?.length) return;
+  if (dialog.open || closing || !npc.dialogue?.length) return;
   const firstMeeting = !hasMet(npc.id) && Boolean(npc.firstMeeting?.length);
   const lines = firstMeeting ? npc.firstMeeting : (npc.repeatDialogue?.length ? npc.repeatDialogue : npc.dialogue);
   activeNpc = { ...npc, dialogue: lines, firstMeeting };
   lineIndex = 0; returnTarget = source;
-  dialog.dataset.place = current;
+  dialog.dataset.place = current; app.dataset.mode = 'dialogue';
   $('npc-name').textContent = npc.name; $('npc-note').textContent = npc.note;
   $('npc-portrait').dataset.src = '__reset__'; $('place-view').classList.add('mv-talking');
   source?.classList.add('is-speaking'); dialog.showModal(); showLine(); $('dialog-next').focus({preventScroll:true});
 }
 function nextLine() {
-  if (!dialog.open || !activeNpc) return;
+  if (!dialog.open || !activeNpc || closing) return;
   if (typing) return finishLine();
   if (++lineIndex >= activeNpc.dialogue.length) {
     if (activeNpc.firstMeeting) completeFirstMeeting(activeNpc.id);
-    dialog.close(); return;
+    closeDialogue(); return;
   }
   showLine();
 }
-dialog.addEventListener('close', () => { clearTyping(); typing = false; activeNpc = null; $('place-view').classList.remove('mv-talking'); returnTarget?.classList.remove('is-speaking'); returnTarget?.focus({preventScroll:true}); });
-$('dialog-close').addEventListener('click', () => dialog.close());
+function closeDialogue(immediate = false) {
+  clearTyping();
+  if (!dialog.open) return;
+  if (immediate || reduced()) { clearTimeout(closeTimer); dialog.close(); return; }
+  if (closing) return;
+  closing = true; dialog.setAttribute('data-closing', '');
+  closeTimer = setTimeout(() => { if (dialog.open) dialog.close(); }, 180);
+}
+dialog.addEventListener('cancel', event => { event.preventDefault(); closeDialogue(); });
+dialog.addEventListener('close', () => {
+  clearTimeout(closeTimer); closeTimer = 0; closing = false; dialog.removeAttribute('data-closing');
+  clearTyping(); typing = false; activeNpc = null; app.dataset.mode = 'explore';
+  $('place-view').classList.remove('mv-talking');
+  returnTarget?.classList.remove('is-speaking'); returnTarget?.focus({preventScroll:true});
+});
+$('dialog-close').addEventListener('click', () => closeDialogue());
 $('dialog-next').addEventListener('click', nextLine);
 $('npc-text-next').addEventListener('click', nextLine);
 $('world-map-back').addEventListener('click', () => navigate('map'));
 window.addEventListener('hashchange', () => navigate(routeValue(), {fromHistory:true}));
 window.addEventListener('pageshow', event => { if (event.persisted) navigate(routeValue(), {fromHistory:true, immediate:true}); });
-window.addEventListener('pagehide', () => { ++generation; clearTyping(); });
+window.addEventListener('pagehide', () => { ++generation; clearTyping(); closeDialogue(true); });
 motion.addEventListener('change', () => { document.documentElement.classList.toggle('mv-reduced-motion', reduced()); if (typing && reduced()) finishLine(); });
 document.documentElement.classList.toggle('mv-reduced-motion', reduced());
 mountMap(); const initial = routeValue(); setHash(initial, true); render(initial);
