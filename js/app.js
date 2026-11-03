@@ -2,7 +2,7 @@ import { narrative, scripts, assets } from './data.js';
 import { readSave, writeSave } from './storage.js';
 import { Sound } from './audio.js';
 import { Music } from './music.js';
-import { createPixelLoader, prepareImages } from './loading.js';
+import { createPixelLoader, prepareImages } from './loading.js?v=20261104d';
 import { readingTime } from './dialogue-timing.js';
 
 const $ = id => document.getElementById(id);
