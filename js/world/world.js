@@ -3,6 +3,7 @@ import { places } from './place-data.js';
 import { npcs, npcsAt } from './npc-data.js?v=unified-scenes-20261102';
 import { hasMet, completeFirstMeeting } from './encounter-session.js';
 import { readSave } from '../storage.js';
+import { spriteTest, testSprites } from './sprite-test.js';
 
 const $ = id => document.getElementById(id);
 const app = $('world'), dialog = $('npc-dialog');
@@ -94,13 +95,15 @@ function mountNpcs(place) {
 function featureNpc(npc) {
   featuredNpc = npc;
   const button = $('featured-npc'), image = $('featured-art');
+  const sprite = spriteTest && testSprites[npc.id];
+  button.classList.toggle('mv-sprite-test', Boolean(sprite));
   button.setAttribute('aria-label', npc.name + ' · 이야기 나누기');
   $('featured-name').textContent = npc.name; $('featured-role').textContent = npc.role;
-  image.alt = npc.illustration.alt;
+  image.alt = sprite ? npc.name + ' 도트 테스트' : npc.illustration.alt;
   button.dataset.art = npc.scene?.src ? 'cutout' : 'original';
   button.style.setProperty('--character-scale', npc.scene?.scale || '1');
   if (npc.illustration.ready) {
-    loadImage(image, npc.scene?.src || npc.illustration.src, $('featured-fallback'));
+    loadImage(image, sprite || npc.scene?.src || npc.illustration.src, $('featured-fallback'));
     if (npc.scene?.src) image.onerror = () => {
       button.dataset.art = 'original';
       loadImage(image, npc.illustration.src, $('featured-fallback'));
