@@ -1,0 +1,34 @@
+[
+  {
+    "name": "edelin",
+    "width": 96,
+    "height": 96,
+    "bounds": [
+      29,
+      9,
+      68,
+      88
+    ],
+    "alphas": [
+      0,
+      255
+    ],
+    "colors": 23
+  },
+  {
+    "name": "rowen",
+    "width": 96,
+    "height": 96,
+    "bounds": [
+      25,
+      9,
+      64,
+      88
+    ],
+    "alphas": [
+      0,
+      255
+    ],
+    "colors": 21
+  }
+]

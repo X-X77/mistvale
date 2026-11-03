@@ -1,0 +1,5 @@
+/* Native 96px grid shown at integer scale. Only the opt-in two-NPC preview. */
+#featured-npc.mv-sprite-test .mv-featured-frame{height:384px;min-height:0;display:flex;align-items:flex-end;justify-content:center}
+#featured-npc.mv-sprite-test #featured-art{width:384px;height:384px;max-width:none;object-fit:contain;image-rendering:pixelated;image-rendering:crisp-edges;mask-image:none;-webkit-mask-image:none;filter:none;transform:none}
+#featured-npc.mv-sprite-test::before,#featured-npc.mv-sprite-test .mv-featured-frame::before{display:none}
+@media(max-width:700px){#featured-npc.mv-sprite-test .mv-featured-frame{height:288px;min-height:0!important}#featured-npc.mv-sprite-test #featured-art{width:288px;height:288px}#place-view.mv-talking #featured-npc.mv-sprite-test .mv-featured-frame{height:288px!important;min-height:0!important}}
