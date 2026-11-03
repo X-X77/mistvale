@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { villageMap } from '../js/world/map-data.js';
 import { places } from '../js/world/place-data.js';
+import { chibiResidents } from '../js/world/chibi-data.js';
+import { portraitAssets } from '../js/world/portrait-data.js';
 
 const root = new URL('../', import.meta.url);
 const raw = readFileSync(new URL('assets/npc/characters.json', root), 'utf8');
@@ -53,4 +55,27 @@ test('모든 장소에 최소 한 명 이상의 인물이 있다', () => {
 test('공개 데이터에 비밀 설정·성인 설정 표현이 없고 성별 호칭을 쓰지 않는다', () => {
   assert.doesNotMatch(JSON.stringify(pack.npc), /BDSM|클럽|자위|노출|관음|번식|성인|비설|지배|탑|주도형|인분|짝짓|구애|임신|산란/);
   for (const [id, n] of entries) for (const line of n.lines) assert.doesNotMatch(line, /{{user}}(군|양)|오빠|누나/, id);
+});
+
+test('치비(탐색용)와 대형 원화(대화용)가 NPC마다 따로 연결되어 있고 서로 겹치지 않는다', () => {
+  const chibiFiles = new Set(), portraitFiles = new Set();
+  for (const [id] of entries) {
+    const c = chibiResidents[id], p = portraitAssets[id];
+    assert.ok(c && p, id + ' 치비/원화 설정');
+    assert.ok(existsSync(new URL(c.src.replace('./', ''), root)), id + ' 치비 파일 없음');
+    assert.ok(c.ratio > 0.4 && c.ratio < 1.1, id + ' 비율');
+    assert.ok(c.height >= 30 && c.mobileHeight >= 24, id + ' 치비 크기가 너무 작음');
+    assert.ok(!c.src.includes('..') && c.src.includes(id), id + ' 다른 NPC 치비 경로');
+    assert.ok(p.src.includes('/' + id + '.'), id + ' 대화 원화가 다른 NPC 파일을 가리킴');
+    assert.ok(!chibiFiles.has(c.src) && !portraitFiles.has(p.src), id + ' 중복 경로');
+    chibiFiles.add(c.src); portraitFiles.add(p.src);
+  }
+});
+
+test('누끼 완성본이 투명 배경 WebP 로 23장 있다', () => {
+  for (const [id] of entries) {
+    const buf = readFileSync(new URL('assets/characters/chibis-matted/' + id + '.webp', root));
+    assert.equal(buf.subarray(0, 4).toString(), 'RIFF', id);
+    assert.equal(buf.subarray(8, 12).toString(), 'WEBP', id);
+  }
 });

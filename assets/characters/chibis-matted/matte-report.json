@@ -1,0 +1,162 @@
+{
+ "adela": {
+  "file": "adela.webp",
+  "width": 551,
+  "height": 900,
+  "sourceCutSides": []
+ },
+ "arachne": {
+  "file": "arachne.webp",
+  "width": 651,
+  "height": 900,
+  "sourceCutSides": [
+   "L",
+   "R"
+  ]
+ },
+ "bianca": {
+  "file": "bianca.webp",
+  "width": 506,
+  "height": 900,
+  "sourceCutSides": []
+ },
+ "cordelia": {
+  "file": "cordelia.webp",
+  "width": 581,
+  "height": 900,
+  "sourceCutSides": []
+ },
+ "edelin": {
+  "file": "edelin.webp",
+  "width": 641,
+  "height": 900,
+  "sourceCutSides": []
+ },
+ "edwin": {
+  "file": "edwin.webp",
+  "width": 526,
+  "height": 900,
+  "sourceCutSides": []
+ },
+ "felix": {
+  "file": "felix.webp",
+  "width": 632,
+  "height": 900,
+  "sourceCutSides": []
+ },
+ "isabel": {
+  "file": "isabel.webp",
+  "width": 675,
+  "height": 900,
+  "sourceCutSides": []
+ },
+ "kylen": {
+  "file": "kylen.webp",
+  "width": 584,
+  "height": 900,
+  "sourceCutSides": []
+ },
+ "lepion": {
+  "file": "lepion.webp",
+  "width": 645,
+  "height": 900,
+  "sourceCutSides": [
+   "L",
+   "R"
+  ]
+ },
+ "lillian": {
+  "file": "lillian.webp",
+  "width": 528,
+  "height": 900,
+  "sourceCutSides": []
+ },
+ "luciel": {
+  "file": "luciel.webp",
+  "width": 681,
+  "height": 900,
+  "sourceCutSides": []
+ },
+ "mariel": {
+  "file": "mariel.webp",
+  "width": 629,
+  "height": 900,
+  "sourceCutSides": []
+ },
+ "miel": {
+  "file": "miel.webp",
+  "width": 615,
+  "height": 900,
+  "sourceCutSides": []
+ },
+ "morel": {
+  "file": "morel.webp",
+  "width": 611,
+  "height": 900,
+  "sourceCutSides": [
+   "L",
+   "R",
+   "T",
+   "B"
+  ]
+ },
+ "nepia": {
+  "file": "nepia.webp",
+  "width": 695,
+  "height": 900,
+  "sourceCutSides": []
+ },
+ "neri": {
+  "file": "neri.webp",
+  "width": 751,
+  "height": 900,
+  "sourceCutSides": [
+   "L",
+   "R"
+  ]
+ },
+ "noah": {
+  "file": "noah.webp",
+  "width": 544,
+  "height": 900,
+  "sourceCutSides": []
+ },
+ "rowen": {
+  "file": "rowen.webp",
+  "width": 535,
+  "height": 900,
+  "sourceCutSides": []
+ },
+ "sarkan": {
+  "file": "sarkan.webp",
+  "width": 651,
+  "height": 900,
+  "sourceCutSides": []
+ },
+ "seira": {
+  "file": "seira.webp",
+  "width": 611,
+  "height": 900,
+  "sourceCutSides": [
+   "L",
+   "R"
+  ]
+ },
+ "serepina": {
+  "file": "serepina.webp",
+  "width": 618,
+  "height": 900,
+  "sourceCutSides": [
+   "L",
+   "R",
+   "T",
+   "B"
+  ]
+ },
+ "theo": {
+  "file": "theo.webp",
+  "width": 580,
+  "height": 900,
+  "sourceCutSides": []
+ }
+}
