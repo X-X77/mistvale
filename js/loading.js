@@ -33,6 +33,11 @@ function drawSoftShadow(ctx,x,y,rx,ry,opacity=.22){
  ctx.save();ctx.fillStyle=`rgba(9,25,19,${opacity})`;
  ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fill();ctx.restore();
 }
+// 농사 동작 효과는 스프라이트 안의 '손 끝'과 '물뿌리개 주둥이' 위치에서 시작해 캐릭터가 바라보는 방향(화면 왼쪽)의 밭으로 떨어진다.
+// 좌표는 스프라이트 이미지 비율(0~1)로 적어 두었으므로 그림 크기가 바뀌어도 맞는다.
+const ACTION_TIP={seed:{x:.405,y:.635},water:{x:.035,y:.535}};
+// 효과가 닿는 밭 자리(캐릭터 발 기준 x 오프셋, y 오프셋). y 가 클수록 화면 앞쪽이라 조금 더 크게 그린다.
+const PLANT_SPOTS=[{x:-96,y:-22},{x:-66,y:-12},{x:-38,y:-3}];
 function sceneFarm(ctx,imgs,t,reduce,w,h){
  const background=imgs.farm?.naturalWidth?imgs.farm:null;
  if(background)cover(ctx,background,w,h,reduce?1:1.018);
@@ -47,35 +52,50 @@ function sceneFarm(ctx,imgs,t,reduce,w,h){
  const image=imgs[state];
  const bounce=reduce?0:Math.sin(t/155)*3.5;
  const playerHeight=163;
- if(imgs.seedBag?.naturalWidth)drawItem(ctx,imgs.seedBag,440,baseY+2,42,.84);
- // A few seedlings appear only after the planting and watering segments.
- for(let n=0;n<3;n++){
-  let x=615+n*42, y=371+n*2;
-  const grow=smooth((phase-3600-n*110)/720);
-  if(grow>.005){drawSoftShadow(ctx,x,y,14,4,.20*grow);ctx.save();ctx.translate(x,y);ctx.scale(.25+grow*.36,.25+grow*.36);ctx.translate(-x,-y);drawItem(ctx,imgs.sprout,x,y+3,64,Math.min(1,grow*1.3));ctx.restore();}
- }
+ // 손/주둥이 위치(캔버스 좌표)
+ const tipOf=kind=>{
+  const im=imgs[kind];if(!im?.naturalWidth)return null;
+  const ww=playerHeight*im.naturalWidth/im.naturalHeight, tip=ACTION_TIP[kind];
+  return {x:playerX-ww/2+tip.x*ww, y:baseY+bounce-playerHeight+tip.y*playerHeight};
+ };
+ // 씨앗 주머니는 심는 자리의 반대편(오른쪽 뒤)에 둔다.
+ if(imgs.seedBag?.naturalWidth)drawItem(ctx,imgs.seedBag,playerX+88,baseY+2,42,.84);
+ // 심은 자리: 씨앗이 떨어진 곳 -> 물이 스며든 흔적 -> 새싹
+ const seeded=smooth((phase-250)/900);               // 씨앗 단계에서 흙 위 씨앗 자국이 생김
+ const wet=smooth((phase-2300)/700)*(1-smooth((phase-4500)/300));
+ PLANT_SPOTS.forEach((spot,n)=>{
+  const x=playerX+spot.x, y=baseY+spot.y;
+  const grow=smooth((phase-3500-n*110)/720);
+  if(seeded>.01&&grow<.4){
+   ctx.fillStyle=`rgba(236,200,120,${.9*seeded*(1-grow*2)})`;
+   ctx.fillRect(Math.round(x-5),Math.round(y-1),3,3);ctx.fillRect(Math.round(x+1),Math.round(y),3,3);ctx.fillRect(Math.round(x-1),Math.round(y+2),3,3);
+  }
+  if(wet>.01){ctx.save();ctx.fillStyle=`rgba(32,24,18,${.34*wet})`;ctx.beginPath();ctx.ellipse(x,y+1,22,6,0,0,Math.PI*2);ctx.fill();ctx.restore();}
+  if(grow>.005){const k=.25+grow*.36;drawSoftShadow(ctx,x,y,13*k+4,3.5,.2*grow);ctx.save();ctx.translate(x,y);ctx.scale(k,k);ctx.translate(-x,-y);drawItem(ctx,imgs.sprout,x,y+3,64,Math.min(1,grow*1.3));ctx.restore();}
+ });
  drawSoftShadow(ctx,playerX,baseY+2,43,10,.34);
  drawItem(ctx,image,playerX,baseY+bounce,playerHeight,1);
- // Additional tiny pixelated seeds / droplets fill in missing motion frames.
- if(!reduce && state==='seed'){
-  ctx.fillStyle='#e4bd70';
-  const local=phase;
-  for(let k=0;k<9;k++){
-   let u=((local+k*220)%1120)/1120;
-   let x=557+u*64+(k%3)*5,y=299+u*u*63+(k%2)*4;
-   ctx.fillRect(Math.round(x),Math.round(y),3,3);
+ // 효과는 손/주둥이에서 출발해 중력으로 휘어 떨어지며 밭 자리에 닿는다.
+ const spray=(kind,count,period,local,paint)=>{
+  const tip=tipOf(kind);if(!tip)return;
+  for(let k=0;k<count;k++){
+   const u=((local+k*(period/count))%period)/period, spot=PLANT_SPOTS[k%PLANT_SPOTS.length];
+   const lx=playerX+spot.x+((k*7)%11-5), ly=baseY+spot.y+((k*5)%5-2);
+   // 수평은 등속, 수직은 가속(포물선)
+   paint(tip.x+(lx-tip.x)*u, tip.y+(ly-tip.y)*u*u, u, k);
   }
+ };
+ if(!reduce&&state==='seed'){
+  ctx.fillStyle='#e8c675';
+  spray('seed',9,1050,phase,(x,y)=>ctx.fillRect(Math.round(x),Math.round(y),3,3));
  }
- if(!reduce && state==='water'){
-  ctx.fillStyle='#c2e8e0';
+ if(!reduce&&state==='water'){
   const local=phase-2100;
-  for(let k=0;k<11;k++){
-   let u=((local+k*130)%880)/880;
-   let x=570+u*60+(k%3)*3,y=296+u*u*70;
-   ctx.fillRect(Math.round(x),Math.round(y),2,5);
-  }
+  ctx.fillStyle='#cdeee8';
+  // 물줄기는 주둥이에서 곧게 이어지도록 촘촘한 점선으로 그린다.
+  spray('water',16,720,local,(x,y,u)=>ctx.fillRect(Math.round(x),Math.round(y),2,u>.6?4:3));
  }
- // Sparse drifting petal motifs on top of the scenery, without large UI clutter.
+// Sparse drifting petal motifs on top of the scenery, without large UI clutter.
  if(imgs.petal?.naturalWidth&&!reduce){
   for(let i=0;i<5;i++){
    const seed=i*1237+487;

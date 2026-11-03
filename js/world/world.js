@@ -72,7 +72,7 @@ function mountNpcs(place) {
     button.dataset.background = config?.background || 'original-preserved';
     button.setAttribute('aria-label', npc.name + ' · ' + npc.role + ' · 이야기 나누기');
     button.title = [npc.name, npc.spot, npc.appears].filter(Boolean).join(' · ');
-    for (const [key, value] of Object.entries({x:config?.x ?? 65, ground:config?.ground ?? 78, h:config?.height ?? 28, mx:config?.mobileX ?? 60, mg:config?.mobileGround ?? 65, mh:config?.mobileHeight ?? 24})) button.style.setProperty('--' + key, value);
+    for (const [key, value] of Object.entries({x:config?.x ?? 65, ground:config?.ground ?? 78, h:config?.height ?? 28, mx:config?.mobileX ?? 60, mg:config?.mobileGround ?? 65, mh:config?.mobileHeight ?? 24, r:config?.ratio ?? 0.7, foot:config?.foot ?? 3, sw:config?.shadow ?? 56})) button.style.setProperty('--' + key, value);
     const image = document.createElement('img');
     image.alt = ''; image.draggable = false; image.decoding = 'async';
     image.src = config?.src || npc.illustration.src;
