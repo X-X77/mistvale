@@ -1,9 +1,9 @@
 import { villageMap } from './map-data.js';
 import { places } from './place-data.js';
-import { npcs, npcsAt } from './npc-data.js?v=20261104f';
+import { npcs, npcsAt } from './npc-data.js?v=scene-polish-2';
 import { hasMet, completeFirstMeeting } from './encounter-session.js';
 import { readSave } from '../storage.js';
-import { chibiResidents } from './chibi-data.js?v=20261104f';
+import { chibiResidents } from './chibi-data.js?v=scene-polish-2';
 
 const $ = id => document.getElementById(id);
 const app = $('world'), dialog = $('npc-dialog');
@@ -69,7 +69,7 @@ function mountNpcs(place) {
     const config = npc.chibi;
     const button = document.createElement('button');
     button.className = 'mv-chibi'; button.dataset.npc = npc.id;
-    button.dataset.background = config?.background || 'original-preserved';
+    button.dataset.background = config?.background || (config?.src ? 'transparent' : 'original-preserved');
     button.setAttribute('aria-label', npc.name + ' · ' + npc.role + ' · 이야기 나누기');
     button.title = [npc.name, npc.spot, npc.appears].filter(Boolean).join(' · ');
     for (const [key, value] of Object.entries({x:config?.x ?? 65, ground:config?.ground ?? 78, h:config?.height ?? 28, mx:config?.mobileX ?? 60, mg:config?.mobileGround ?? 65, mh:config?.mobileHeight ?? 24, r:config?.ratio ?? 0.7, foot:config?.foot ?? 3, sw:config?.shadow ?? 56})) button.style.setProperty('--' + key, value);
