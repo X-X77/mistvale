@@ -11,11 +11,26 @@ export const PALS = {
 const memo = new Map();
 function cached(key, make) { let v = memo.get(key); if (!v) { v = make(); memo.set(key, v); } return v; }
 
+const props = new Image();
+props.src = new URL('../../assets/minigames/forest-props.png', import.meta.url).href;
+const propIndex = { tallgrass:0, bush:1, log:2, rock:3, leaves:4 };
+
 /* 숨을 곳 그림. size = 한 변 칸 수 기준(가로), variant 0~2 로 모양이 조금씩 다릅니다. */
 export function spotSprite(kind, variant, zoneId, size) {
-  return cached(`${kind}:${variant}:${zoneId}:${size}`, () => {
+  return cached(`${props.naturalWidth}:${kind}:${variant}:${zoneId}:${size}`, () => {
     const P = PALS[zoneId], w = Math.max(12, size), h = Math.round(w * (kind === 'tallgrass' ? 1.05 : kind === 'log' ? .55 : kind === 'leaves' ? .6 : .85));
     const p = new Pix(w + 2, h + 2), k = w / 22, R = i => hash(i * 17 + variant * 131 + w);
+    if (props.naturalWidth) {
+      p.g.save();
+      if (variant === 1) { p.g.translate(w + 2, 0); p.g.scale(-1, 1); }
+      p.g.drawImage(props, propIndex[kind] * 64, 0, 64, 64, 1, 1, w, h);
+      // More distant zones keep their original cool camouflage palette.
+      p.g.globalCompositeOperation = 'source-atop';
+      p.g.globalAlpha = { meadow:.06, thicket:.24, mist:.45 }[zoneId];
+      p.rect(0, 0, w + 2, h + 2, P.ground[0]);
+      p.g.restore();
+      return p;
+    }
     if (kind === 'tallgrass') {
       p.ellipse(w / 2 + 1, h - 1, w * .42, 2, P.g0);
       for (let i = 0; i < 11; i++) { const x = 3 + (w - 5) * (i / 10), ht = h * (.45 + R(i) * .5), lean = (R(i + 40) - .5) * 4, c = i % 3 === 0 ? P.g2 : i % 3 === 1 ? P.g1 : P.g0; p.line(x, h - 1, x + lean, h - ht, c); p.line(x + 1, h - 1, x + 1 + lean, h - ht, c); p.px(x + lean, h - ht - 1, P.g3); }

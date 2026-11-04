@@ -1,5 +1,6 @@
 // 채광 화면(픽셀 캔버스): 동굴 안 광석 하나를 가운데 두고, 약점의 위치와 빛나는 순간을 맞춰 곡괭이로 내리칩니다.
 // 규칙(약점·맥박·등급·피해)은 mining-engine.js 가 그대로 담당하고, 이 파일은 입력과 그림(바위·균열·곡괭이·파편)을 맡습니다.
+import { scenePainter } from './scene-art.js';
 import { MINING_SPOTS, ORES, TIERS, josa } from './items.js?v=mg4';
 import { equipmentBonus } from './goods.js?v=mg4';
 import { MineSession } from './mining-engine.js?v=mg4';
@@ -15,6 +16,7 @@ const chip = (label, tone = '') => `<span class="demo-chip ${tone}">${label}</sp
 const key = label => `<span class="demo-key">${label}</span>`;
 
 export function createMining({ host, placeId, progress, sfx, reduced }) {
+  const paintScene = scenePainter('mine', 0);
   const spot = MINING_SPOTS[placeId], rng = createRng();
   const stage = host.stage; stage.classList.add('ms-stage');
   stage.innerHTML = `<div class="ms-select"></div>
@@ -210,6 +212,11 @@ export function createMining({ host, placeId, progress, sfx, reduced }) {
     // 손잡이
     p.line(ex, ey, gx, gy, INK); p.line(ex + 1, ey, gx + 1, gy, INK); p.line(ex - 1, ey, gx - 1, gy, INK); p.line(ex, ey + 1, gx, gy + 1, INK);
     p.line(ex, ey, gx, gy, '#a77746'); p.line(ex + 1, ey, gx + 1, gy, '#d19a60'); p.rect(Math.round(gx) - 1, Math.round(gy) - 1, 3, 2, '#6a4527');
+    for (const grip of [21, 24, 27, 30]) {
+      const x = ex + dx * grip, y = ey + dy * grip;
+      p.line(x - pxv, y - pyv, x + pxv, y + pyv, '#623e31');
+      p.px(x + pxv, y + pyv, '#efa86a');
+    }
     // 헤드(양 끝이 휘어 내려옴)
     const pts = [[-15, 4], [-10, 1], [-5, -1], [0, -1.5], [5, -1], [10, 1], [15, 4]].map(([a, b]) => [ex + pxv * a - dx * b, ey + pyv * a - dy * b]);
     for (let i = 0; i < pts.length - 1; i++) { for (const [ox, oy] of [[-1, 0], [1, 0], [0, -1], [0, 1], [1, 1], [-1, -1]]) p.line(pts[i][0] + ox, pts[i][1] + oy, pts[i + 1][0] + ox, pts[i + 1][1] + oy, INK); }
@@ -227,7 +234,7 @@ export function createMining({ host, placeId, progress, sfx, reduced }) {
     if (!run || playEl.hidden || !bg) return;
     g.setTransform(1, 0, 0, 1, 0, 0); g.imageSmoothingEnabled = false; g.clearRect(0, 0, VW, VH);
     const sh = S.shake > 0 && !reduced ? S.shake : 0; canvas.style.transform = sh ? `translate(${Math.round((Math.random() - .5) * sh) * PX}px,${Math.round((Math.random() - .5) * sh) * PX}px)` : '';
-    g.drawImage(bg.cv, 0, 0);
+    paintScene(g, bg.cv);
     const m = run.m, ending = run.phase === 'ending' || run.phase === 'done', cracked = m.over === 'cracked';
     // 바닥 그림자
     const p = P(); g.globalAlpha = .35; p.ellipse(X0 + N / 2, Y0 + N + 1, N * .42, 4, '#000'); g.globalAlpha = 1;
