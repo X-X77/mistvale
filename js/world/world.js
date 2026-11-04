@@ -1,9 +1,9 @@
 import { villageMap } from './map-data.js';
 import { places } from './place-data.js';
-import { npcs, npcsAt } from './npc-data.js?v=20261104d';
+import { npcs, npcsAt } from './npc-data.js?v=20261104f';
 import { hasMet, completeFirstMeeting } from './encounter-session.js';
 import { readSave } from '../storage.js';
-import { chibiResidents } from './chibi-data.js?v=20261104d';
+import { chibiResidents } from './chibi-data.js?v=20261104f';
 
 const $ = id => document.getElementById(id);
 const app = $('world'), dialog = $('npc-dialog');

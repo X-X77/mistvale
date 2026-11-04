@@ -1,5 +1,5 @@
-import { chibiResidents } from './chibi-data.js?v=20261104d';
-import { portraitAssets } from './portrait-data.js';
+import { chibiResidents } from './chibi-data.js?v=20261104f';
+import { portraitAssets } from './portrait-data.js?v=20261104f';
 import { sceneArt } from './scene-art.js';
 import { firstMeetings } from './first-meetings.js';
 import { npcPresentation } from './npc-presentation.js';
