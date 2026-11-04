@@ -1,12 +1,12 @@
 // 미니게임 공통 껍데기: 전체 화면 오버레이, 튜토리얼, 결과 카드, 소지품 패널, 전환.
-import { describeItem, TIERS } from './items.js?v=sh2';
-import { GROUPS, groupOf, isProtected } from './goods.js?v=sh2';
-import { SHOPS, GIFT } from './shop-data.js?v=sh2';
-import { sellPrice } from './shop-engine.js?v=sh2';
-import { GIFT_ICON } from './gift-ui.js?v=sh2';
-import { effectText } from './shop-ui.js?v=sh2';
-import { levelOf } from './progress.js?v=sh2';
-import { iconImg, uiIcon } from './art.js?v=sh2';
+import { describeItem, TIERS } from './items.js?v=mg4';
+import { GROUPS, groupOf, isProtected } from './goods.js?v=mg4';
+import { SHOPS, GIFT } from './shop-data.js?v=mg4';
+import { sellPrice } from './shop-engine.js?v=mg4';
+import { GIFT_ICON } from './gift-ui.js?v=mg4';
+import { effectText } from './shop-ui.js?v=mg4';
+import { levelOf } from './progress.js?v=mg4';
+import { iconImg, uiIcon } from './art.js?v=mg4';
 
 /* 소지품 아이콘: 픽셀 그림(art.js) */
 export function itemIcon(info, size = 28) { return iconImg(info, size); }
@@ -42,8 +42,8 @@ export class MinigameHost {
   }
   #syncSfx() { this.sfxBtn.querySelector('img').src = uiIcon(this.sfx.enabled ? 'sound' : 'mute'); this.sfxBtn.setAttribute('aria-pressed', String(this.sfx.enabled)); this.sfxBtn.title = this.sfx.enabled ? '효과음 끄기' : '효과음 켜기'; }
   refreshSkill() {
-    const skill = { fishing:'fishing', cooking:'cooking', mining:'mining' }[this.id]; const level = levelOf(this.progress.state.skills[skill] || 0);
-    const names = { fishing:'낚시', cooking:'요리', mining:'채광' };
+    const skill = { fishing:'fishing', cooking:'cooking', mining:'mining', gathering:'gathering' }[this.id]; const level = levelOf(this.progress.state.skills[skill] || 0);
+    const names = { fishing:'낚시', cooking:'요리', mining:'채광', gathering:'채집' };
     this.skillEl.textContent = `Lv.${level.level}`; this.skillEl.title = `${names[skill]} 숙련도`;
   }
   say(message) { this.live.textContent = message; }
@@ -106,7 +106,7 @@ function packDetail(id, n) {
 export function renderPack(progress, selectedId = '') {
   const state = progress.state, byGroup = {};
   for (const [id, n] of Object.entries(state.items)) { const info = describeItem(id); (byGroup[groupOf(info.kind)] ||= []).push({ info, n, id }); }
-  const skillNames = { fishing:'낚시', cooking:'요리', mining:'채광' };
+  const skillNames = { fishing:'낚시', gathering:'채집', cooking:'요리', mining:'채광' };
   const skills = Object.keys(skillNames).map(key => { const lv = levelOf(state.skills[key]); return `<li><b>${skillNames[key]}</b><span>Lv.${lv.level}</span><small>${lv.max ? 'MAX' : lv.xp + ' / ' + lv.next + ' XP'}</small></li>`; }).join('');
   let html = `<div class="pack-gold"><span>코인</span><b>${state.coins.toLocaleString('ko-KR')} 코인</b></div><p class="pack-note pack-own">이 사이트의 미니게임용 코인이에요. 케이브덕 본편의 소지금(G)과는 별개예요.</p><ul class="pack-skills">${skills}</ul>`;
   const selected = selectedId && state.items[selectedId] > 0 ? selectedId : '';

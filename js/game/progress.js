@@ -2,7 +2,7 @@
 // 코인은 이 사이트의 미니게임용 재화 하나뿐이며, 케이브덕 본편의 소지금(G)과는 별개입니다.
 // 저장이 막혀 있으면 이 탭 메모리에서만 유지되고, 화면에 그 사실을 알립니다(persistent === false).
 const KEY = 'mistvale.progress.v1';
-export const SKILLS = ['fishing', 'cooking', 'mining'];
+export const SKILLS = ['fishing', 'cooking', 'mining', 'gathering'];
 export const START_COINS = 100;          // 처음 가진 코인(오프닝의 '소지금 500G'는 케이브덕 본편 이야기이고 이것과 별개입니다)
 export const GIFT_UNLOCK = 5000;         // 누적 획득 코인이 이만큼이 되면 '엑스의 비밀 선물'이 열립니다
 const LEVEL_XP = [0, 30, 80, 150, 250, 400, 600]; // 레벨 n 에 필요한 누적 경험치(레벨 1~7)
@@ -14,7 +14,7 @@ export function levelOf(xp) {
   return { level, xp, base: LEVEL_XP[level - 1], next, max: next === null };
 }
 export function freshState() {
-  return { v:1, coins:START_COINS, earned:0, gift:{ unlocked:false, seen:false, bought:false }, items:{}, skills:{ fishing:0, cooking:0, mining:0 }, caught:{}, log:[] };
+  return { v:1, coins:START_COINS, earned:0, gift:{ unlocked:false, seen:false, bought:false }, items:{}, skills:{ fishing:0, cooking:0, mining:0, gathering:0 }, caught:{}, log:[] };
 }
 export function normalizeState(raw) {
   const state = freshState();

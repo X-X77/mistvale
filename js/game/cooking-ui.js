@@ -1,11 +1,11 @@
 // 요리 화면(픽셀 캔버스): 주방 한 칸. 썰기(도마·식칼) / 젓기(국자·냄비) / 굽기(프라이팬·불 손잡이) / 졸이기(냄비)가 서로 다른 손맛을 갖도록
 // 각각 다른 도구와 다른 입력 방식으로 그립니다. 점수·품질·재료 소비 규칙은 cooking-engine.js 와 items.js 가 그대로 담당합니다.
-import { RECIPES, INGREDIENTS, FISH, describeItem, qualityOf } from './items.js?v=sh2';
-import { buildSteps, dishScore, JUDGE } from './cooking-engine.js?v=sh2';
-import { itemIcon } from './host.js?v=sh2';
-import { Pix, pixelSurface, clamp, lerp, mix, light, dark, INK, hash } from './pixel.js?v=sh2';
-import { uiIcon } from './art.js?v=sh2';
-import { knifeSprite, ingredientStrip, panFish, dishPlate, burntPlate, potSprite, panSprite, BIT_COLORS } from './cook-art.js?v=sh2';
+import { RECIPES, INGREDIENTS, FISH, describeItem, qualityOf } from './items.js?v=mg4';
+import { buildSteps, dishScore, JUDGE } from './cooking-engine.js?v=mg4';
+import { itemIcon } from './host.js?v=mg4';
+import { Pix, pixelSurface, clamp, lerp, mix, light, dark, INK, hash } from './pixel.js?v=mg4';
+import { uiIcon } from './art.js?v=mg4';
+import { knifeSprite, ingredientStrip, panFish, dishPlate, burntPlate, potSprite, panSprite, BIT_COLORS } from './cook-art.js?v=mg4';
 
 const TAU = Math.PI * 2;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -230,10 +230,12 @@ export function createCooking({ host, progress, sfx, reduced }) {
     } else if (step.id === 'stir') {
       step.step(dt); V.tt = step.t; V.swirl += dt * (1 + V.kick); V.kick = Math.max(0, V.kick - dt * 2.2); V.pour += dt;
       const beatNo = Math.floor(step.t / step.period); if (beatNo !== V.lastBeat && beatNo >= 0) { V.lastBeat = beatNo; sfx.play('stir', .2); }
+      V.bub = (V.bub || 0) - dt; if (V.bub <= 0) { V.bub = .22 + Math.random() * .25; sfx.play('bubble', Math.random()); }   // 냄비가 보글보글
       for (const ev of step.events) if (ev.type === 'miss') { popup('놓쳤어요', 'bad'); sfx.play('bad'); }
       if (step.done && cooking.phase === 'play') endStep();
     } else if (step.id === 'finish') {
       step.step(dt); V.sizzle -= dt; if (V.sizzle <= 0) { V.sizzle = .4; sfx.play('sizzle', .3 + step.sheen * .4); }
+      V.bub = (V.bub || 0) - dt; if (V.bub <= 0) { V.bub = Math.max(.1, .38 - .22 * Math.min(1, step.sheen)); sfx.play('bubble', Math.min(1, step.sheen)); }   // 졸수록 거품이 빨라집니다
       for (const ev of step.events) if (ev.burnt) { popup('눌어붙었어요', 'bad'); sfx.play('bad'); S.shake = 4; V.lift = 0; }
       if (step.done && cooking.phase === 'play') endStep();
     }

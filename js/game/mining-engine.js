@@ -2,11 +2,11 @@
 // 바위 면 위에서 약점(균열 위의 빛나는 점)을 찾아, 알맞은 위치(정확도)와 알맞은 순간(맥박)에 곡괭이를 내리칩니다.
 //   좌표: 바위 면 0~1 (가운데 0.5, 0.5).  약점은 맥박(pulse)에 맞춰 밝아졌다 어두워지고, 희귀·특수 광석에서는 균열을 따라 움직입니다.
 //   등급: perfect(약점 한가운데 + 가장 밝을 때) / good / weak(약점은 맞췄지만 어설픔) / miss(바위만 맞힘). 모든 스윙은 1회 소모입니다.
-import { createRng } from './rng.js?v=sh2';
+import { createRng } from './rng.js?v=mg4';
 
 export const DAMAGE = {
   common:  { perfect:42, good:30, weak:14, miss:4 },
-  rare:    { perfect:46, good:28, weak:10, miss:3 },
+  rare:    { perfect:46, good:26, weak:7,  miss:3 },
   special: { perfect:42, good:24, weak:6,  miss:0 },
 };
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -21,7 +21,8 @@ export class MineSession {
     // 약점 후보 위치(균열)
     this.nodes = [];
     for (let i = 0; i < this.cfg.nodes; i++) {
-      const ang = rng.range(0, Math.PI * 2) + i * (Math.PI * 2 / this.cfg.nodes), rad = rng.range(.08, .24);
+      const ang = rng.range(0, Math.PI * 2) + i * (Math.PI * 2 / this.cfg.nodes), rad = this.cfg.weak.moves ? rng.range(.08, .24) : rng.range(.17, .27);   // 가만히 있는 약점도 한가운데는 아니라서, 가운데만 두드려서는 깨지지 않습니다
+      
       const cx = .5 + Math.cos(ang) * rad, cy = .5 + Math.sin(ang) * rad * .85;
       const dir = rng.range(0, Math.PI), len = this.cfg.weak.moves ? (ore.tier === 'special' ? .2 : .17) : 0;
       this.nodes.push({ ax:cx - Math.cos(dir) * len / 2, ay:cy - Math.sin(dir) * len / 2, bx:cx + Math.cos(dir) * len / 2, by:cy + Math.sin(dir) * len / 2, phase:rng.range(0, 6.28), cx, cy });

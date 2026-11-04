@@ -1,12 +1,12 @@
 // 채광 화면(픽셀 캔버스): 동굴 안 광석 하나를 가운데 두고, 약점의 위치와 빛나는 순간을 맞춰 곡괭이로 내리칩니다.
 // 규칙(약점·맥박·등급·피해)은 mining-engine.js 가 그대로 담당하고, 이 파일은 입력과 그림(바위·균열·곡괭이·파편)을 맡습니다.
-import { MINING_SPOTS, ORES, TIERS, josa } from './items.js?v=sh2';
-import { equipmentBonus } from './goods.js?v=sh2';
-import { MineSession } from './mining-engine.js?v=sh2';
-import { createRng } from './rng.js?v=sh2';
-import { itemIcon } from './host.js?v=sh2';
-import { Pix, pixelSurface, blit, clamp, lerp, mix, light, dark, INK, hash } from './pixel.js?v=sh2';
-import { rockSprite, rockShards, iconSprite, uiIcon } from './art.js?v=sh2';
+import { MINING_SPOTS, ORES, TIERS, josa } from './items.js?v=mg4';
+import { equipmentBonus } from './goods.js?v=mg4';
+import { MineSession } from './mining-engine.js?v=mg4';
+import { createRng } from './rng.js?v=mg4';
+import { itemIcon } from './host.js?v=mg4';
+import { Pix, pixelSurface, blit, clamp, lerp, mix, light, dark, INK, hash } from './pixel.js?v=mg4';
+import { rockSprite, rockShards, iconSprite, uiIcon } from './art.js?v=mg4';
 
 const TAU = Math.PI * 2;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -125,7 +125,7 @@ export function createMining({ host, placeId, progress, sfx, reduced }) {
     if (!run || run.phase !== 'play' || S.freeze > 0) return;
     S.swing = .001; const m = run.m, hit = m.strike(S.rx, S.ry); if (!hit) return;
     const v = toV(hit.x, hit.y), cfg = { perfect:{ shake:3, n:20, freeze:.09, flash:.35 }, good:{ shake:2, n:12, freeze:.05, flash:.12 }, weak:{ shake:1.4, n:7, freeze:.02, flash:0 }, miss:{ shake:2, n:4, freeze:0, flash:0 } }[hit.grade];
-    sfx.play('hit-' + hit.grade); if (hit.grade === 'perfect' || hit.grade === 'good') setTimeout(() => sfx.play('crack'), 60);
+    sfx.play('hit-' + hit.grade); if (hit.grade === 'perfect' || hit.grade === 'good') { setTimeout(() => sfx.play('crack'), 60); setTimeout(() => sfx.play('rubble'), 220); }   // 금 가는 소리 → 파편 떨어지는 소리
     if (!reduced) { S.shake = cfg.shake; S.flash = cfg.flash; S.freeze = cfg.freeze; } S.squash = .16; S.grade = hit.grade; if (hit.grade === 'miss') S.bounce = .3;
     const tone = hit.grade === 'miss' ? ['#7a8580', '#9aa59f', '#5a6560'] : [run.ore.color, run.ore.glow, light(run.ore.color, .4), '#cfd8d4'];
     chips(v.x, v.y, cfg.n, tone, hit.grade === 'perfect' ? 78 : 58); dust(v.x, v.y + 2, hit.grade === 'miss' ? 4 : 2);
@@ -142,7 +142,7 @@ export function createMining({ host, placeId, progress, sfx, reduced }) {
     S.shards = pcs.map((q, i) => { const a = Math.atan2(q.cy - N / 2, q.cx - N / 2) + rnd(-.3, .3), v = rnd(40, 90); return { pix:q.pix, cx:q.cx, cy:q.cy, x:X0 + q.cx, y:Y0 + q.cy, vx:Math.cos(a) * v, vy:Math.sin(a) * v - 70, rot:0, vr:rnd(-5, 5), life:1.2, max:1.2 }; });
     const spr = iconSprite({ id:run.ore.id, kind:'ore', color:run.ore.color }).cv;
     S.pops = Array.from({ length:n }, (_, i) => ({ spr, x:cx, y:cy, vx:(i - (n - 1) / 2) * 26 + rnd(-6, 6), vy:-rnd(90, 130), floor:Y0 + N + 6 + (i % 2) * 5, t:0, land:0, delay:.18 + i * .09 }));
-    dust(cx, cy, 8); sparks(cx, cy, 24, 80); chips(cx, cy, 22, [run.ore.color, run.ore.glow, light(run.ore.color, .4)], 90);
+    sfx.play('rubble'); setTimeout(() => sfx.play('rubble'), 260); dust(cx, cy, 8); sparks(cx, cy, 24, 80); chips(cx, cy, 22, [run.ore.color, run.ore.glow, light(run.ore.color, .4)], 90);
   }
 
   function finish() {
