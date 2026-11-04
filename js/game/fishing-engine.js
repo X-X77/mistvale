@@ -8,7 +8,7 @@
 //    - 놓으면 장력은 내려가지만 물고기가 멀어지고, 너무 오래 풀어 두면 바늘이 빠집니다(loose).
 //    - 모든 '돌진'은 신호(telegraph)가 먼저 나옵니다. 장력이 갑자기 터지는 일은 없습니다.
 //    - 좌우(lean)로 물고기를 중앙에 붙잡아 두어야 합니다. 갈대·바위 쪽으로 몰리면 줄이 쓸려 장력이 오르고 물고기가 힘을 되찾습니다.
-import { createRng } from './rng.js?v=px2';
+import { createRng } from './rng.js?v=sh1';
 
 export const TUNING = {
   dangerT: .92, snapStrain: .2, strainRecover: .6,
@@ -25,7 +25,8 @@ export const TUNING = {
 /* ---------- 입질 ---------- */
 export class BiteSession {
   // depth: 0(가까움)~1(멀리). fishPool: 이 장소의 FISH 정의 목록(일반→특수 순).
-  constructor(fishPool, depth, rng = createRng()) {
+  // windowMul: 낚싯대 장비가 늘려 주는 챔질 가능 시간 배율(goods.js 의 equipmentBonus)
+  constructor(fishPool, depth, rng = createRng(), windowMul = 1) {
     this.rng = rng; this.depth = depth;
     this.fish = BiteSession.pickFish(fishPool, depth, rng);
     const bite = this.fish.bite;
@@ -36,7 +37,7 @@ export class BiteSession {
     const n = rng.int(bite.nibbles[0], bite.nibbles[1]);
     for (let i = 0; i < n; i++) this.nibbles.push(wait * (.2 + .7 * (i + rng()) / Math.max(1, n)));
     this.nibbles.sort((a, b) => a - b);
-    this.window = bite.window; this.lastNibble = -9; this.nibbleCount = 0;
+    this.window = bite.window * windowMul; this.lastNibble = -9; this.nibbleCount = 0;
   }
   static weights(depth) {
     // [일반1, 일반2, 희귀, 특수] — 깊을수록 희귀·특수 비중이 커집니다.

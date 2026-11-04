@@ -1,10 +1,11 @@
 // 낚시 화면(픽셀 캔버스): 위에서 내려다본 물가. 찌·물보라·줄의 휘어짐·낚싯대의 휘어짐·물고기의 몸짓으로 상태를 보여 줍니다.
 // 규칙(장력·체력·저항 패턴)은 fishing-engine.js 가 그대로 담당하고, 이 파일은 입력과 그림만 맡습니다.
-import { FISH, FISHING_SPOTS, TIERS, josa } from './items.js?v=px2';
-import { BiteSession, Fight, TUNING, rollSize } from './fishing-engine.js?v=px2';
-import { createRng } from './rng.js?v=px2';
-import { Pix, pixelSurface, blit, text, clamp, lerp, mix, light, dark, INK, hash } from './pixel.js?v=px2';
-import { fishSprite, uiIcon, iconImg } from './art.js?v=px2';
+import { FISH, FISHING_SPOTS, TIERS, josa } from './items.js?v=sh1';
+import { equipmentBonus } from './goods.js?v=sh1';
+import { BiteSession, Fight, TUNING, rollSize } from './fishing-engine.js?v=sh1';
+import { createRng } from './rng.js?v=sh1';
+import { Pix, pixelSurface, blit, text, clamp, lerp, mix, light, dark, INK, hash } from './pixel.js?v=sh1';
+import { fishSprite, uiIcon, iconImg } from './art.js?v=sh1';
 
 const TAU = Math.PI * 2;
 
@@ -65,7 +66,7 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
     const minY = waterTop() + 40, maxY = shoreY() - 70;
     const ty = clamp(y, minY, maxY), tx = clamp(x, W / 2 - halfW() * .78, W / 2 + halfW() * .78);
     S.floatX = tx; S.floatY = ty; S.from = { x:W / 2, y:shoreY() - 36 }; S.castT = 0; S.phase = 'cast'; stage.dataset.phase = 'cast';
-    S.bite = new BiteSession(pool, yToDepth(ty), rng); S.fish = S.bite.fish; setHint(''); sfx.play('cast');
+    S.bite = new BiteSession(pool, yToDepth(ty), rng, equipmentBonus(progress.state.items).biteWindow); S.fish = S.bite.fish; setHint(''); sfx.play('cast');
   }
   function afterCast() {
     S.phase = 'wait'; stage.dataset.phase = 'wait'; ring(S.floatX, S.floatY, '#ffffff', 40, 1.1); sfx.play('splash');

@@ -40,17 +40,35 @@ export class Progress {
     catch { this.persistent = false; }
     for (const listener of this.listeners) listener(this.state);
   }
+  // 같은 브라우저의 다른 탭이 먼저 바꾼 값을 다시 읽어 옵니다(거래 직전에 불러서, 오래된 값으로 거래해 복제되는 일을 막습니다).
+  refresh() {
+    if (!this.storage) return;
+    try { const text = this.storage.getItem(KEY); if (text) { this.state = normalizeState(JSON.parse(text)); this.persistent = true; } } catch { /* 읽을 수 없으면 지금 값을 씁니다 */ }
+  }
+  // 거래(골드 + 여러 소지품)를 한 번에 처리합니다. 하나라도 어긋나면 아무것도 바꾸지 않고 false 를 돌려줍니다.
+  //   change: { gold: ±정수, items: { id: ±정수 } }   — 결과가 음수이거나 골드 상한(maxGold)을 넘으면 거절
+  transact(change, { maxGold = Infinity } = {}) {
+    this.refresh();
+    const gold = Number.isInteger(change.gold || 0) ? (change.gold || 0) : NaN, items = change.items || {};
+    if (!Number.isFinite(gold) || this.state.gold + gold < 0 || this.state.gold + gold > maxGold) return false;
+    for (const [id, delta] of Object.entries(items)) if (!Number.isInteger(delta) || this.count(id) + delta < 0) return false;
+    this.state.gold += gold;
+    for (const [id, delta] of Object.entries(items)) { const n = this.count(id) + delta; if (n > 0) this.state.items[id] = n; else delete this.state.items[id]; }
+    this.#write(); return true;
+  }
   subscribe(listener) { this.listeners.add(listener); return () => this.listeners.delete(listener); }
   count(id) { return this.state.items[id] || 0; }
   has(need) { return Object.entries(need).every(([id, n]) => this.count(id) >= n); }
-  add(id, n = 1) { if (n > 0) { this.state.items[id] = this.count(id) + n; this.#write(); } }
+  add(id, n = 1) { if (n > 0) { this.refresh(); this.state.items[id] = this.count(id) + n; this.#write(); } }
   remove(need) {
+    this.refresh();
     if (!this.has(need)) return false;
     for (const [id, n] of Object.entries(need)) { this.state.items[id] -= n; if (this.state.items[id] <= 0) delete this.state.items[id]; }
     this.#write(); return true;
   }
   addXp(skill, amount) {
     if (!SKILLS.includes(skill)) return { before:null, after:null, leveled:false };
+    this.refresh();
     const before = levelOf(this.state.skills[skill]);
     this.state.skills[skill] += Math.max(0, Math.floor(amount));
     const after = levelOf(this.state.skills[skill]); this.#write();

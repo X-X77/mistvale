@@ -63,6 +63,10 @@ export class Sfx {
       case 'good': this.tone({ f:700, dur:.1, type:'triangle', vol:.09 }); break;
       case 'bad': this.tone({ f:200, f2:140, dur:.2, type:'sawtooth', vol:.08 }); break;
       case 'bell': this.tone({ f:1568, dur:.5, type:'sine', vol:.1 }); this.tone({ f:2093, dur:.4, type:'sine', vol:.05, at:.01 }); break;
+      // 상점
+      case 'coin': this.tone({ f:1319, dur:.09, type:'square', vol:.05 }); this.tone({ f:1976, dur:.22, type:'square', vol:.05, at:.07 }); break;
+      case 'buy': this.tone({ f:520, f2:780, dur:.1, type:'triangle', vol:.1 }); this.tone({ f:1175, dur:.18, type:'triangle', vol:.08, at:.09 }); this.tone({ f:1568, dur:.22, type:'sine', vol:.05, at:.16 }); break;
+      case 'deny': this.tone({ f:240, f2:170, dur:.16, type:'triangle', vol:.09 }); break;
       // 채광
       case 'hit-perfect': this.burst({ dur:.12, freq:2400, type:'highpass', vol:.3 }); this.tone({ f:1320, f2:880, dur:.35, type:'triangle', vol:.16 }); this.tone({ f:90, f2:50, dur:.25, type:'sine', vol:.3 }); break;
       case 'hit-good': this.burst({ dur:.1, freq:1800, type:'highpass', vol:.2 }); this.tone({ f:880, f2:640, dur:.22, type:'triangle', vol:.12 }); this.tone({ f:100, f2:55, dur:.2, type:'sine', vol:.24 }); break;

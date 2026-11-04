@@ -1,6 +1,7 @@
 // 미니게임용 픽셀 그림 만들기: 물고기·광석 바위·소지품 아이콘을 코드로 그립니다(별도 이미지 파일 없음).
 // 그림은 한 번 만들어 두고(캐시) 재사용합니다. 윤곽선은 모두 같은 어두운 숲색입니다.
-import { Pix, INK, mix, light, dark, clamp, hash, PAL } from './pixel.js?v=px2';
+import { Pix, INK, mix, light, dark, clamp, hash, PAL } from './pixel.js?v=sh1';
+import { goodsIconDraw } from './goods-art.js?v=sh1';
 
 const cache = new Map();
 const memo = (key, make) => { if (!cache.has(key)) cache.set(key, make()); return cache.get(key); };
@@ -175,6 +176,7 @@ export function iconSprite(info) {
   else if (ROCK_KIND[info.id]) p = iconCanvas(oreIcon(ROCK_KIND[info.id]));
   else if (info.kind === 'dish') { const [, recipe, quality] = info.id.split(':'); p = iconCanvas(dishIcon(recipe, quality)); }
   else if (info.kind === 'junk') p = iconCanvas(burntIcon);
+  else if (goodsIconDraw(info)) p = iconCanvas(goodsIconDraw(info));
   else p = iconCanvas(pp => { pp.ellipse(8, 9, 5, 4, info.color || '#999'); });
   cache.set(key, p); return p;
 }
@@ -199,6 +201,10 @@ export function uiIcon(name, color = '#f7efd6') {
   else if (name === 'pan') { p.ellipse(5, 7, 5, 3, '#4a5256'); p.ellipse(5, 6, 4, 2, '#7c8a90'); p.line(9, 6, 12, 3, '#d19a60'); p.line(9, 7, 12, 4, '#a77746'); p.px(3, 2, '#f7efd6'); p.px(5, 1, '#f7efd6'); p.px(7, 2, '#f7efd6'); }
   else if (name === 'pick') { p.line(3, 11, 9, 5, '#d19a60'); p.line(4, 11, 10, 5, '#a77746'); p.line(3, 5, 6, 3, '#c5d0d2'); p.line(6, 3, 10, 3, '#e6eef0'); p.line(10, 3, 12, 6, '#c5d0d2'); p.line(4, 5, 7, 4, '#7c8e92'); }
   else if (name === 'leaf') { p.ellipse(6, 6, 4, 3, '#78b86a'); p.line(2, 10, 10, 3, '#3f7a4e'); p.px(4, 5, '#b6e29a'); p.px(6, 4, '#b6e29a'); p.px(2, 11, '#3f7a4e'); }
+  else if (name === 'coin') { p.disc(6, 6, 5, '#c9a24a'); p.disc(6, 6, 4, '#f0cf5a'); p.disc(6, 6, 2, '#c9a24a'); p.rect(5, 4, 2, 5, '#ffe9a0'); p.px(3, 3, '#fff6c8'); p.px(4, 2, '#fff6c8'); p.outline(INK); }
+  else if (name === 'plus') { p.rect(5, 2, 3, 9, c); p.rect(2, 5, 9, 3, c); }
+  else if (name === 'minus') { p.rect(2, 5, 9, 3, c); }
+  else if (name === 'spark') { p.px(6, 1, c); p.rect(6, 2, 1, 3, c); p.px(6, 11, c); p.rect(6, 8, 1, 3, c); p.px(1, 6, c); p.rect(2, 6, 3, 1, c); p.px(11, 6, c); p.rect(8, 6, 3, 1, c); p.rect(5, 5, 3, 3, '#ffffff'); }
   const url = p.cv.toDataURL(); uiCache.set(key, url); return url;
 }
 

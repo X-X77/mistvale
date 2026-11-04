@@ -1,17 +1,19 @@
 // 미니게임 시작/종료: 화면을 덮고 → 오버레이를 올리고 → 걷어내는 전환. 장소 화면(world.html)에서 호출합니다.
-import { Progress } from './progress.js?v=px2';
-import { Sfx } from './sfx.js?v=px2';
-import { MinigameHost } from './host.js?v=px2';
+import { Progress } from './progress.js?v=sh1';
+import { Sfx } from './sfx.js?v=sh1';
+import { MinigameHost } from './host.js?v=sh1';
 
 export const progress = new Progress();
 const sfx = new Sfx();
 let active = null;
+/* 상점 화면도 같은 효과음·같은 켜기/끄기 설정을 씁니다 */
+export function shopSfx() { let sound = true; try { sound = localStorage.getItem('mistvale.mgSound') !== '0'; } catch { /* 기본 켜짐 */ } sfx.setEnabled(sound); return sfx; }
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 const loaders = {
-  fishing: () => import('./fishing-ui.js?v=px2').then(m => m.createFishing),
-  cooking: () => import('./cooking-ui.js?v=px2').then(m => m.createCooking),
-  mining:  () => import('./mining-ui.js?v=px2').then(m => m.createMining),
+  fishing: () => import('./fishing-ui.js?v=sh1').then(m => m.createFishing),
+  cooking: () => import('./cooking-ui.js?v=sh1').then(m => m.createCooking),
+  mining:  () => import('./mining-ui.js?v=sh1').then(m => m.createMining),
 };
 const TITLES = { fishing:'낚시', cooking:'요리', mining:'채광' };
 

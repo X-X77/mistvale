@@ -1,6 +1,8 @@
 // 미니게임 데이터: 물고기·광석·재료·요리 정의.
-// value 는 훗날 상점/판매 시스템을 붙일 때 쓰는 기준값입니다. 지금은 판매 기능이 없어서 화면에 표시하지 않습니다.
+// value 는 상점을 만들기 전의 옛 기준값이라 더 이상 가격으로 쓰이지 않습니다. 실제 구매가·판매가는 shop-data.js 의 가격표에서만 정합니다.
 // 이름·설명은 시범용 문구입니다. 세계관에 맞게 고쳐도 게임 로직은 id 만 쓰므로 영향이 없습니다.
+
+import { GOODS } from './goods.js?v=sh1';
 
 export const TIERS = { common: '일반', rare: '희귀', special: '특수' };
 
@@ -104,6 +106,7 @@ export function describeItem(id) {
   if (INGREDIENTS[id]) return INGREDIENTS[id];
   if (ORES[id]) return ORES[id];
   if (JUNK[id]) return JUNK[id];
+  if (GOODS[id]) return GOODS[id];
   if (id.startsWith('dish:')) {
     const [, recipeId, qualityId] = id.split(':'), recipe = RECIPES[recipeId], quality = DISH_QUALITY.find(q => q.id === qualityId);
     if (recipe && quality) return { id, name:(quality.id === 'normal' ? '' : quality.label + ' ') + recipe.name, kind:'dish', tier:'dish', value:Math.round(recipe.value * quality.mult), color:recipe.color, desc:recipe.desc, quality:quality.id };
