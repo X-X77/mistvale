@@ -1,10 +1,12 @@
 // 미니게임 공통 껍데기: 전체 화면 오버레이, 튜토리얼, 결과 카드, 소지품 패널, 전환.
-import { describeItem, TIERS } from './items.js?v=sh1';
-import { GROUPS, groupOf, isProtected } from './goods.js?v=sh1';
-import { SHOPS } from './shop-data.js?v=sh1';
-import { sellPrice } from './shop-engine.js?v=sh1';
-import { levelOf } from './progress.js?v=sh1';
-import { iconImg, uiIcon } from './art.js?v=sh1';
+import { describeItem, TIERS } from './items.js?v=sh2';
+import { GROUPS, groupOf, isProtected } from './goods.js?v=sh2';
+import { SHOPS, GIFT } from './shop-data.js?v=sh2';
+import { sellPrice } from './shop-engine.js?v=sh2';
+import { GIFT_ICON } from './gift-ui.js?v=sh2';
+import { effectText } from './shop-ui.js?v=sh2';
+import { levelOf } from './progress.js?v=sh2';
+import { iconImg, uiIcon } from './art.js?v=sh2';
 
 /* 소지품 아이콘: 픽셀 그림(art.js) */
 export function itemIcon(info, size = 28) { return iconImg(info, size); }
@@ -93,32 +95,29 @@ export class MinigameHost {
 }
 
 /* ---------- 소지품 패널 (월드 화면 공용) ---------- */
-// 분류별(물고기·광석·농사·재료·음식·도구·자재·생활·가구·기타)로 묶어 보여 주고, 물건을 누르면 설명과 '어디서 얼마에 팔 수 있는지'가 나옵니다.
-function sellPlaces(id) {
-  return Object.values(SHOPS).map(shop => ({ name:shop.name, price:sellPrice(shop, id) })).filter(row => row.price > 0).sort((a, b) => b.price - a.price);
-}
+// 간결한 목록: 분류별(물고기·광석·재료·요리·미끼·장비)로 이름과 수량만 보여 주고, 물건을 누르면 설명과 팔 값이 나옵니다.
 function packDetail(id, n) {
-  const info = describeItem(id), places = sellPlaces(id), locked = isProtected(info);
-  const where = locked ? '<p class="pack-lock">고유 장비라서 되팔 수 없어요.</p>'
-    : places.length ? `<p class="pack-where"><b>팔 수 있는 곳</b>${places.slice(0, 4).map(row => `<span>${esc(row.name)} <em>${row.price.toLocaleString('ko-KR')}G</em></span>`).join('')}${places.length > 4 ? `<span>외 ${places.length - 4}곳</span>` : ''}</p>`
-    : '<p class="pack-where"><b>팔 수 있는 곳</b><span>아직 사 주는 가게가 없어요</span></p>';
-  const eff = info.effect ? `<p class="pack-eff">${info.effect.mineSwings ? '채광: 곡괭이질 +' + info.effect.mineSwings + '번' : ''}${info.effect.biteWindow ? '낚시: 챔질 시간 +' + Math.round((info.effect.biteWindow - 1) * 100) + '%' : ''} (실제로 적용돼요)</p>` : '';
-  return `<div class="pack-detail"><span class="mg-ico">${itemIcon(info, 30)}</span><div><h4>${esc(info.name)}<em class="pack-n">×${n}</em></h4><p>${esc(info.desc || '')}</p>${eff}${info.soon ? `<p class="pack-soon">※ ${esc(info.soon)}</p>` : ''}${where}</div></div>`;
+  const info = describeItem(id), price = sellPrice(SHOPS.clover, id), shop = SHOPS.clover.name;
+  const where = isProtected(info) ? '<p class="pack-lock">고유 장비라서 되팔 수 없어요.</p>'
+    : price ? `<p class="pack-where"><span>${esc(shop)}에서 개당 <em>${price.toLocaleString('ko-KR')}코인</em></span></p>` : '';
+  const eff = effectText(info).map(line => `<p class="pack-eff">${esc(line)}</p>`).join('');
+  return `<div class="pack-detail"><span class="mg-ico">${itemIcon(info, 30)}</span><div><h4>${esc(info.name)}<em class="pack-n">×${n}</em></h4><p>${esc(info.desc || '')}</p>${eff}${where}</div></div>`;
 }
 export function renderPack(progress, selectedId = '') {
   const state = progress.state, byGroup = {};
   for (const [id, n] of Object.entries(state.items)) { const info = describeItem(id); (byGroup[groupOf(info.kind)] ||= []).push({ info, n, id }); }
   const skillNames = { fishing:'낚시', cooking:'요리', mining:'채광' };
   const skills = Object.keys(skillNames).map(key => { const lv = levelOf(state.skills[key]); return `<li><b>${skillNames[key]}</b><span>Lv.${lv.level}</span><small>${lv.max ? 'MAX' : lv.xp + ' / ' + lv.next + ' XP'}</small></li>`; }).join('');
-  let html = `<div class="pack-gold"><span>소지금</span><b>${state.gold.toLocaleString('ko-KR')} G</b></div><p class="pack-note pack-own">웹사이트 안내용 소지금이에요. 케이브덕 본편의 시작 소지금과는 별개예요.</p><ul class="pack-skills">${skills}</ul>`;
+  let html = `<div class="pack-gold"><span>코인</span><b>${state.coins.toLocaleString('ko-KR')} 코인</b></div><p class="pack-note pack-own">이 사이트의 미니게임용 코인이에요. 케이브덕 본편의 소지금(G)과는 별개예요.</p><ul class="pack-skills">${skills}</ul>`;
   const selected = selectedId && state.items[selectedId] > 0 ? selectedId : '';
-  html += selected ? packDetail(selected, state.items[selected]) : '<p class="pack-tip">물건을 누르면 설명과 팔 수 있는 곳이 나와요.</p>';
+  html += selected ? packDetail(selected, state.items[selected]) : '<p class="pack-tip">물건을 누르면 설명과 팔 값이 나와요.</p>';
   let any = false;
   for (const group of GROUPS) {
     const list = byGroup[group.id]; if (!list?.length) continue; any = true;
     html += `<h3>${group.label}<small>${list.length}종</small></h3><ul class="pack-list">` + list.sort((a, b) => a.info.name.localeCompare(b.info.name, 'ko')).map(({ info, n, id }) => `<li class="${id === selected ? 'sel' : ''}" data-pack-item="${esc(id)}" role="button" tabindex="0" aria-pressed="${id === selected}" title="${esc(info.desc || '')}"><span class="mg-ico">${itemIcon(info, 30)}</span><span><b>${esc(info.name)}</b>${info.tier && TIERS[info.tier] ? `<em class="tier-${info.tier}">${TIERS[info.tier]}</em>` : isProtected(info) ? '<em class="tier-special">고유</em>' : ''}</span><strong>×${n}</strong></li>`).join('') + '</ul>';
   }
-  if (!any) html += '<p class="pack-empty">아직 소지품이 없습니다. 은빛 호수나 푸른물결 해안에서 낚시를, 속삭임 숲에서 채집을, 습한 동굴에서 채광을 해 보세요. 얻은 물건은 마을 가게에서 팔 수 있어요.</p>';
+  if (!any) html += '<p class="pack-empty">아직 소지품이 없습니다. 은빛 호수나 푸른물결 해안에서 낚시를, 속삭임 숲에서 채집을, 습한 동굴에서 채광을 해 보세요. 얻은 물건은 클로버 잡화점에서 팔 수 있어요.</p>';
+  if (state.gift.bought) html += `<h3>받은 선물</h3><ul class="pack-list"><li class="pack-gift"><span class="mg-ico">${itemIcon({ ...GIFT_ICON }, 30)}</span><span><b>${esc(GIFT.name)}</b><em class="tier-special">코드</em></span><button type="button" class="px-btn" data-open-reward>코드 보기</button></li></ul>`;
   const caught = Object.keys(state.caught).length;
   if (caught) html += `<p class="pack-note">낚시 도감 ${caught}종 기록됨</p>`;
   if (!progress.persistent) html += '<p class="pack-warn">이 브라우저는 저장을 막고 있어, 페이지를 닫으면 소지품이 사라집니다.</p>';

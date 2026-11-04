@@ -1,7 +1,7 @@
 // 미니게임용 픽셀 그림 만들기: 물고기·광석 바위·소지품 아이콘을 코드로 그립니다(별도 이미지 파일 없음).
 // 그림은 한 번 만들어 두고(캐시) 재사용합니다. 윤곽선은 모두 같은 어두운 숲색입니다.
-import { Pix, INK, mix, light, dark, clamp, hash, PAL } from './pixel.js?v=sh1';
-import { goodsIconDraw } from './goods-art.js?v=sh1';
+import { Pix, INK, mix, light, dark, clamp, hash, PAL } from './pixel.js?v=sh2';
+import { goodsIconDraw } from './goods-art.js?v=sh2';
 
 const cache = new Map();
 const memo = (key, make) => { if (!cache.has(key)) cache.set(key, make()); return cache.get(key); };

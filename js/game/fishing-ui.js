@@ -1,11 +1,12 @@
 // 낚시 화면(픽셀 캔버스): 위에서 내려다본 물가. 찌·물보라·줄의 휘어짐·낚싯대의 휘어짐·물고기의 몸짓으로 상태를 보여 줍니다.
 // 규칙(장력·체력·저항 패턴)은 fishing-engine.js 가 그대로 담당하고, 이 파일은 입력과 그림만 맡습니다.
-import { FISH, FISHING_SPOTS, TIERS, josa } from './items.js?v=sh1';
-import { equipmentBonus } from './goods.js?v=sh1';
-import { BiteSession, Fight, TUNING, rollSize } from './fishing-engine.js?v=sh1';
-import { createRng } from './rng.js?v=sh1';
-import { Pix, pixelSurface, blit, text, clamp, lerp, mix, light, dark, INK, hash } from './pixel.js?v=sh1';
-import { fishSprite, uiIcon, iconImg } from './art.js?v=sh1';
+import { FISH, FISHING_SPOTS, TIERS, josa } from './items.js?v=sh2';
+import { equipmentBonus, baitEffect, BAIT_IDS, GOODS } from './goods.js?v=sh2';
+import { BiteSession, Fight, TUNING, rollSize } from './fishing-engine.js?v=sh2';
+import { createRng } from './rng.js?v=sh2';
+import { Pix, pixelSurface, blit, text, clamp, lerp, mix, light, dark, INK, hash } from './pixel.js?v=sh2';
+import { fishSprite, uiIcon, iconImg } from './art.js?v=sh2';
+import { describeItem } from './items.js?v=sh2';
 
 const TAU = Math.PI * 2;
 
@@ -20,6 +21,22 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
     <div class="fs-call" aria-hidden="true"></div>
     <div class="fs-hint" aria-hidden="true"></div>
     <div class="fs-controls" hidden><button type="button" class="fs-btn side fs-left" aria-label="왼쪽으로 기울이기"><img class="pxi" src="${uiIcon('left')}" alt=""></button><button type="button" class="fs-btn fs-reel" aria-label="감기 (누르고 있는 동안)">감기<small>꾹 누르기</small></button><button type="button" class="fs-btn side fs-right" aria-label="오른쪽으로 기울이기"><img class="pxi" src="${uiIcon('right')}" alt=""></button></div>`;
+  // 미끼 고르기: 던지기 전에만 보입니다. 던질 때마다 고른 미끼를 1개 씁니다. (키보드: 1 = 미끼 없음, 2·3 = 미끼)
+  stage.insertAdjacentHTML('beforeend', '<div class="fs-bait" role="group" aria-label="미끼 고르기"></div>');
+  const baitEl = stage.querySelector('.fs-bait'); let baitId = null;
+  function renderBait() {
+    if (baitId && progress.count(baitId) < 1) baitId = null;
+    const chips = [{ id:null, label:'없음', key:'1' }, ...BAIT_IDS.map((id, i) => ({ id, label:GOODS[id].short || GOODS[id].name, key:String(i + 2), n:progress.count(id) }))];
+    baitEl.innerHTML = chips.map(chip => `<button type="button" tabindex="-1" class="fs-baitbtn${chip.id === baitId ? ' on' : ''}${chip.id && !chip.n ? ' empty' : ''}" data-bait="${chip.id || ''}" aria-pressed="${chip.id === baitId}" ${chip.id && !chip.n ? 'aria-disabled="true"' : ''} title="${chip.id ? GOODS[chip.id].desc : '미끼 없이 던집니다'}">${chip.id ? iconImg(describeItem(chip.id), 24) : ''}<span>${chip.label}</span>${chip.id ? `<b>×${chip.n}</b>` : ''}${coarse ? '' : `<kbd>${chip.key}</kbd>`}</button>`).join('');
+  }
+  function pickBait(id) {
+    if (S.phase !== 'aim') return;
+    if (id && progress.count(id) < 1) { sfx.play('deny'); setHint('그 미끼가 없어요. 클로버 잡화점에서 살 수 있어요.', 2400); return; }
+    baitId = id; sfx.play('ui'); renderBait();
+    setHint(id ? GOODS[id].desc : '미끼 없이 던져요', 2600);
+  }
+  baitEl.addEventListener('pointerdown', event => event.preventDefault());   // 눌러도 초점이 옮겨 가지 않게(Space 로 던질 때 버튼이 눌리지 않도록)
+  baitEl.addEventListener('click', event => { const button = event.target.closest('.fs-baitbtn'); if (button) pickBait(button.dataset.bait || null); });
   const canvas = stage.querySelector('canvas'), surf = pixelSurface(canvas, stage, { maxH:220 }), g = surf.g;
   const callEl = stage.querySelector('.fs-call'), hintEl = stage.querySelector('.fs-hint'), controls = stage.querySelector('.fs-controls'), gaugeEl = stage.querySelector('.fs-gauge');
   const zoneEls = [...stage.querySelectorAll('.fs-zone')];
@@ -59,14 +76,17 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
 
   function toAim() {
     S.phase = 'aim'; S.bite = null; S.fight = null; S.fish = null; S.ended = false; S.reeling = false; S.dashShown = '';
-    sfx.stopHum(); setCall(''); setHint(coarse ? '물 위를 눌러 던져요' : '물 위를 눌러 던져요 (Space: 아무 데나)');
+    sfx.stopHum(); setCall(''); renderBait(); setHint(coarse ? '물 위를 눌러 던져요' : '물 위를 눌러 던져요 (Space: 아무 데나)');
     stage.dataset.phase = 'aim';
   }
   function cast(x, y) {
     const minY = waterTop() + 40, maxY = shoreY() - 70;
     const ty = clamp(y, minY, maxY), tx = clamp(x, W / 2 - halfW() * .78, W / 2 + halfW() * .78);
     S.floatX = tx; S.floatY = ty; S.from = { x:W / 2, y:shoreY() - 36 }; S.castT = 0; S.phase = 'cast'; stage.dataset.phase = 'cast';
-    S.bite = new BiteSession(pool, yToDepth(ty), rng, equipmentBonus(progress.state.items).biteWindow); S.fish = S.bite.fish; setHint(''); sfx.play('cast');
+    // 고른 미끼는 던지는 순간 1개 씁니다(다른 탭에서 이미 써서 없다면 미끼 없이 던집니다).
+    let used = null; if (baitId && progress.remove({ [baitId]:1 })) used = baitId; else baitId = null;
+    S.bite = new BiteSession(pool, yToDepth(ty), rng, equipmentBonus(progress.state.items).biteWindow, used ? baitEffect(used) : {}); S.fish = S.bite.fish; S.usedBait = used; setHint(''); sfx.play('cast');
+    if (used) { const name = describeItem(used).name; host.say(`${name}${josa(name, '을/를')} 달아 던졌습니다.`); }; renderBait();
   }
   function afterCast() {
     S.phase = 'wait'; stage.dataset.phase = 'wait'; ring(S.floatX, S.floatY, '#ffffff', 40, 1.1); sfx.play('splash');
@@ -138,6 +158,7 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
   const keyMap = { ' ':'reel', Spacebar:'reel', Enter:'reel', ArrowDown:'reel', s:'reel', S:'reel', ArrowLeft:'left', a:'left', A:'left', ArrowRight:'right', d:'right', D:'right' };
   function onKey(event, down) {
     if (paused || host.closed || !host.layer.hidden) return;
+    if (down && !event.repeat && S.phase === 'aim' && /^[1-3]$/.test(event.key)) { const choice = ['', ...BAIT_IDS][Number(event.key) - 1]; pickBait(Number(event.key) === 1 ? null : choice); event.preventDefault(); return; }
     const k = keyMap[event.key]; if (!k) return;
     if (event.target?.closest?.('button') && (event.key === ' ' || event.key === 'Enter')) { if (!event.target.classList.contains('fs-reel')) return; }
     event.preventDefault();

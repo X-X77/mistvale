@@ -4,12 +4,11 @@ import { npcs, npcsAt } from './npc-data.js?v=cutout-d';
 import { hasMet, completeFirstMeeting } from './encounter-session.js';
 import { readSave } from '../storage.js';
 import { chibiResidents } from './chibi-data.js?v=cutout-d';
-import { startMinigame, progress, shopSfx } from '../game/launcher.js?v=sh1';
-import { shopByPlace, shopByNpc } from '../game/shop-data.js?v=sh1';
-import { isOpen, hoursText, currentMinutes } from '../game/shop-engine.js?v=sh1';
-import { uiIcon } from '../game/art.js?v=sh1';
-import { renderPack } from '../game/host.js?v=sh1';
-import { GATHER_SPOTS, INGREDIENTS, ACTIVITIES, FISHING_SPOTS } from '../game/items.js?v=sh1';
+import { startMinigame, progress, shopSfx } from '../game/launcher.js?v=sh2';
+import { shopByPlace, shopByNpc } from '../game/shop-data.js?v=sh2';
+import { uiIcon } from '../game/art.js?v=sh2';
+import { renderPack } from '../game/host.js?v=sh2';
+import { GATHER_SPOTS, INGREDIENTS, ACTIVITIES, FISHING_SPOTS } from '../game/items.js?v=sh2';
 
 const $ = id => document.getElementById(id);
 const app = $('world'), dialog = $('npc-dialog');
@@ -143,7 +142,7 @@ const ACTIVITY_COPY = {
 };
 let gathered = new Set();
 function toast(message) { const node = $('mv-toast'); node.textContent = message; node.classList.add('on'); clearTimeout(toast.timer); toast.timer = setTimeout(() => node.classList.remove('on'), 2600); }
-function refreshGold() { $('pack-gold').textContent = progress.state.gold.toLocaleString('ko-KR') + 'G'; }
+function refreshGold() { $('pack-gold').textContent = progress.state.coins.toLocaleString('ko-KR') + ' 코인'; }
 function mountActivities(place) {
   const box = $('place-activities'); box.replaceChildren();
   const list = place.activities || [], shop = shopByPlace(place.id);
@@ -181,12 +180,12 @@ function mountActivities(place) {
 }
 // 상점 이용 버튼: 처음 만나는 상점 주인이면 먼저 인사(기존 첫 만남 대화)부터, 이미 만났으면 바로 가게를 엽니다.
 function mountShopButton(box, place, shop) {
-  const npc = npcs[shop.npcId], open = isOpen(shop, currentMinutes());
+  const npc = npcs[shop.npcId];
   const button = document.createElement('button');
   button.type = 'button'; button.className = 'mv-activity mv-activity-shop'; button.dataset.activity = 'shop';
   button.innerHTML = `<i aria-hidden="true"><img class="pxi" src="${uiIcon('coin')}" width="26" height="26" alt=""></i><span><strong></strong><small></small></span><b aria-hidden="true">▸</b>`;
   button.querySelector('strong').textContent = '가게 이용하기';
-  button.querySelector('small').textContent = (open ? '영업 중' : '지금은 준비 중') + ' · 영업시간 ' + hoursText(shop);
+  button.querySelector('small').textContent = '사기 · 팔기 · 미끼와 장비';
   button.addEventListener('click', () => {
     if (!npc) return;
     if (!hasMet(npc.id) && npc.firstMeeting?.length) openDialogue(npc, button); else openShopFor(npc, button);
@@ -198,19 +197,21 @@ async function openShopFor(npc, source) {
   const shop = shopByNpc(npc?.id); if (!shop || shopRunning) return; shopRunning = true;
   app.inert = true; document.documentElement.classList.add('mg-open');
   try {
-    const { openShop } = await import('../game/shop-ui.js?v=sh1');
+    const { openShop } = await import('../game/shop-ui.js?v=sh2');
     openShop({ shop, npc, place:places[shop.placeId], progress, sfx:shopSfx(), reduced:reduced(), onClose: () => {
       shopRunning = false; app.inert = false; document.documentElement.classList.remove('mg-open'); refreshGold();
-      const hours = $('place-hours'); if (hours && current === shop.placeId) hours.textContent = hoursLine(shop);
       (source?.isConnected ? source : document.querySelector(`.mv-chibi[data-npc="${npc.id}"]`))?.focus({ preventScroll:true });
     } });
   } catch (error) { console.error(error); shopRunning = false; app.inert = false; document.documentElement.classList.remove('mg-open'); toast('상점을 열지 못했습니다. 잠시 뒤 다시 시도해 주세요.'); }
 }
-const hoursLine = shop => '영업시간 ' + hoursText(shop) + (isOpen(shop, currentMinutes()) ? ' · 영업 중' : ' · 준비 중');
 let packSelected = '';
 const paintPack = () => { $('pack-body').innerHTML = renderPack(progress, packSelected); };
 function openPack() { paintPack(); if (!$('pack-dialog').open) $('pack-dialog').showModal(); }
-$('pack-body').addEventListener('click', event => {
+$('pack-body').addEventListener('click', async event => {
+  if (event.target.closest('[data-open-reward]')) {   // 받은 선물의 코드 다시 보기
+    const { openReward } = await import('../game/gift-ui.js?v=sh2'); const dialogEl = $('pack-dialog');
+    openReward({ progress, parent:dialogEl, sfx:shopSfx(), reduced:reduced(), onClose:() => dialogEl.querySelector('[data-open-reward]')?.focus({ preventScroll:true }) }); return;
+  }
   const item = event.target.closest('[data-pack-item]'); if (!item) return;
   packSelected = packSelected === item.dataset.packItem ? '' : item.dataset.packItem; paintPack();
   $('pack-body').querySelector(`[data-pack-item="${CSS.escape(packSelected)}"]`)?.focus({ preventScroll:true });
@@ -266,8 +267,8 @@ function render(value) {
     $('place-title').textContent = place.name;
     $('place-category').textContent = place.category;
     const shop = shopByPlace(place.id);
-    $('place-hours').hidden = !place.hours && !shop;
-    $('place-hours').textContent = shop ? hoursLine(shop) : place.hours ? '영업시간 ' + place.hours : '';
+    $('place-hours').hidden = !place.hours || Boolean(shop);   // 상점은 항상 열려 있어서 영업시간을 따로 표시하지 않습니다
+    $('place-hours').textContent = place.hours && !shop ? '영업시간 ' + place.hours : '';
     $('place-purpose').textContent = place.purpose;
     $('place-description').textContent = place.description;
     const stage = $('place-stage');
@@ -301,7 +302,7 @@ function finishLine() {
   // 마지막 대사에서 상점 주인이면 '상점 보기'가 나타납니다(기존 첫 만남 대화는 그대로 끝까지 봅니다).
   const shopBtn = $('dialog-shop'), shop = last ? shopByNpc(activeNpc.id) : null;
   shopBtn.hidden = !shop;
-  if (shop) shopBtn.textContent = isOpen(shop, currentMinutes()) ? '상점 보기' : '상점 보기 (준비 중)';
+  if (shop) shopBtn.textContent = '상점 보기';
 }
 function showLine() {
   clearTyping(); $('dialog-shop').hidden = true;

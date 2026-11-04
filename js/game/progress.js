@@ -1,8 +1,10 @@
-// 미스트베일 진행 상태: 소지금·소지품·활동 숙련도(경험치). 이 브라우저의 localStorage 에 보관합니다.
+// 미스트베일 진행 상태: 코인·소지품·활동 숙련도(경험치)·누적 획득 코인·엑스의 비밀 선물 상태. 이 브라우저의 localStorage 에 보관합니다.
+// 코인은 이 사이트의 미니게임용 재화 하나뿐이며, 케이브덕 본편의 소지금(G)과는 별개입니다.
 // 저장이 막혀 있으면 이 탭 메모리에서만 유지되고, 화면에 그 사실을 알립니다(persistent === false).
 const KEY = 'mistvale.progress.v1';
 export const SKILLS = ['fishing', 'cooking', 'mining'];
-export const START_GOLD = 500;           // 오프닝 '소지금 500G' 와 같은 값
+export const START_COINS = 100;          // 처음 가진 코인(오프닝의 '소지금 500G'는 케이브덕 본편 이야기이고 이것과 별개입니다)
+export const GIFT_UNLOCK = 5000;         // 누적 획득 코인이 이만큼이 되면 '엑스의 비밀 선물'이 열립니다
 const LEVEL_XP = [0, 30, 80, 150, 250, 400, 600]; // 레벨 n 에 필요한 누적 경험치(레벨 1~7)
 
 export function levelOf(xp) {
@@ -12,12 +14,18 @@ export function levelOf(xp) {
   return { level, xp, base: LEVEL_XP[level - 1], next, max: next === null };
 }
 export function freshState() {
-  return { v:1, gold:START_GOLD, items:{}, skills:{ fishing:0, cooking:0, mining:0 }, caught:{}, log:[] };
+  return { v:1, coins:START_COINS, earned:0, gift:{ unlocked:false, seen:false, bought:false }, items:{}, skills:{ fishing:0, cooking:0, mining:0 }, caught:{}, log:[] };
 }
 export function normalizeState(raw) {
   const state = freshState();
   if (!raw || typeof raw !== 'object') return state;
-  if (Number.isFinite(raw.gold)) state.gold = Math.max(0, Math.floor(raw.gold));
+  const coins = Number.isFinite(raw.coins) ? raw.coins : raw.gold;   // 옛 저장값(gold)도 이어서 씁니다
+  if (Number.isFinite(coins)) state.coins = Math.max(0, Math.floor(coins));
+  if (Number.isFinite(raw.earned)) state.earned = Math.max(0, Math.floor(raw.earned));
+  const gift = raw.gift && typeof raw.gift === 'object' ? raw.gift : {};
+  state.gift.bought = gift.bought === true;
+  state.gift.seen = gift.seen === true || state.gift.bought;
+  state.gift.unlocked = gift.unlocked === true || state.gift.seen || state.earned >= GIFT_UNLOCK;
   if (raw.items && typeof raw.items === 'object') for (const [id, count] of Object.entries(raw.items)) if (Number.isFinite(count) && count > 0) state.items[id] = Math.floor(count);
   for (const skill of SKILLS) if (Number.isFinite(raw.skills?.[skill])) state.skills[skill] = Math.max(0, Math.floor(raw.skills[skill]));
   if (raw.caught && typeof raw.caught === 'object') for (const [id, value] of Object.entries(raw.caught)) if (value && Number.isFinite(value.count)) state.caught[id] = { count:Math.floor(value.count), best:Number.isFinite(value.best) ? value.best : 0 };
@@ -45,16 +53,28 @@ export class Progress {
     if (!this.storage) return;
     try { const text = this.storage.getItem(KEY); if (text) { this.state = normalizeState(JSON.parse(text)); this.persistent = true; } } catch { /* 읽을 수 없으면 지금 값을 씁니다 */ }
   }
-  // 거래(골드 + 여러 소지품)를 한 번에 처리합니다. 하나라도 어긋나면 아무것도 바꾸지 않고 false 를 돌려줍니다.
-  //   change: { gold: ±정수, items: { id: ±정수 } }   — 결과가 음수이거나 골드 상한(maxGold)을 넘으면 거절
-  transact(change, { maxGold = Infinity } = {}) {
+  // 거래(코인 + 여러 소지품)를 한 번에 처리합니다. 하나라도 어긋나면 아무것도 바꾸지 않고 false 를 돌려줍니다.
+  //   change: { coins: ±정수, items: { id: ±정수 }, earn: 이번에 번 코인(양수, 누적 획득액에 더함), giftBought: true }
+  //   opts  : { maxCoins, guard(state) } — guard 는 최신 값을 다시 읽은 뒤 조건을 확인하고, false 면 거래를 취소합니다.
+  // 누적 획득액이 GIFT_UNLOCK 에 처음 닿으면 gift.unlocked 도 같은 저장에서 켭니다.
+  transact(change, { maxCoins = Infinity, guard } = {}) {
     this.refresh();
-    const gold = Number.isInteger(change.gold || 0) ? (change.gold || 0) : NaN, items = change.items || {};
-    if (!Number.isFinite(gold) || this.state.gold + gold < 0 || this.state.gold + gold > maxGold) return false;
+    const coins = Number.isInteger(change.coins || 0) ? (change.coins || 0) : NaN, items = change.items || {}, earn = change.earn || 0;
+    if (!Number.isFinite(coins) || this.state.coins + coins < 0 || this.state.coins + coins > maxCoins) return false;
+    if (!Number.isInteger(earn) || earn < 0) return false;
+    if (guard && !guard(this.state)) return false;
     for (const [id, delta] of Object.entries(items)) if (!Number.isInteger(delta) || this.count(id) + delta < 0) return false;
-    this.state.gold += gold;
+    this.state.coins += coins; this.state.earned += earn;
     for (const [id, delta] of Object.entries(items)) { const n = this.count(id) + delta; if (n > 0) this.state.items[id] = n; else delete this.state.items[id]; }
+    if (this.state.earned >= GIFT_UNLOCK) this.state.gift.unlocked = true;
+    if (change.giftBought) { this.state.gift.bought = true; this.state.gift.unlocked = true; this.state.gift.seen = true; }
     this.#write(); return true;
+  }
+  // 엑스 이벤트를 아직 보지 않았다면 '봤다'고 표시하고 true 를 돌려줍니다. 처음 부른 한 곳만 true 라서 이벤트는 한 번만 열립니다.
+  claimGiftEvent() {
+    this.refresh();
+    const gift = this.state.gift; if (!gift.unlocked || gift.seen) return false;
+    gift.seen = true; this.#write(); return true;
   }
   subscribe(listener) { this.listeners.add(listener); return () => this.listeners.delete(listener); }
   count(id) { return this.state.items[id] || 0; }
