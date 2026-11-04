@@ -1,4 +1,4 @@
-import { villageMap } from './map-data.js';
+import { atlas } from './map-data.js?v=atlas1';
 import { places } from './place-data.js';
 import { npcs, npcsAt } from './npc-data.js?v=cutout-d';
 import { hasMet, completeFirstMeeting } from './encounter-session.js';
@@ -37,7 +37,7 @@ function preloadImages(urls, timeout = 1800) {
   return Promise.race([Promise.all(jobs), new Promise(resolve => setTimeout(resolve, timeout))]);
 }
 function assetsFor(target) {
-  if (target === 'map') return [villageMap.background];
+  if (target === 'map') return [atlas[page].art];
   const place = places[target];
   return [place.background, ...npcsAt(place.id).map(npc => npc.chibi?.src || npc.illustration?.src)];
 }
@@ -47,91 +47,78 @@ function routeValue() { const value = location.hash.slice(1); return places[valu
 function setHash(value, replace = false) {
   if (location.hash !== '#' + value) history[replace ? 'replaceState' : 'pushState'](null, '', '#' + value);
 }
-/* 지도: 작은 마커 + 눌러지는 영역(호버 때 은은하게 빛남) + 이름표. 오른쪽 '여행 수첩'의 항목과 서로 연결됩니다.
-   마우스: 올리면 강조, 누르면 입장. 터치(호버 없음): 한 번 누르면 선택·이름표, 같은 곳을 다시 누르면 입장. */
-const touchLike = matchMedia('(hover: none)');
-const markers = new Map(), cards = new Map();
-let selectedPlace = '', lastVisited = '';
-function setHighlight(id, on) {
-  markers.get(id)?.classList.toggle('is-hover', on);
-  cards.get(id)?.classList.toggle('is-hover', on);
-  $('map-stage').classList.toggle('has-focus', Boolean(document.querySelector('#map-stage .is-hover, #map-stage .is-selected')));
+let page = 'town', selected = '';
+const marks = new Map(), rows = new Map();
+function describe(site) {
+  const place = places[site.id];
+  return { name:site.name || place.name,
+    note:site.note || npcsAt(site.id).map(npc => npc.name).join(' · ') || place.purpose };
 }
-function setSelected(id) {
-  if (selectedPlace === id) return;
-  markers.get(selectedPlace)?.classList.remove('is-selected'); cards.get(selectedPlace)?.classList.remove('is-selected');
-  selectedPlace = id;
-  markers.get(id)?.classList.add('is-selected'); cards.get(id)?.classList.add('is-selected');
-  $('map-stage').classList.toggle('has-focus', Boolean(id) || Boolean(document.querySelector('#map-stage .is-hover')));
-}
-function activatePlace(id, fromMap) {
-  // 터치에서는 지도 위 첫 탭이 '선택'입니다. 같은 곳을 한 번 더 누르면 들어갑니다.
-  if (fromMap && touchLike.matches && selectedPlace !== id) {
-    setSelected(id); cards.get(id)?.scrollIntoView({block:'nearest', behavior: reduced() ? 'auto' : 'smooth'});
-    setStatus(places[id].name + ' 선택됨. 한 번 더 누르면 들어갑니다.'); return;
+function selectSite(id) {
+  const site = atlas[page].sites.find(item => item.id === id);
+  selected = site?.id || '';
+  for (const [key, marker] of marks) {
+    const on = key === selected;
+    marker.classList.toggle('is-selected', on);
+    rows.get(key).classList.toggle('is-selected', on);
+    rows.get(key).setAttribute('aria-pressed', String(on));
   }
-  setSelected(id); lastVisited = id; navigate(id);
+  $('atlas-name').textContent = site ? describe(site).name : atlas[page].title;
+  $('atlas-note').textContent = site ? describe(site).note + (site.note ? ' · 지도 명소' : '') : '건물이나 지형을 선택해 둘러보세요.';
+  $('atlas-enter').hidden = !places[selected];
+}
+function showPage(key) {
+  page = key;
+  const sheet = atlas[key], town = key === 'town';
+  $('map-subtitle').textContent = sheet.title;
+  $('map-art').alt = sheet.alt;
+  loadImage($('map-art'), sheet.art, $('map-fallback'));
+  $('place-group-town').hidden = !town;
+  $('place-group-outside').hidden = town;
+  for (const tab of $('atlas-pages').children) tab.setAttribute('aria-pressed', String(tab.dataset.page === key));
+  const list = $(town ? 'place-list-town' : 'place-list-outside');
+  list.replaceChildren(); $('map-markers').replaceChildren(); marks.clear(); rows.clear();
+  for (const site of sheet.sites) {
+    const { name, note } = describe(site);
+    const marker = document.createElement('button'), row = document.createElement('button');
+    marker.type = row.type = 'button'; marker.dataset.place = row.dataset.place = site.id;
+    marker.className = 'mv-map-marker'; row.className = 'mv-place-card';
+    for (const k of ['x','y','w','h']) marker.style.setProperty('--' + k, site[k] + '%');
+    marker.dataset.tag = site.y < 20 ? 'below' : 'above';
+    marker.dataset.edge = site.x < 14 ? 'left' : site.x > 85 ? 'right' : 'center';
+    marker.setAttribute('aria-label', name);
+    marker.innerHTML = '<span class="mv-hot"></span><span class="mv-marker-pin"></span><span class="mv-marker-name"><strong></strong></span>';
+    marker.querySelector('strong').textContent = name;
+    row.innerHTML = '<i class="mv-card-mark"></i><strong></strong><span></span><b aria-hidden="true">›</b>';
+    row.querySelector('strong').textContent = name; row.querySelector('span').textContent = note;
+    const highlight = on => { marker.classList.toggle('is-hover', on); row.classList.toggle('is-hover', on); };
+    for (const el of [marker,row]) {
+      el.onpointerenter = e => { if (e.pointerType !== 'touch') highlight(true); };
+      el.onpointerleave = () => highlight(false);
+      el.onfocus = () => highlight(true); el.onblur = () => highlight(false);
+    }
+    marker.onclick = e => {
+      const enter = places[site.id] && (selected === site.id || !matchMedia('(hover:none)').matches && e.detail > 0);
+      selectSite(site.id);
+      if (enter) navigate(site.id);
+    };
+    row.onclick = () => { if (selected === site.id && places[site.id]) navigate(site.id); else selectSite(site.id); };
+    marks.set(site.id,marker); rows.set(site.id,row);
+    $('map-markers').append(marker); list.append(row);
+  }
+  $(town ? 'town-count' : 'outside-count').textContent = sheet.sites.length;
+  selectSite('');
 }
 function mountMap() {
-  $('map-subtitle').textContent = villageMap.subtitle;
-  loadImage($('map-art'), villageMap.background, $('map-fallback'));
-  $('map-art').alt = villageMap.alt;
-  const groups = { building: $('place-list-town'), route: $('place-list-outside') };
-  const counts = { building: 0, route: 0 };
-  $('map-hint').querySelector('span').textContent = touchLike.matches
-    ? '좌우로 밀어 둘러보고, 장소를 눌러 확인한 뒤 다시 누르면 들어갑니다.' : '지도 위 장소에 마우스를 올리거나 눌러 보세요.';
-  for (const location of villageMap.locations) {
-    const place = places[location.placeId]; if (!place) continue;
-    const kind = location.kind === 'route' ? 'route' : 'building';
-    const cx = bounded(location.hx ?? location.x, 3, 97, 50), cy = bounded(location.hy ?? location.y, 5, 95, 50);
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'mv-map-marker' + (kind === 'route' ? ' mv-route' : '');
-    button.style.setProperty('--x', cx + '%'); button.style.setProperty('--y', cy + '%'); button.style.setProperty('--r', String(location.r ?? 7));
-    button.dataset.tag = cy < 22 ? 'below' : 'above';
-    button.dataset.edge = cx < 14 ? 'left' : cx > 86 ? 'right' : 'center';
-    button.setAttribute('aria-label', place.name + (kind === 'route' ? ' 길로 들어가기' : ' 들어가기'));
-    button.dataset.place = place.id;
-    const hot = document.createElement('span'); hot.className = 'mv-hot'; hot.setAttribute('aria-hidden', 'true');
-    const pin = document.createElement('span'); pin.className = 'mv-marker-pin'; pin.setAttribute('aria-hidden', 'true');
-    const label = document.createElement('span'); label.className = 'mv-marker-name'; label.setAttribute('aria-hidden', 'true');
-    const labelName = document.createElement('strong'); labelName.textContent = place.name;
-    const labelHint = document.createElement('small'); labelHint.textContent = kind === 'route' ? '길 입구' : '마을 시설';
-    label.append(labelName, labelHint);
-    button.append(hot, pin, label);
-    button.addEventListener('click', () => activatePlace(place.id, true));
-    button.addEventListener('pointerenter', event => { if (event.pointerType !== 'touch') setHighlight(place.id, true); });
-    button.addEventListener('pointerleave', () => setHighlight(place.id, false));
-    button.addEventListener('focus', () => { if (button.matches(':focus-visible')) setHighlight(place.id, true); }); button.addEventListener('blur', () => setHighlight(place.id, false));
-    $('map-markers').append(button); markers.set(place.id, button);
-    const card = document.createElement('button'); card.type = 'button'; card.className = 'mv-place-card' + (kind === 'route' ? ' mv-route' : ''); card.dataset.place = place.id;
-    const mark = document.createElement('i'); mark.className = 'mv-card-mark'; mark.setAttribute('aria-hidden', 'true');
-    const title = document.createElement('strong'); title.textContent = place.name;
-    const who = npcsAt(place.id).map(npc => npc.name).join(' · ');
-    const info = document.createElement('span'); info.textContent = who ? who : place.purpose;
-    const arrow = document.createElement('b'); arrow.textContent = '›'; arrow.setAttribute('aria-hidden', 'true');
-    card.append(mark, title, info, arrow);
-    card.addEventListener('click', () => activatePlace(place.id, false));
-    card.addEventListener('pointerenter', event => { if (event.pointerType !== 'touch') setHighlight(place.id, true); });
-    card.addEventListener('pointerleave', () => setHighlight(place.id, false));
-    card.addEventListener('focus', () => { if (card.matches(':focus-visible')) setHighlight(place.id, true); }); card.addEventListener('blur', () => setHighlight(place.id, false));
-    groups[kind].append(card); cards.set(place.id, card); counts[kind]++;
-  }
-  $('place-group-town').hidden = !groups.building.children.length;
-  $('place-group-outside').hidden = !groups.route.children.length;
-  $('town-count').textContent = counts.building; $('outside-count').textContent = counts.route;
-  $('map-view').dataset.count = String(counts.building + counts.route);
-  const body = $('place-list'), toggle = $('journal-toggle');
-  toggle.addEventListener('click', () => {
-    const open = toggle.getAttribute('aria-expanded') !== 'true';
-    toggle.setAttribute('aria-expanded', String(open)); toggle.textContent = open ? '접기' : '펼치기';
-    $('map-journal').classList.toggle('is-collapsed', !open);
-  });
-  // 지도 바깥(빈 곳)을 누르면 선택이 풀립니다.
-  // 좁은 화면에서는 지도가 가로로 넓어져 밀어서 볼 수 있습니다. 처음엔 마을 한가운데에 맞춥니다.
-  const centerMap = () => { const stage = $('map-stage'); if (stage.scrollWidth > stage.clientWidth + 4) stage.scrollLeft = (stage.scrollWidth - stage.clientWidth) * 0.55; };
-  $('map-art').addEventListener('load', centerMap); addEventListener('resize', () => { if (!$('map-view').hidden && $('map-stage').scrollLeft === 0) centerMap(); });
-  $('map-stage').addEventListener('click', event => { if (!event.target.closest('.mv-map-marker')) setSelected(''); });
+  $('map-hint').querySelector('span').textContent = '수첩에서 위치를 찾고, 건물을 눌러 방문하세요.';
+  for (const tab of $('atlas-pages').children) tab.onclick = () => showPage(tab.dataset.page);
+  $('atlas-enter').onclick = () => { if (places[selected]) navigate(selected); };
+  $('journal-toggle').onclick = () => {
+    const open = $('map-journal').classList.toggle('is-collapsed') === false;
+    $('journal-toggle').setAttribute('aria-expanded', String(open));
+    $('journal-toggle').textContent = open ? '접기' : '펼치기';
+  };
+  showPage('town');
 }
 
 // ---- 활동(낚시·요리·채광·채집) : 장소 데이터의 activities 로 버튼이 만들어집니다 ----------------------------
@@ -242,10 +229,12 @@ function render(value) {
   $('world-map-back').hidden = value === 'map';
   if (value === 'map') {
     setStatus('미스트베일 마을 지도');
-    setSelected('');
-    markers.get(lastVisited)?.focus({preventScroll:true});
+    if (selected) marks.get(selected)?.focus({preventScroll:true});
   } else {
     const place = places[value];
+    const sheet = Object.keys(atlas).find(key => atlas[key].sites.some(site => site.id === value));
+    if (sheet && sheet !== page) showPage(sheet);
+    selectSite(value);
     $('place-title').textContent = place.name;
     $('place-category').textContent = place.category;
     const shop = shopByPlace(place.id);

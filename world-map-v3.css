@@ -166,3 +166,24 @@ body.mv-world{background:radial-gradient(ellipse 90% 60% at 50% 0,#244a3d 0,#173
 .mv-chibi-world #npc-dialog{transition:opacity .18s ease;}
 .mv-chibi-world .mv-transition{transition:opacity .26s ease;}
 .mv-reduced-motion .mv-chibi-world #npc-portrait:not([hidden]){animation:none;}
+
+/* Both illustrations and their footprints share one uncropped coordinate space. */
+#map-view .mv-map-stage{aspect-ratio:auto;height:auto;max-height:none;overflow:hidden}
+#map-view .mv-map-canvas{width:100%;height:auto;aspect-ratio:3/2}
+#map-view #map-art{position:absolute;inset:0;width:100%;height:100%;object-fit:fill}
+#map-view .mv-map-marker{width:var(--w);height:var(--h);min-width:0;aspect-ratio:auto;border-radius:12%}
+#map-view .mv-marker-pin{width:6px;height:6px;top:87%;opacity:.76}
+#map-view .mv-hot{border-radius:18%;background:radial-gradient(ellipse,#ffe7a318,transparent 70%)}
+#atlas-pages,#atlas-caption{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+#atlas-pages{margin:0 0 10px}
+#atlas-pages button,#atlas-enter{padding:8px 15px;color:#f9eccf;background:#284537;border:1px solid #ab9465;border-radius:3px;cursor:pointer}
+#atlas-pages button[aria-pressed=true]{color:#34291b;background:#ead7a5}
+#atlas-caption{padding:10px 2px;color:#ebdfc7;font-size:13px}
+#atlas-caption strong{color:#ffe5a9}#atlas-enter{margin-left:auto}
+#map-view .mv-journal{background:linear-gradient(95deg,#cdb792,#f2e4c9 7%,#e9d9b8);--m3-cream:#392c24;--m3-mute:#655443;--m3-gold:#84653b}
+#map-view .mv-journal-toggle{color:#fff3d6}
+#map-view .mv-place-card{background:transparent!important;box-shadow:none;border:0!important;border-bottom:1px solid #ae987878!important;border-radius:0}
+#map-view .mv-place-card:is(:hover,.is-selected,.is-hover,:focus-visible){background:#d8c092!important}
+#map-view .mv-place-card .mv-card-mark{width:6px;height:6px;background:#866a40;border:0;box-shadow:none}
+#map-view .mv-journal h2,#map-view .mv-place-card strong{text-shadow:none}
+#atlas-enter[hidden]{display:none}

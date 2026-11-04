@@ -1,35 +1,31 @@
-// 마을 지도 데이터. 지도 그림(village-map.jpg)은 그대로 두고, 장소 핀(%)만 올립니다.
-//   kind 'building' : 지도 위의 건물·시설 핀
-//   kind 'route'    : 지도에 건물이 없는 곳(숲·해안·동굴·호수)으로 드는 길 입구 핀. 지도 가장자리/물가·숲 쪽에 둡니다.
-// hx, hy 는 건물·지형 한가운데(가로·세로 %), r 은 눌러지는 영역의 지름(가로 %). 마커는 작게 두고 이 영역이 호버·선택 때 은은하게 빛납니다.
-// x, y 는 예전 핀 끝점 위치(호환용). 새 장소는 place-data.js 에 장소를 추가하고 여기에 한 줄만 더하면 됩니다.
-export const villageMap = {
-  id: 'mistvale',
-  title: '미스트베일',
-  subtitle: '안개가 머무는 마을',
-  description: '지도에서 장소를 선택해 미스트베일의 공간과 인물을 살펴보세요.',
-  background: './assets/world/village-map.jpg',
-  alt: '초록 들판과 작은 집, 개울이 어우러진 미스트베일 시범 지도',
-  locations: [
-    // 마을 시설 (기존 2곳의 위치는 그대로)
-    { placeId: 'clover', x: 56, y: 49, hx: 57.6, hy: 41.4, r: 10 },
-    { placeId: 'library', x: 81, y: 52, hx: 84.4, hy: 40.2, r: 8 },
-    { placeId: 'hall', x: 31, y: 37, hx: 33.4, hy: 27.2, r: 8.5 },
-    { placeId: 'clinic', x: 42, y: 45, hx: 42.2, hy: 37.6, r: 5.5 },
-    { placeId: 'tailor', x: 24, y: 50, hx: 20.6, hy: 40.2, r: 8 },
-    { placeId: 'inn', x: 20, y: 69, hx: 16.4, hy: 57.2, r: 8.5 },
-    { placeId: 'workshop', x: 44, y: 63, hx: 44.4, hy: 58, r: 7.2 },
-    { placeId: 'pub', x: 67, y: 63, hx: 68, hy: 56.2, r: 6.4 },
-    { placeId: 'bakery', x: 74, y: 56, hx: 75.7, hy: 51.2, r: 6.4 },
-    { placeId: 'post', x: 79, y: 29, hx: 79.9, hy: 21.6, r: 6.8 },
-    { placeId: 'apothecary', x: 70, y: 17, hx: 72.9, hy: 12.4, r: 6.2 },
-    { placeId: 'ranch', x: 92, y: 27, hx: 92, hy: 17.6, r: 6.6 },
-    { placeId: 'forge', x: 82, y: 77, hx: 84.4, hy: 66.6, r: 8 },
-    // 길 입구 (지도에 건물이 없는 서식지)
-    { placeId: 'whisper-forest', x: 7, y: 84, hx: 6.9, hy: 77.4, r: 7.5, kind: 'route', glyph: '♣' },
-    { placeId: 'wet-cave', x: 8, y: 20, hx: 8.2, hy: 14, r: 6.5, kind: 'route', glyph: '◖' },
-    { placeId: 'silver-lake', x: 47, y: 26, hx: 47.4, hy: 19.8, r: 7, kind: 'route', glyph: '≈' },
-    { placeId: 'farmhouse', x: 38, y: 90, hx: 38, hy: 84, r: 7, kind: 'route', glyph: '⌂' },
-    { placeId: 'blue-coast', x: 91, y: 91, hx: 91, hy: 84.6, r: 6.6, kind: 'route', glyph: '≈' },
-  ],
+// Coordinates are percentages of the complete 3:2 illustrations. Width and
+// height describe the visible footprint, independent of screen size.
+const site = (id, x, y, w, h, name, note) => ({ id, x, y, w, h, name, note });
+export const atlas = {
+  town: {
+    title:'마을 중심', art:'./assets/world/atlas-town.webp',
+    alt:'목장과 회관, 도서관, 우체국 아래로 분수 광장을 둘러싼 상점과 작업장들이 이어지는 지도',
+    sites:[
+      site('ranch',17,17,30,26), site('hall',46,16,19,25),
+      site('library',67,18,15,20), site('post',88,18,15,20),
+      site('workshop',11,46,19,20), site('clover',31,46,16,19),
+      site('plaza',49,49,16,21,'중심 광장','분수를 중심으로 마을의 길이 만나는 곳입니다.'),
+      site('clinic',67,46,17,21), site('apothecary',88,46,17,20),
+      site('forge',10,76,18,24), site('pub',30,76,16,23), site('inn',49,76,18,24),
+      site('bakery',69,76,16,23), site('tailor',88,76,17,23),
+    ],
+  },
+  region: {
+    title:'주변 지역', art:'./assets/world/atlas-region.webp',
+    alt:'북서쪽 숲과 서쪽 농장 사이의 온실, 북쪽 광산, 북동쪽 온천, 동쪽 호수와 남쪽 해안, 동남쪽 꽃밭이 이어지는 지형도',
+    sites:[
+      site('farmhouse',15,53,25,23,'오래된 농장'),
+      site('greenhouse',21,33,15,13,'버려진 온실','오래된 농장과 속삭임 숲이 맞닿는 경계에 있습니다.'),
+      site('whisper-forest',14,13,25,21), site('grey-mine',52,12,14,17,'회색산 광산','마을 북쪽 회색산의 갱도입니다.'),
+      site('mist-springs',87,13,18,14,'안개 온천','북동쪽 바위 사이로 온천수가 솟습니다.'),
+      site('wet-cave',72,25,11,11), site('silver-lake',81,44,24,18),
+      site('flower-meadow',83,72,22,17,'꽃바람 초원','마을 동남쪽, 해안 위로 꽃밭이 펼쳐집니다.'),
+      site('blue-coast',44,92,33,12),
+    ],
+  },
 };
