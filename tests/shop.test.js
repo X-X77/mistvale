@@ -180,8 +180,8 @@ test('판매 이외의 코인 변동(구매)은 누적 획득액에 들어가지
   const p = mk({ coins:1000 }); buy(p, shop, 'bait-glow', 5); assert.equal(p.state.earned, 0); assert.equal(p.state.gift.unlocked, false);
 });
 test('선물 구매: 열리기 전·코인 부족은 거절, 5,000코인을 실제로 차감하고 한 번만 살 수 있다', () => {
-  const p = mk({ coins:9000 });
-  assert.equal(quoteGift(p.state).reason, 'locked'); assert.equal(buyGift(p).ok, false); assert.equal(p.state.coins, 9000);
+  const p = mk({ coins:4000 });
+  assert.equal(quoteGift(p.state).reason, 'locked'); assert.equal(buyGift(p).ok, false); assert.equal(p.state.coins, 4000);
   set(p, { earned:5000, gift:{ unlocked:true, seen:false, bought:false } }); assert.equal(p.state.gift.unlocked, true);
   set(p, { coins:4999 }); assert.equal(buyGift(p).reason, 'coins'); assert.equal(p.state.gift.bought, false); assert.equal(p.state.coins, 4999);
   set(p, { coins:7000 });
@@ -242,4 +242,17 @@ test('모든 소지품은 분류·이름·설명이 있다', () => {
   const ids = [...Object.keys(PRICES), ...Object.keys(GOODS), ...Object.keys(FISH), ...Object.keys(ORES)];
   for (const id of ids) { const info = describeItem(id); assert.notEqual(info.kind, 'unknown', id); assert.ok(info.name && info.desc, id); assert.ok(GROUPS.some(g => g.id === groupOf(info.kind)), id); }
   for (const spot of Object.values(GATHER_SPOTS)) for (const pick of spot.picks) assert.ok(describeItem(pick.id).name);
+});
+
+test('이벤트: 옛 저장(누적 기록 없이 코인만 5,000 이상)이나 보유 코인 5,000 이상이어도 열리고, 한 번만 열린다', () => {
+  const store = memoryStorage();
+  store.setItem(KEY, JSON.stringify({ v:1, gold:6200, items:{} }));       // 이전 상점 버전의 저장 형태
+  const p = new Progress(store);
+  assert.equal(p.state.coins, 6200); assert.equal(p.state.gift.unlocked, true); assert.ok(p.state.earned >= 6100);
+  assert.equal(p.claimGiftEvent(), true); assert.equal(p.claimGiftEvent(), false);
+  // 번 누적은 적어도 지금 5,000 이상 가진 경우
+  const q = mk({ coins:5000, earned:300 });
+  assert.equal(q.state.gift.unlocked, true); assert.equal(q.claimGiftEvent(), true); assert.equal(q.claimGiftEvent(), false);
+  // 5,000 미만이면 닫혀 있음
+  assert.equal(mk({ coins:4999, earned:4000 }).state.gift.unlocked, false);
 });
