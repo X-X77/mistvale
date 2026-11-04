@@ -2,48 +2,56 @@
 // value 는 상점을 만들기 전의 옛 기준값이라 더 이상 가격으로 쓰이지 않습니다. 실제 구매가·판매가는 shop-data.js 의 가격표에서만 정합니다.
 // 이름·설명은 시범용 문구입니다. 세계관에 맞게 고쳐도 게임 로직은 id 만 쓰므로 영향이 없습니다.
 
-import { GOODS } from './goods.js?v=sh2';
+import { GOODS } from './goods.js?v=mg4';
 
 export const TIERS = { common: '일반', rare: '희귀', special: '특수' };
+/* 낚시 난이도 4단계와 물고기 저항 유형 (화면 표시용) */
+export const GRADES = { 1:{ label:'쉬움', stars:'★' }, 2:{ label:'보통', stars:'★★' }, 3:{ label:'어려움', stars:'★★★' }, 4:{ label:'최고 난도', stars:'★★★★' } };
+export const TRAITS = {
+  dart:   { label:'날쌘 돌진형', text:'작고 빠르게 치고 나가요. 신호가 길어 읽기는 쉬워요.' },
+  heavy:  { label:'버티기형', text:'힘이 세고 오래 버텨요. 장력을 알맞게 유지하며 지치게 해요.' },
+  zigzag: { label:'지그재그형', text:'돌진 신호가 짧고, ◀▶ 표시가 뜨면 도중에 방향을 바꿔요.' },
+  ambush: { label:'매복 연타형', text:'지친 척하다 연달아 돌진해요. 신호가 아주 짧아요.' },
+};
 
 /* ---------------- 낚시 ---------------- */
 // bite    : window(챔질 가능 시간, 초), wait([최소,최대] 초), nibbles(가짜 입질 횟수 범위)
 // fight   : engine 이 쓰는 저항 패턴 (fishing-engine.js 참고)
 export const FISH = {
   // 은빛 호수 (민물)
-  'silver-minnow': { id:'silver-minnow', name:'은빛 피라미', tier:'common', habitat:'silver-lake', value:12, color:'#cfe3ee',
+  'silver-minnow': { id:'silver-minnow', name:'은빛 피라미', tier:'common', grade:1, trait:'dart', habitat:'silver-lake', value:12, color:'#cfe3ee',
     desc:'호수 가장자리에서 반짝이는 작은 물고기. 힘은 약하지만 돌진 신호를 무시하면 줄이 끊어집니다.', size:[9,16], xp:10,
     bite:{ window:.95, wait:[2.2,5], nibbles:[0,2] },
-    fight:{ dist:4.5, stamina:.55, cruise:.24, restForce:.1, swim:[1.6,3.2], rest:[.8,1.6], restP:.25, tele:[.85,1.05], dash:[.7,1], dashForce:[1.25,1.4], lateral:.25, chain:0, dashEvery:[1.0,2.4] } },
-  'reed-crucian': { id:'reed-crucian', name:'갈대 붕어', tier:'common', habitat:'silver-lake', value:18, color:'#c9b27a',
+    fight:{ dist:4.5, stamina:.55, cruise:.26, restForce:.1, swim:[1.4,2.8], rest:[.7,1.4], restP:.25, tele:[.8,1], dash:[.7,1], dashForce:[1.3,1.45], lateral:.3, chain:0, dashEvery:[.9,2] } },
+  'reed-crucian': { id:'reed-crucian', name:'갈대 붕어', tier:'common', grade:2, trait:'heavy', habitat:'silver-lake', value:18, color:'#c9b27a',
     desc:'갈대 밑에서 느긋하게 사는 붕어. 끈질기게 버티지만 패턴이 단순합니다.', size:[18,32], xp:12,
     bite:{ window:.9, wait:[2.5,5.5], nibbles:[1,2] },
-    fight:{ dist:5.5, stamina:.7, cruise:.28, restForce:.1, swim:[1.5,3], rest:[.8,1.5], restP:.3, tele:[.8,1], dash:[.8,1.1], dashForce:[1.18,1.32], lateral:.35, chain:0, dashEvery:[1.0,2.2] } },
-  'mist-trout': { id:'mist-trout', name:'안개 송어', tier:'rare', habitat:'silver-lake', value:60, color:'#9fc3b0',
+    fight:{ dist:4.8, stamina:.7, cruise:.31, restForce:.1, swim:[1.3,2.6], rest:[.7,1.3], restP:.3, tele:[.55,.7], dash:[.8,1.1], dashForce:[1.3,1.45], lateral:.4, chain:.15, dashEvery:[.9,1.9], tune:{ sweetLow:.5, sweetHigh:.86 } } },
+  'mist-trout': { id:'mist-trout', name:'안개 송어', tier:'rare', grade:3, trait:'zigzag', habitat:'silver-lake', value:60, color:'#9fc3b0',
     desc:'안개 낀 깊은 물에서 사는 송어. 신호가 짧고, 좌우로 크게 방향을 바꿉니다.', size:[28,44], xp:26,
     bite:{ window:.6, wait:[3,6.5], nibbles:[1,3] },
-    fight:{ dist:6.2, stamina:.9, cruise:.34, restForce:.12, swim:[1.1,2.2], rest:[.5,1], restP:.15, tele:[.38,.46], dash:[.9,1.2], dashForce:[1.45,1.6], lateral:.9, chain:0.3, dashEvery:[.8,1.7] } },
-  'moon-carp': { id:'moon-carp', name:'달무늬 잉어', tier:'special', habitat:'silver-lake', value:160, color:'#e8d890',
+    fight:{ dist:4.6, stamina:.9, cruise:.34, restForce:.12, swim:[1,2], rest:[.5,.9], restP:.15, tele:[.34,.42], dash:[.9,1.2], dashForce:[1.5,1.65], lateral:.9, chain:.35, dashEvery:[.8,1.6], zig:.45, tune:{ sweetLow:.5, sweetHigh:.84, dangerT:.9 } } },
+  'moon-carp': { id:'moon-carp', name:'달무늬 잉어', tier:'special', grade:4, trait:'ambush', habitat:'silver-lake', value:160, color:'#e8d890',
     desc:'등에 달무늬가 있는 잉어. 지친 척 힘을 아끼다가 갑자기 연달아 돌진합니다.', size:[46,70], xp:60,
     bite:{ window:.5, wait:[4,8], nibbles:[2,3] },
-    fight:{ dist:7.8, stamina:1, cruise:.38, restForce:.05, swim:[1,1.8], rest:[1.6,2.6], restP:.4, tele:[.3,.38], dash:[1,1.3], dashForce:[1.7,1.9], lateral:1, chain:0.55, dashEvery:[.7,1.4], sulk:true } },
+    fight:{ dist:5.6, stamina:1, cruise:.4, restForce:.05, swim:[.9,1.6], rest:[1.2,2], restP:.4, tele:[.28,.34], dash:[1,1.3], dashForce:[1.75,1.95], lateral:1, chain:.5, chainMax:2, dashEvery:[.6,1.3], sulk:true, zig:.55, tune:{ sweetLow:.55, sweetHigh:.82, dangerT:.88, snapStrain:.17, tiredAt:.18 } } },
   // 푸른물결 해안 (바다)
-  'tide-mackerel': { id:'tide-mackerel', name:'물결 고등어', tier:'common', habitat:'blue-coast', value:16, color:'#7aa6c4',
+  'tide-mackerel': { id:'tide-mackerel', name:'물결 고등어', tier:'common', grade:1, trait:'dart', habitat:'blue-coast', value:16, color:'#7aa6c4',
     desc:'밀물을 따라 오가는 고등어. 빠르게 치고 나가지만 금방 지칩니다.', size:[20,34], xp:11,
     bite:{ window:.9, wait:[2.2,5], nibbles:[0,2] },
-    fight:{ dist:5, stamina:.55, cruise:.27, restForce:.1, swim:[1.4,2.8], rest:[.8,1.4], restP:.25, tele:[.8,1], dash:[.7,1], dashForce:[1.18,1.32], lateral:.45, chain:0, dashEvery:[1.0,2.2] } },
-  'reef-bream': { id:'reef-bream', name:'암초 도미', tier:'common', habitat:'blue-coast', value:24, color:'#d98a86',
+    fight:{ dist:5, stamina:.55, cruise:.28, restForce:.1, swim:[1.3,2.6], rest:[.7,1.3], restP:.25, tele:[.75,.95], dash:[.7,1], dashForce:[1.3,1.45], lateral:.45, chain:0, dashEvery:[.9,2] } },
+  'reef-bream': { id:'reef-bream', name:'암초 도미', tier:'common', grade:2, trait:'heavy', habitat:'blue-coast', value:24, color:'#d98a86',
     desc:'암초 사이를 오가는 붉은 도미. 힘이 세고 버티는 시간이 깁니다.', size:[24,40], xp:14,
     bite:{ window:.85, wait:[2.6,5.5], nibbles:[1,2] },
-    fight:{ dist:5.8, stamina:.8, cruise:.3, restForce:.1, swim:[1.4,2.8], rest:[.8,1.4], restP:.25, tele:[.78,.95], dash:[.8,1.1], dashForce:[1.2,1.34], lateral:.4, chain:0, dashEvery:[1,2.2] } },
-  'lighthouse-bass': { id:'lighthouse-bass', name:'등대 농어', tier:'rare', habitat:'blue-coast', value:70, color:'#b8cad6',
+    fight:{ dist:5, stamina:.8, cruise:.31, restForce:.1, swim:[1.3,2.6], rest:[.7,1.3], restP:.25, tele:[.55,.7], dash:[.8,1.1], dashForce:[1.32,1.46], lateral:.4, chain:.15, dashEvery:[.9,1.9], tune:{ sweetLow:.5, sweetHigh:.86 } } },
+  'lighthouse-bass': { id:'lighthouse-bass', name:'등대 농어', tier:'rare', grade:3, trait:'zigzag', habitat:'blue-coast', value:70, color:'#b8cad6',
     desc:'등대 불빛 아래를 지나는 농어. 신호가 짧고 연속으로 돌진할 때가 있습니다.', size:[40,66], xp:28,
     bite:{ window:.6, wait:[3,6.5], nibbles:[1,3] },
-    fight:{ dist:6.5, stamina:.95, cruise:.35, restForce:.12, swim:[1.1,2.1], rest:[.5,1], restP:.15, tele:[.38,.46], dash:[.9,1.2], dashForce:[1.45,1.65], lateral:.8, chain:0.35, dashEvery:[.8,1.6] } },
-  'fog-anglerfish': { id:'fog-anglerfish', name:'안개 아귀', tier:'special', habitat:'blue-coast', value:180, color:'#8d7aa8',
+    fight:{ dist:4.8, stamina:.95, cruise:.35, restForce:.12, swim:[1,1.9], rest:[.5,.9], restP:.15, tele:[.34,.42], dash:[.9,1.2], dashForce:[1.5,1.7], lateral:.8, chain:.4, dashEvery:[.8,1.5], zig:.4, tune:{ sweetLow:.5, sweetHigh:.84, dangerT:.9 } } },
+  'fog-anglerfish': { id:'fog-anglerfish', name:'안개 아귀', tier:'special', grade:4, trait:'ambush', habitat:'blue-coast', value:180, color:'#8d7aa8',
     desc:'밀물 동굴 밖까지 나온 심해 아귀. 한참 버티다 짧은 신호 뒤에 크게 돌진합니다.', size:[55,90], xp:64,
     bite:{ window:.5, wait:[4,8], nibbles:[2,3] },
-    fight:{ dist:8.2, stamina:1, cruise:.4, restForce:.06, swim:[1,1.8], rest:[1.4,2.4], restP:.4, tele:[.3,.38], dash:[1.05,1.35], dashForce:[1.7,1.95], lateral:1, chain:0.5, dashEvery:[.7,1.4], sulk:true } },
+    fight:{ dist:6, stamina:1, cruise:.42, restForce:.06, swim:[.9,1.6], rest:[1.2,2], restP:.4, tele:[.28,.34], dash:[1.05,1.35], dashForce:[1.8,2], lateral:1, chain:.5, chainMax:2, dashEvery:[.6,1.3], sulk:true, zig:.45, tune:{ sweetLow:.55, sweetHigh:.82, dangerT:.88, snapStrain:.17, tiredAt:.18 } } },
 };
 // 장소별 낚시 구역: 가까운 곳(near)은 일반, 먼 곳(far)일수록 희귀·특수가 걸립니다.
 export const FISHING_SPOTS = {
@@ -66,7 +74,7 @@ export const GATHER_SPOTS = {
 export const ORES = {
   'moss-copper': { id:'moss-copper', name:'이끼 구리석', tier:'common', habitat:'wet-cave', value:14, color:'#7aa57a', glow:'#b6e0a0',
     desc:'이끼가 낀 구리 광맥. 약점이 넓고 맥박이 느립니다.', xp:10, kind:'ore',
-    mine:{ swings:9, hp:100, weak:{ r:.20, moves:false, pulse:1.7, goodWin:.5 }, nodes:1, yield:[2,3] } },
+    mine:{ swings:9, hp:100, weak:{ r:.15, moves:false, pulse:1.7, goodWin:.5 }, nodes:1, yield:[2,3] } },
   'silver-mist-stone': { id:'silver-mist-stone', name:'은빛 안개석', tier:'rare', habitat:'wet-cave', value:55, color:'#aebfd1', glow:'#e6f1ff',
     desc:'은빛으로 빛나는 안개석. 약점이 작고 균열을 따라 움직입니다.', xp:26, kind:'ore',
     mine:{ swings:7, hp:100, weak:{ r:.09, moves:true, pulse:1.2, goodWin:.4 }, nodes:1, yield:[1,2] } },

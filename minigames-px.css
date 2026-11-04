@@ -178,3 +178,43 @@ html.mv-reduced-motion .mg-root,html.mv-reduced-motion .mg-layer,html.mv-reduced
 .fs-baitbtn.on{background:#5a7a4a;border-color:#f0cf5a;box-shadow:0 2px 0 #11100c,0 0 0 1px #f0cf5a inset}
 .fs-baitbtn.empty{opacity:.55}
 @media (max-width:560px){.fs-bait{top:auto;bottom:108px;gap:5px}.fs-baitbtn{padding:3px 8px 3px 5px;font-size:12px}}
+
+/* 낚시: 걸린 물고기의 난이도 표시 */
+.fs-grade{position:absolute;left:50%;top:44px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;white-space:nowrap;padding:5px 12px 6px;font:400 13px/1.2 var(--px-font);color:#f4efd8;z-index:3;transition:opacity .2s}
+.fs-grade[hidden]{display:none}.fs-grade b{font-weight:400;color:#fff}.fs-grade em{font-style:normal;font-size:11.5px;color:#cfe6d6;opacity:.9}
+.fs-grade .g1{color:#9fe0a8}.fs-grade .g2{color:#e8e08a}.fs-grade .g3{color:#ffb86a}.fs-grade .g4{color:#ff8a72}
+.fs-stage:not([data-phase=fight]):not([data-phase=ending]) .fs-grade{opacity:0}
+@media (max-width:560px){.fs-grade{top:50px;gap:6px;font-size:12px;padding:4px 9px 5px}.fs-grade em{display:none}}
+
+/* ---------- 채집 (숲에서 단서를 찾아 재료를 직접 모으는 탐색형) ---------- */
+.gt-stage{background:#0b140f}
+.gt-select{position:absolute;inset:0;overflow:auto;padding:max(78px,11vh) max(14px,3vw) 30px;background:radial-gradient(ellipse at 50% 0,#2d4a35 0,#0b1410 75%)}.gt-select[hidden]{display:none}
+.gt-select-in{width:min(940px,100%);margin:0 auto;text-align:center}
+.gt-select-in h2{margin:2px 0 6px;font:400 27px/1.2 var(--px-font);color:var(--px-gold);text-shadow:0 3px 0 var(--px-ink)}.gt-select-in .mg-body{max-width:520px;margin:0 auto}
+.gt-zones{display:flex;flex-wrap:wrap;gap:22px 20px;justify-content:center;margin-top:22px}
+.gt-zone{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;width:min(262px,100%);padding:14px 14px 16px;text-align:center;--pxbg:#2c4a3a}
+.gt-zone.g2{--pxbg:#2f4a30}.gt-zone.g3{--pxbg:#2b4448}
+.gt-swatch{width:84px;height:60px;background:linear-gradient(180deg,color-mix(in srgb,var(--c) 70%,#fff),var(--c));box-shadow:0 -3px 0 0 var(--px-ink),0 3px 0 0 var(--px-ink),-3px 0 0 0 var(--px-ink),3px 0 0 0 var(--px-ink);image-rendering:pixelated;position:relative}
+.gt-swatch::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 60%,#ffffff55 0 2px,transparent 3px),radial-gradient(circle at 65% 35%,#ffffff44 0 2px,transparent 3px),radial-gradient(circle at 80% 75%,#00000033 0 5px,transparent 6px)}
+.gt-zone h3{margin:2px 0 0;font:400 18px var(--px-font);color:var(--px-cream)}
+.gt-zone p{margin:0;font-size:11.5px;line-height:1.55;color:#cbd5bd;min-height:4.6em}
+.gt-grade{font-style:normal;font:400 12.5px var(--px-font)}.gt-grade.g1{color:#9fe0a8}.gt-grade.g2{color:#e8e08a}.gt-grade.g3{color:#ffb86a}
+.gt-zone dl{margin:2px 0 0;display:grid;gap:4px;width:100%}.gt-zone dl div{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;padding:3px 8px;background:#0e1c17}.gt-zone dt{color:var(--px-mute)}.gt-zone dd{margin:0;color:var(--px-cream)}
+.gt-zone .px-btn{margin-top:auto;width:100%;max-width:200px}
+.gt-play{position:absolute;inset:0}.gt-play[hidden]{display:none}
+.gt-canvas{position:absolute;inset:0;display:block;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges;cursor:crosshair}
+.gt-top{position:absolute;left:50%;top:max(66px,9.5vh);transform:translateX(-50%);display:flex;gap:10px;align-items:center;justify-content:center;pointer-events:none;z-index:2;width:min(96%,720px)}
+.gt-zname{display:flex;flex-direction:column;padding:4px 10px 6px;--pxbg:#142a21;white-space:nowrap}.gt-zname b{font:400 13px var(--px-font)}.gt-zname small{font-size:10px;color:var(--px-mute)}
+.gt-miss{display:inline-flex;gap:4px;padding:8px 9px;--pxbg:#142a21}
+.gt-miss i{width:14px;height:14px;background:#e0503c;box-shadow:inset 0 3px 0 #ff9d8a,inset 0 -3px 0 #8a2a20;clip-path:polygon(0 25%,25% 0,50% 25%,75% 0,100% 25%,100% 50%,50% 100%,0 50%);transition:transform .2s}
+.gt-miss i.off{background:#38443f;box-shadow:none;opacity:.55}
+.gt-basket{display:inline-flex;gap:8px;padding:4px 10px;--pxbg:#142a21}
+.gt-basket span{display:inline-flex;align-items:center;gap:3px}.gt-basket img{width:22px;height:22px;image-rendering:pixelated}.gt-basket b{font:400 14px var(--px-font);color:var(--px-gold);min-width:1ch}
+.gt-basket .bump{animation:gt-bump .35s steps(4,end)}@keyframes gt-bump{50%{transform:translateY(-4px) scale(1.2)}}
+.gt-hint{top:max(118px,15vh)}
+.gt-legend{position:absolute;left:50%;bottom:max(70px,10.5vh);transform:translateX(-50%);display:flex;flex-wrap:wrap;gap:4px 8px;justify-content:center;width:min(96%,640px);pointer-events:none;z-index:2}
+.gt-lg{font:400 11px/1 var(--px-font);padding:4px 7px 5px;background:#0e1c17cc;color:#cfe6d6;border-left:4px solid #7fe07a}
+.gt-lg.mushroom{border-color:#b08cf0}.gt-lg.berry{border-color:#ff6a7a}.gt-lg.gold{border-color:#ffe27a}
+.gt-done{position:absolute;left:50%;bottom:max(16px,3vh);transform:translateX(-50%);min-width:min(220px,60vw);min-height:46px;font-size:16px;z-index:3}.gt-done:active{transform:translateX(-50%) translateY(2px)}.gt-done[hidden]{display:none}
+.gt-judge{font-size:clamp(20px,4vw,30px)}
+@media (max-width:560px){.gt-zones{gap:14px}.gt-zone{width:min(300px,100%)}.gt-top{gap:6px;top:76px}.gt-zname{display:none}.gt-legend{bottom:76px}.gt-lg{font-size:10px;padding:3px 5px 4px}.gt-hint{top:124px;font-size:12px;max-width:90%;padding:6px 10px}.gt-basket{gap:6px;padding:4px 7px}}

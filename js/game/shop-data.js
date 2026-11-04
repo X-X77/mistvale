@@ -1,8 +1,8 @@
 // 상점 중앙 데이터: 가격표, 상점(클로버 잡화점 하나), 엑스의 비밀 선물.
 // 가격을 바꾸고 싶으면 아래 PRICES 표만 고치면 됩니다. (buy: 상점에서 사는 값, sell: 상점이 쳐 주는 값)
 // 사 주는 것(물고기·광석·요리)과 파는 것(미끼·장비·식재료)이 겹치지 않아서, 사고팔기만으로는 코인이 불어나지 않습니다.
-import { DISH_QUALITY } from './items.js?v=sh2';
-import { GIFT_UNLOCK } from './progress.js?v=sh2';
+import { DISH_QUALITY } from './items.js?v=mg4';
+import { GIFT_UNLOCK } from './progress.js?v=mg4';
 
 /* ---------------- 가격표 (코인) ---------------- */
 export const PRICES = {

@@ -1,12 +1,12 @@
 // 낚시 화면(픽셀 캔버스): 위에서 내려다본 물가. 찌·물보라·줄의 휘어짐·낚싯대의 휘어짐·물고기의 몸짓으로 상태를 보여 줍니다.
 // 규칙(장력·체력·저항 패턴)은 fishing-engine.js 가 그대로 담당하고, 이 파일은 입력과 그림만 맡습니다.
-import { FISH, FISHING_SPOTS, TIERS, josa } from './items.js?v=sh2';
-import { equipmentBonus, baitEffect, BAIT_IDS, GOODS } from './goods.js?v=sh2';
-import { BiteSession, Fight, TUNING, rollSize } from './fishing-engine.js?v=sh2';
-import { createRng } from './rng.js?v=sh2';
-import { Pix, pixelSurface, blit, text, clamp, lerp, mix, light, dark, INK, hash } from './pixel.js?v=sh2';
-import { fishSprite, uiIcon, iconImg } from './art.js?v=sh2';
-import { describeItem } from './items.js?v=sh2';
+import { FISH, FISHING_SPOTS, TIERS, GRADES, TRAITS, josa } from './items.js?v=mg4';
+import { equipmentBonus, baitEffect, BAIT_IDS, GOODS } from './goods.js?v=mg4';
+import { BiteSession, Fight, TUNING, rollSize } from './fishing-engine.js?v=mg4';
+import { createRng } from './rng.js?v=mg4';
+import { Pix, pixelSurface, blit, text, clamp, lerp, mix, light, dark, INK, hash } from './pixel.js?v=mg4';
+import { fishSprite, uiIcon, iconImg } from './art.js?v=mg4';
+import { describeItem } from './items.js?v=mg4';
 
 const TAU = Math.PI * 2;
 
@@ -16,8 +16,9 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
   const stage = host.stage; stage.classList.add('fs-stage');
   const zoneChip = (cls, id, label) => `<div class="fs-zone ${cls}">${iconImg({ id, kind:'fish', color:FISH[id].color }, 24)}<span>${label}</span></div>`;
   stage.innerHTML = `<canvas class="fs-canvas" aria-label="낚시터 화면"></canvas>
-    <div class="fs-zones" aria-hidden="true">${zoneChip('z1', pool[0].id, '얕은 곳 · 일반')}${zoneChip('z2', pool[2].id, '중간 · 희귀')}${zoneChip('z3', pool[3].id, '깊은 곳 · 특수')}</div>
+    <div class="fs-zones" aria-hidden="true">${zoneChip('z1', pool[0].id, '얕은 곳 · 쉬움~보통')}${zoneChip('z2', pool[2].id, '중간 · 어려움')}${zoneChip('z3', pool[3].id, '깊은 곳 · 최고 난도')}</div>
     <div class="fs-gauge pxt" aria-hidden="true">줄 장력</div>
+    <div class="fs-grade px" aria-hidden="true" hidden></div>
     <div class="fs-call" aria-hidden="true"></div>
     <div class="fs-hint" aria-hidden="true"></div>
     <div class="fs-controls" hidden><button type="button" class="fs-btn side fs-left" aria-label="왼쪽으로 기울이기"><img class="pxi" src="${uiIcon('left')}" alt=""></button><button type="button" class="fs-btn fs-reel" aria-label="감기 (누르고 있는 동안)">감기<small>꾹 누르기</small></button><button type="button" class="fs-btn side fs-right" aria-label="오른쪽으로 기울이기"><img class="pxi" src="${uiIcon('right')}" alt=""></button></div>`;
@@ -38,7 +39,7 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
   baitEl.addEventListener('pointerdown', event => event.preventDefault());   // 눌러도 초점이 옮겨 가지 않게(Space 로 던질 때 버튼이 눌리지 않도록)
   baitEl.addEventListener('click', event => { const button = event.target.closest('.fs-baitbtn'); if (button) pickBait(button.dataset.bait || null); });
   const canvas = stage.querySelector('canvas'), surf = pixelSurface(canvas, stage, { maxH:220 }), g = surf.g;
-  const callEl = stage.querySelector('.fs-call'), hintEl = stage.querySelector('.fs-hint'), controls = stage.querySelector('.fs-controls'), gaugeEl = stage.querySelector('.fs-gauge');
+  const gradeEl = stage.querySelector('.fs-grade'), callEl = stage.querySelector('.fs-call'), hintEl = stage.querySelector('.fs-hint'), controls = stage.querySelector('.fs-controls'), gaugeEl = stage.querySelector('.fs-gauge');
   const zoneEls = [...stage.querySelectorAll('.fs-zone')];
   const coarse = matchMedia('(pointer: coarse)').matches || matchMedia('(hover: none)').matches;
   controls.hidden = !coarse;
@@ -47,7 +48,7 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
   const S = { phase:'aim', bite:null, fight:null, fish:null, floatX:0, floatY:0, castT:0, from:null, shake:0, flash:0, reeling:false, lean:0,
     keys:{ reel:false, left:false, right:false }, ptr:{ down:false, id:null, x0:0 }, btn:{ reel:false, left:false, right:false },
     particles:[], rings:[], fishPos:{ x:0, y:0, vx:0, vy:0 }, floatDip:0, dipV:0, call:'', callTone:'', callT:0, lastTick:0, lastWarn:-9, maxT:0, dangerSeen:false,
-    mouse:{ x:0, y:0, in:false }, ended:false, endT:0, endInfo:null, pxPerM:30, hookedAt:0, reelAcc:0, dashShown:'' , jumpT:0, catchFrom:null, splash:0 };
+    shadows:[], biter:null, mouse:{ x:0, y:0, in:false }, ended:false, endT:0, endInfo:null, pxPerM:30, hookedAt:0, reelAcc:0, dashShown:'' , jumpT:0, catchFrom:null, splash:0 };
 
   const bottomPad = () => (coarse ? 112 : 0);
   const shoreY = () => H - bottomPad() - Math.max(54, H * .1);
@@ -74,9 +75,46 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
   function shake(amount) { if (!reduced) S.shake = Math.max(S.shake, amount); }
   function buzz(ms) { try { navigator.vibrate?.(ms); } catch { /* 지원 안 함 */ } }
 
+  /* ---------- 물속 그림자: 던지기 전에 물고기가 헤엄치는 모습이 어렴풋이 보입니다 ----------
+     그림자가 큰(=덩치 큰) 곳 가까이에 던지면 바로 그 물고기가 다가옵니다. 아무것도 없는 곳에 던지면 깊이에 따라 무엇이 올지 정해져요. */
+  const silCache = {};
+  function silhouette(fish) {
+    const key = fish.id; if (silCache[key]) return silCache[key];
+    const spr = fishSprite(fish.id, 0, fish.color), out = new Pix(spr.cv.width, spr.cv.height); out.g.drawImage(spr.cv, 0, 0);
+    out.g.globalCompositeOperation = 'source-atop'; out.g.fillStyle = '#04141e'; out.g.fillRect(0, 0, out.cv.width, out.cv.height);
+    out.len = spr.len; out.headX = spr.headX; return (silCache[key] = out);
+  }
+  // 구역(깊이)별로 어떤 그림자가 많이 보이는지: 얕을수록 작고 쉬운 물고기, 깊을수록 크고 어려운 물고기
+  const SHADOW_BANDS = [[.1, [.7, .3, 0, 0]], [.26, [.4, .6, 0, 0]], [.42, [.1, .5, .4, 0]], [.58, [0, .2, .8, 0]], [.76, [0, 0, .65, .35]], [.92, [0, 0, .25, .75]]];
+  function spawnShadows() {
+    S.shadows = SHADOW_BANDS.map(([d0, w]) => { const d = clamp(d0 + rng.range(-.04, .04), 0, 1), y = depthToY(d), x = W / 2 + rng.range(-.7, .7) * halfW();
+      let roll = rng(), idx = 0; for (let i = 0; i < w.length; i++) { roll -= w[i]; if (roll <= 0) { idx = i; break; } idx = i; }
+      return { fish:pool[idx], x, y, hx:x, hy:y, ang:rng() < .5 ? 0 : Math.PI, ph:rng.range(0, 6.28), spd:rng.range(9, 16) }; });
+  }
+  function updateShadows(dt) {
+    for (const sh of S.shadows) {
+      sh.ang += Math.sin(time * .6 + sh.ph) * dt * 1.4; const sp = sh.spd * (sh.alert > 0 ? 3 : 1); sh.alert = Math.max(0, (sh.alert || 0) - dt);
+      sh.x += Math.cos(sh.ang) * sp * dt; sh.y += Math.sin(sh.ang) * sp * dt * .45;
+      const dx = sh.hx - sh.x, dy = sh.hy - sh.y; if (Math.hypot(dx, dy) > 46) sh.ang = Math.atan2(dy, dx) + Math.sin(sh.ph) * .4;
+    }
+  }
+  function drawShadowFish(fish, x, y, heading, alpha) {
+    const spr = silhouette(fish), swim = Math.sin(time * 3 + x * .05) * .08; blit(g, spr, R(x), R(y), { rot:heading + swim, alpha });
+    if (fish.grade === 4 && !reduced && Math.sin(time * 3 + x) > .5) { g.save(); g.globalAlpha = .6; surf.pix.px(R(x) + 2, R(y) - 2, '#fff3a8'); g.restore(); }
+  }
+  function drawShadows() { for (const sh of S.shadows) drawShadowFish(sh.fish, sh.x, sh.y, Math.cos(sh.ang) >= 0 ? sh.ang : sh.ang, .3); }
+  /* 입질을 기다리는 동안 이 물고기가 찌 쪽으로 다가와 기웃거리다 물어요 */
+  function updateBiter(dt) {
+    const b = S.biter; if (!b) return; const bite = S.bite, u = bite ? clamp(bite.t / bite.biteAt, 0, 1) : 1, e = u * u * (3 - 2 * u);
+    const lunge = clamp(1 - (bite.t - bite.lastNibble) / .4, 0, 1), a = time * 1.5, near = (1 - e) * 26 + 9;
+    const tx = S.floatX + Math.cos(a) * near, ty = S.floatY + Math.sin(a) * near * .55;
+    const px0 = lerp(b.x0, tx, e), py0 = lerp(b.y0, ty, e);
+    const nx = lerp(px0, S.floatX, lunge * .85 + (S.phase === 'bite' ? .9 : 0)), ny = lerp(py0, S.floatY + 3, lunge * .85 + (S.phase === 'bite' ? .9 : 0));
+    b.heading = Math.atan2(S.floatY - ny, S.floatX - nx) + (S.phase === 'bite' ? Math.sin(time * 40) * .5 : 0); b.x = nx; b.y = ny;
+  }
   function toAim() {
-    S.phase = 'aim'; S.bite = null; S.fight = null; S.fish = null; S.ended = false; S.reeling = false; S.dashShown = '';
-    sfx.stopHum(); setCall(''); renderBait(); setHint(coarse ? '물 위를 눌러 던져요' : '물 위를 눌러 던져요 (Space: 아무 데나)');
+    S.phase = 'aim'; S.bite = null; S.fight = null; S.fish = null; S.biter = null; gradeEl.hidden = true; spawnShadows(); S.ended = false; S.reeling = false; S.dashShown = '';
+    sfx.stopHum(); setCall(''); renderBait(); setHint(coarse ? '물 위를 눌러 던져요. 큰 그림자 가까이 던지면 그 물고기가 와요' : '큰 그림자 가까이에 던지면 그 물고기가 와요 (Space: 아무 데나)');
     stage.dataset.phase = 'aim';
   }
   function cast(x, y) {
@@ -85,11 +123,14 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
     S.floatX = tx; S.floatY = ty; S.from = { x:W / 2, y:shoreY() - 36 }; S.castT = 0; S.phase = 'cast'; stage.dataset.phase = 'cast';
     // 고른 미끼는 던지는 순간 1개 씁니다(다른 탭에서 이미 써서 없다면 미끼 없이 던집니다).
     let used = null; if (baitId && progress.remove({ [baitId]:1 })) used = baitId; else baitId = null;
-    S.bite = new BiteSession(pool, yToDepth(ty), rng, equipmentBonus(progress.state.items).biteWindow, used ? baitEffect(used) : {}); S.fish = S.bite.fish; S.usedBait = used; setHint(''); sfx.play('cast');
+    let forced = null, near = null, best = 70; for (const sh of S.shadows) { const d = Math.hypot(sh.x - tx, sh.y - ty); if (d < best) { best = d; near = sh; } }
+    if (near) { forced = near.fish; S.shadows = S.shadows.filter(sh => sh !== near); }
+    S.bite = new BiteSession(pool, yToDepth(ty), rng, equipmentBonus(progress.state.items).biteWindow, used ? baitEffect(used) : {}, forced); S.fish = S.bite.fish;
+    S.biter = { fish:S.fish, x0:near ? near.x : tx + (rng() < .5 ? -1 : 1) * rng.range(110, 170), y0:near ? near.y : ty + rng.range(-24, 24), x:0, y:0, heading:0 }; S.biter.x = S.biter.x0; S.biter.y = S.biter.y0; S.usedBait = used; setHint(''); sfx.play('cast');
     if (used) { const name = describeItem(used).name; host.say(`${name}${josa(name, '을/를')} 달아 던졌습니다.`); }; renderBait();
   }
   function afterCast() {
-    S.phase = 'wait'; stage.dataset.phase = 'wait'; ring(S.floatX, S.floatY, '#ffffff', 40, 1.1); sfx.play('splash');
+    S.phase = 'wait'; stage.dataset.phase = 'wait'; ring(S.floatX, S.floatY, '#ffffff', 40, 1.1); sfx.play('plop');
     setHint('찌를 지켜봐요. 까딱이는 건 가짜 입질!'); host.say('낚싯줄을 던졌습니다. 입질을 기다리는 중.');
   }
   function onHookPress() {
@@ -99,8 +140,12 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
       else if (r === 'early') endBite('early');
     }
   }
+  function showGrade(fish) {
+    const grade = GRADES[fish.grade] || GRADES[1], trait = TRAITS[fish.trait];
+    gradeEl.innerHTML = `<b>${fish.name}</b><span class="g${fish.grade}">${grade.stars} ${grade.label}</span>${trait ? `<em>${trait.label}</em>` : ''}`; gradeEl.hidden = false;
+  }
   function startFight() {
-    S.phase = 'fight'; stage.dataset.phase = 'fight'; S.fight = new Fight(S.fish, rng); S.hookedAt = time; S.maxT = 0; S.dangerSeen = false; S.reelAcc = 0;
+    S.phase = 'fight'; stage.dataset.phase = 'fight'; S.biter = null; S.fight = new Fight(S.fish, rng); showGrade(S.fish); S.hookedAt = time; S.maxT = 0; S.dangerSeen = false; S.reelAcc = 0;
     const startDist = S.fight.dist, dy = shoreY() - 30 - S.floatY; S.pxPerM = Math.max(14, dy / startDist);
     S.fishPos = { x:S.floatX, y:S.floatY, vx:0, vy:0 };
     // 좌우 위치는 던진 위치에서 시작
@@ -109,7 +154,7 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
     setHint(coarse ? '‘감기’를 꾹 눌러 끌어와요. 물보라가 보이면 손을 떼요!' : '꾹 눌러(마우스·Space) 끌어와요. 물보라가 보이면 놓아요!', 6000); host.say('걸렸습니다! 힘겨루기 시작.');
   }
   function endBite(kind) {
-    S.phase = 'ending'; stage.dataset.phase = 'ending'; sfx.stopHum(); setHint('');
+    S.biter = null; S.phase = 'ending'; stage.dataset.phase = 'ending'; sfx.stopHum(); setHint('');
     const fish = S.fish;
     if (kind === 'early') { sfx.play('early'); ring(S.floatX, S.floatY, '#ff9d7a', 50, .7); setCall('너무 일찍!', 'bad', 1.6); S.endInfo = { result:'early' }; }
     else { sfx.play('lose'); setCall('놓쳤다…', 'bad', 1.6); S.endInfo = { result:'missed' }; }
@@ -118,7 +163,7 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
   function finishFight() {
     const f = S.fight; S.phase = 'ending'; stage.dataset.phase = 'ending'; sfx.stopHum(); setHint('');
     S.endInfo = { result:f.over, reason:f.reason }; S.endT = 0; S.ended = true;
-    if (f.over === 'caught') { sfx.play('win'); S.jumpT = 0; S.catchFrom = [Math.round(S.fishPos.x / PX), Math.round(S.fishPos.y / PX)]; burst(S.fishPos.x, S.fishPos.y, 30, '#ffffff', 220); setCall('낚았다!', 'win', 2); buzz(60); }
+    if (f.over === 'caught') { sfx.play('catch'); setTimeout(() => sfx.play('win'), 380); S.jumpT = 0; S.catchFrom = [Math.round(S.fishPos.x / PX), Math.round(S.fishPos.y / PX)]; burst(S.fishPos.x, S.fishPos.y, 30, '#ffffff', 220); setCall('낚았다!', 'win', 2); buzz(60); }
     else { sfx.play(f.over === 'snap' ? 'snap' : 'lose'); shake(f.over === 'snap' ? 14 : 5); buzz(f.over === 'snap' ? 120 : 40);
       setCall(f.over === 'snap' ? '줄이 끊어졌다!' : f.over === 'loose' ? '바늘이 빠졌다!' : '도망쳤다!', 'bad', 2); }
   }
@@ -129,13 +174,14 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
       const size = rollSize(fish, rng), rec = progress.recordCatch(fish.id, size); progress.add(fish.id, 1);
       const xp = progress.addXp('fishing', fish.xp), lvl = xp.leveled ? `낚시 Lv.${xp.after.level} 달성!` : '';
       if (xp.leveled) sfx.play('level');
-      host.showResult({ tone:'win', title:'낚았다!', message:`${size}cm${rec.first ? ' · 처음 낚았어요!' : rec.best === size && progress.state.caught[fish.id].count > 1 ? ' · 최대 기록!' : ''}`,
+      host.showResult({ tone:'win', title:'낚았다!', message:`${GRADES[fish.grade].stars} ${GRADES[fish.grade].label} · ${size}cm${rec.first ? ' · 처음 낚았어요!' : rec.best === size && progress.state.caught[fish.id].count > 1 ? ' · 최대 기록!' : ''}`,
         rewards:[{ item:fish.id, n:1, note:fish.desc }], xp:`낚시 경험치 +${fish.xp}`, level:lvl, actions:[again, leave] });
     } else {
       const reasons = { early:['너무 일찍!', '가짜 입질에 속았어요. 찌가 푹 잠기고 물보라가 일 때까지 기다려요.'],
         missed:['입질을 놓쳤어요', '진짜 입질이 왔을 때 제때 누르지 못했어요. 찌가 푹 잠기면 바로 눌러요.'],
         snap:['줄이 끊어졌어요', info.reason], loose:['바늘이 빠졌어요', info.reason], escaped:['도망쳤어요', info.reason] };
-      const [title, why] = reasons[info.result] || ['실패', ''];
+      let [title, why] = reasons[info.result] || ['실패', ''];
+      if (['snap', 'loose', 'escaped'].includes(info.result) && TRAITS[fish.trait]) why += ` (${fish.name}: ${TRAITS[fish.trait].label} — ${TRAITS[fish.trait].text})`;
       progress.addXp('fishing', 2);
       host.showResult({ tone:'lose', title, message:info.result === 'early' || info.result === 'missed' ? '물고기가 달아났어요.' : `${fish.name}${josa(fish.name, '은/는')} 놓쳤어요.`, detail:why, xp:'낚시 경험치 +2 (도전 보상)', actions:[again, leave] });
     }
@@ -191,6 +237,7 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
     for (const r of S.rings) r.t += dt; S.rings = S.rings.filter(r => r.t < r.dur);
     // 찌 출렁임(스프링)
     S.dipV += (-S.floatDip * 60 - S.dipV * 7) * dt; S.floatDip += S.dipV * dt;
+    updateShadows(dt); if (S.biter && (S.phase === 'cast' || S.phase === 'wait' || S.phase === 'bite')) updateBiter(dt);
 
     if (S.phase === 'cast') {
       S.castT += dt; if (S.castT >= .55) afterCast();
@@ -208,14 +255,15 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
       f.step(dt, { reel:S.reeling, lean:lean });
       S.maxT = Math.max(S.maxT, f.tension);
       for (const ev of f.events) {
-        if (ev === 'phase:telegraph') { const dir = f.dashDir; setCall(dir < 0 ? '◀ 물보라! 놓아요' : '물보라! 놓아요 ▶', 'alert', f.teleLen + .6); sfx.play('warn'); ring(S.fishPos.x, S.fishPos.y, '#fff1a8', 54, f.teleLen + .3); buzz(25); S.dashShown = 'tele'; }
+        if (ev === 'phase:telegraph') { const dir = f.dashDir; setCall(f.zig ? '◀▶ 지그재그! 놓아요' : dir < 0 ? '◀ 물보라! 놓아요' : '물보라! 놓아요 ▶', 'alert', f.teleLen + .6); sfx.play('warn'); ring(S.fishPos.x, S.fishPos.y, '#fff1a8', 54, f.teleLen + .3); buzz(25); S.dashShown = 'tele'; }
         if (ev === 'phase:dash') { burst(S.fishPos.x, S.fishPos.y, 12, '#ffffff', 190); sfx.play('splash'); shake(4); setCall('', '', .01); callEl.classList.remove('on'); }
+        if (ev === 'turn') { burst(S.fishPos.x, S.fishPos.y, 16, '#ffffff', 210); ring(S.fishPos.x, S.fishPos.y, '#ffffff', 62, .5); sfx.play('splash'); shake(5); setCall(f.dashDir < 0 ? '◀ 방향 전환!' : '방향 전환! ▶', 'danger', .7); }
         if (ev === 'phase:rest') { if (!f.tired) setCall('힘을 아끼는 중 — 지금 감아요', 'info', 1.1); }
         if (ev === 'phase:tired') { setCall('지쳤다! 쭉 감아요', 'good', 1.8); sfx.play('good'); }
         if (ev === 'phase:swim' && f.stamina > .5 && S.dashShown === 'tired') { setCall('힘을 되찾았다!', 'alert', 1.2); }
       }
       if (f.phase === 'tired') S.dashShown = 'tired';
-      if (f.tension > TUNING.dangerT - .05 && time - S.lastWarn > .55) { S.lastWarn = time; sfx.play('warn'); buzz(15); if (f.phase !== 'telegraph') setCall('장력 위험! 놓아요', 'danger', .5); }
+      if (f.tension > f.k.dangerT - .05 && time - S.lastWarn > .55) { S.lastWarn = time; sfx.play('warn'); buzz(15); if (f.phase !== 'telegraph') setCall('장력 위험! 놓아요', 'danger', .5); }
       if (Math.abs(f.x) > TUNING.hazardAt && time - S.lastWarn > .8) { S.lastWarn = time; setCall(f.x < 0 ? '◀ 갈대에 쓸려요! 반대로' : '갈대에 쓸려요! 반대로 ▶', 'danger', .8); }
       // 감는 소리
       if (S.reeling) { S.reelAcc += Math.max(0, before - f.dist); if (S.reelAcc > .09) { S.reelAcc = 0; sfx.play('tick', clamp(f.tension, 0, 1)); } }
@@ -330,6 +378,7 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
     for (let i = 0; i < 46; i++) { const sp = 2 + hash(i * 3) * 4, x = ((hash(i * 11) * (vw + 30) + time * sp * (i & 1 ? 1 : -1)) % (vw + 30) + (vw + 30)) % (vw + 30) - 15, y = 4 + hash(i * 5 + 1) * (sy - 10), w = 3 + Math.floor(hash(i * 7) * 5); p.g.globalAlpha = i % 3 ? .2 : .28; p.rect(x, y, w, 1, i % 3 ? '#e9fbff' : '#06202e'); }
     p.g.globalAlpha = 1;
     for (let i = 0; i < 14; i++) { const a = (Math.sin(time * 1.6 + i * 2.3) + 1) / 2; if (a < .7) continue; const x = hash(i * 17) * vw, y = 4 + hash(i * 23 + 3) * (sy - 12); p.px(x, y, '#ffffff'); p.px(x - 1, y, '#ffffff88'); p.px(x + 1, y, '#ffffff88'); p.px(x, y - 1, '#ffffff88'); p.px(x, y + 1, '#ffffff88'); }
+    drawShadows();
     // 갈대밭(위험 구역): 물고기가 그쪽으로 몰리면 노란 표시와 함께 거세게 흔들립니다
     const cx = W / 2, hz = halfW() * TUNING.hazardAt;
     for (const side of [-1, 1]) {
@@ -342,15 +391,15 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
     }
   }
   function drawDialPx() {
-    const f = S.fight, d = dial(), cx = R(d.x), cy = R(d.y), rr = 15, p = surf.pix, T = f ? f.tension : 0;
-    const hotLevel = f ? clamp(f.strain / TUNING.snapStrain, 0, 1) : 0;
+    const f = S.fight, K = f ? f.k : TUNING, d = dial(), cx = R(d.x), cy = R(d.y), rr = 15, p = surf.pix, T = f ? f.tension : 0;
+    const hotLevel = f ? clamp(f.strain / K.snapStrain, 0, 1) : 0;
     p.disc(cx, cy, rr + 3, INK); p.disc(cx, cy, rr + 2, hotLevel > .05 && (Math.floor(time * 14) & 1) ? '#8a2a20' : '#c9a24a'); p.disc(cx, cy, rr + 1, INK); p.disc(cx, cy, rr, '#142a21');
-    const a0 = Math.PI * .78, a1 = Math.PI * 2.22, N = 22, zones = [[0, TUNING.sweetLow, '#5b8aa6'], [TUNING.sweetLow, TUNING.sweetHigh, '#6fb36a'], [TUNING.sweetHigh, TUNING.dangerT, '#e0a53c'], [TUNING.dangerT, 1.02, '#e0503c']];
+    const a0 = Math.PI * .78, a1 = Math.PI * 2.22, N = 22, zones = [[0, K.sweetLow, '#5b8aa6'], [K.sweetLow, K.sweetHigh, '#6fb36a'], [K.sweetHigh, K.dangerT, '#e0a53c'], [K.dangerT, 1.02, '#e0503c']];
     for (let i = 0; i < N; i++) { const t = i / (N - 1), a = lerp(a0, a1, t), z = zones.find(zz => t >= zz[0] && t < zz[1]) || zones[3], on = t <= T + .001; p.g.globalAlpha = on ? 1 : .42; const x = cx + Math.cos(a) * (rr - 4), y = cy + Math.sin(a) * (rr - 4); p.rect(x - 1, y - 1, 2, 2, z[2]); }
     p.g.globalAlpha = 1;
     const jit = f && T > .85 && !reduced ? Math.sin(time * 70) * .03 : 0, ang = lerp(a0, a1, clamp(T + jit, 0, 1));
     p.line(cx, cy, cx + Math.cos(ang) * (rr - 6), cy + Math.sin(ang) * (rr - 6), '#fff5d6'); p.disc(cx, cy, 2, '#fff5d6'); p.px(cx, cy, INK);
-    if (T > TUNING.dangerT - .05 && !reduced && (Math.floor(time * 10) & 1)) text(g, '!', cx, cy + 3, '#ff8a72', INK);
+    if (T > K.dangerT - .05 && !reduced && (Math.floor(time * 10) & 1)) text(g, '!', cx, cy + 3, '#ff8a72', INK);
   }
 
   function drawFightScene(r) {
@@ -361,12 +410,12 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
     const act = f.phase === 'dash' ? 26 : f.phase === 'telegraph' ? 18 : f.phase === 'tired' ? 3 : f.phase === 'rest' ? 4 : 10, bend = Math.sin(time * act);
     const bendIdx = bend > .45 ? 1 : bend < -.45 ? -1 : 0, alpha = f.phase === 'tired' ? .75 : 1;
     const spr = fishSprite(fish.id, bendIdx, fish.color), mouth = mouthOf(fp.x, fp.y, heading, spr);
-    drawLine(r, mouth[0], mouth[1], T, f.loose / TUNING.looseLimit);
+    drawLine(r, mouth[0], mouth[1], T, f.loose / f.k.looseLimit);
     const X = R(fp.x), Y = R(fp.y);
     // 돌진 신호: 물보라 링과 방향 화살표, 머리 위 느낌표
     if (f.phase === 'telegraph') {
       const k = f.tele; for (let i = 0; i < 3; i++) { const t = (k * 2 + i / 3) % 1; p.g.globalAlpha = (1 - t) * .9; p.ring(X, Y, 5 + t * 15, 3 + t * 9, '#fff1a8'); } p.g.globalAlpha = 1;
-      const dx = f.dashDir; for (let i = 0; i < 3; i++) { const ox = X + dx * (14 + i * 6 + Math.floor(k * 4)); p.g.globalAlpha = .45 + .2 * i; for (let j = 0; j < 4; j++) p.rect(ox - dx * j, Y - 3 + j, 1, 7 - j * 2, '#fff1a8'); } p.g.globalAlpha = 1;
+      for (const dx of f.zig ? [-1, 1] : [f.dashDir]) for (let i = 0; i < 3; i++) { const ox = X + dx * (14 + i * 6 + Math.floor(k * 4)); p.g.globalAlpha = .45 + .2 * i; for (let j = 0; j < 4; j++) p.rect(ox - dx * j, Y - 3 + j, 1, 7 - j * 2, f.zig ? '#ffb86a' : '#fff1a8'); } p.g.globalAlpha = 1;
       blit(g, bangSprite, X, Y - R(fish.tier === 'special' ? 20 * PX : 14 * PX) - Math.abs(Math.sin(time * 14)) * 2);
     }
     if (f.phase === 'dash') { for (let i = 0; i < 5; i++) { const t = (time * 3 + i * .2) % 1; p.g.globalAlpha = (1 - t) * .8; p.rect(X - f.dashDir * (6 + t * 24), Y + (i - 2) * 3, 4 + t * 4, 1, '#ffffff'); } p.g.globalAlpha = 1; }
@@ -374,7 +423,7 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
     if (fish.tier === 'special' && !reduced) { const k = (Math.sin(time * 4) + 1) / 2; if (k > .6) blit(g, starSprite(false, '#fff3a8'), X + Math.cos(time * 3) * 13, Y + Math.sin(time * 2.2) * 9); }
     text(g, `${Math.max(0, f.dist).toFixed(1)}m`, X, Y + 11 + Math.round(spr.len / 3), '#eaf6ff', INK);
     if (f.phase === 'tired') for (let i = 0; i < 3; i++) { const t = ((time * .9 + i / 3) % 1); p.px(X + 9 + i * 3, Y - 10 - t * 8, '#bfe8ff'); p.px(X + 9 + i * 3, Y - 9 - t * 8, '#7ec0e8'); }
-    if (T > TUNING.dangerT - .02 && !reduced && (Math.floor(time * 12) & 1)) { const col = '#e0503c'; p.g.globalAlpha = .75; p.rect(0, 0, surf.vw, 2, col); p.rect(0, surf.vh - 2, surf.vw, 2, col); p.rect(0, 0, 2, surf.vh, col); p.rect(surf.vw - 2, 0, 2, surf.vh, col); p.g.globalAlpha = 1; }
+    if (T > f.k.dangerT - .02 && !reduced && (Math.floor(time * 12) & 1)) { const col = '#e0503c'; p.g.globalAlpha = .75; p.rect(0, 0, surf.vw, 2, col); p.rect(0, surf.vh - 2, surf.vw, 2, col); p.rect(0, 0, 2, surf.vh, col); p.rect(surf.vw - 2, 0, 2, surf.vh, col); p.g.globalAlpha = 1; }
   }
   function draw() {
     const p = surf.pix; g.setTransform(1, 0, 0, 1, 0, 0); g.imageSmoothingEnabled = false; g.clearRect(0, 0, surf.vw, surf.vh);
@@ -389,8 +438,10 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
     const r = drawRod();
     if (S.phase === 'cast') {
       const k = clamp(S.castT / .55, 0, 1), e = 1 - Math.pow(1 - k, 2), x = lerp(r.tx, S.floatX, e), y = lerp(r.ty, S.floatY, e) - Math.sin(k * Math.PI) * 90;
+      if (S.biter) drawShadowFish(S.biter.fish, S.biter.x, S.biter.y, S.biter.heading || 0, .4);
       drawLine(r, x, y, .3); p.disc(R(x), R(y), 2, INK); p.disc(R(x), R(y), 1, '#f7f3e6');
     } else if (S.phase === 'wait' || S.phase === 'bite') {
+      if (S.biter) drawShadowFish(S.biter.fish, S.biter.x, S.biter.y, S.biter.heading, S.phase === 'bite' ? .62 : .48);
       if (S.phase === 'bite') { const k = (Math.floor(time * 10) & 1); p.ring(R(S.floatX), R(S.floatY), 8 + k, 5 + k, '#ffe08a'); blit(g, bangSprite, R(S.floatX), R(S.floatY) - 17 - Math.abs(Math.sin(time * 16)) * 2); }
       drawLine(r, S.floatX, S.floatY, .12 + (S.phase === 'bite' ? .3 : 0)); drawFloat(S.floatX, S.floatY, S.phase === 'bite');
     } else if (S.phase === 'fight') drawFightScene(r);
@@ -429,10 +480,10 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
   const chip = (t, cls = '') => `<span class="demo-chip ${cls}">${t}</span>`, key = t => `<span class="demo-key">${t}</span>`;
   const game = {
     tutorial:{ title:'낚시', pages:[
-      { title:'낚싯줄 던지기', demo:chip('얕은 곳 · 일반') + chip('깊은 곳 · 희귀', 'warn'), text:'물 위를 눌러(탭) 던져요. <b>멀리</b> 던질수록 귀한 물고기가 걸리지만 힘도 훨씬 세요.' },
+      { title:'물속 그림자 보고 던지기', demo:chip('작은 그림자 · 쉬움') + chip('큰 그림자 · 어려움', 'warn') + chip('멀리 = 최고 난도', 'bad'), text:'물속에 <b>물고기 그림자</b>가 헤엄쳐요. 그림자 가까이에 던지면 그 물고기가 와요. 크고 먼 곳일수록 귀하지만 훨씬 어려워요(★ 1~4).' },
       { title:'입질과 챔질', demo:chip('까딱… 가짜', 'bad') + chip('푹! 진짜', 'ok') + key('Space'), text:'찌가 <b>푹 잠기고 물보라</b>가 일 때 눌러요. 일찍 누르면 도망쳐요.' },
       { title:'당기기와 놓기', demo:key('꾹') + chip('감기 · 장력↑') + key('뗌') + chip('풀기 · 장력↓'), text:'누르는 동안 감겨요. 장력 바늘이 <b>빨간 구역</b>에 오래 있으면 줄이 끊어지고, 너무 오래 풀어 두면 바늘이 빠져요.' },
-      { title:'물보라 = 돌진 신호', demo:chip('! 물보라', 'warn') + chip('돌진 → 놓기', 'bad') + chip('끝나면 다시 감기', 'ok'), text:'물고기가 <b>!</b> 표시와 물보라를 보이면 곧 돌진해요. 손을 떼고, 지쳐서 힘이 빠질 때 쭉 감아 올려요.' },
+      { title:'물보라 = 돌진 신호', demo:chip('! 물보라', 'warn') + chip('돌진 → 놓기', 'bad') + chip('끝나면 다시 감기', 'ok'), text:'물고기가 <b>!</b> 표시와 물보라를 보이면 곧 돌진해요. 손을 떼고, 지쳐서 힘이 빠질 때 쭉 감아 올려요. <b>◀▶ 표시</b>는 돌진 도중 방향을 바꾸는 지그재그예요.' },
       { title:'좌우 방향 잡기', demo:key('←') + key('→') + key('A') + key('D') + chip('끌기'), text:'물고기가 <b>갈대밭</b>으로 쏠리면 줄이 쓸려요. 반대 방향으로 기울여 가운데로 돌려요.' },
     ] },
     busy: () => S.phase === 'fight' || S.phase === 'bite',

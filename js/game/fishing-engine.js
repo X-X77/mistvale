@@ -8,9 +8,10 @@
 //    - 놓으면 장력은 내려가지만 물고기가 멀어지고, 너무 오래 풀어 두면 바늘이 빠집니다(loose).
 //    - 모든 '돌진'은 신호(telegraph)가 먼저 나옵니다. 장력이 갑자기 터지는 일은 없습니다.
 //    - 좌우(lean)로 물고기를 중앙에 붙잡아 두어야 합니다. 갈대·바위 쪽으로 몰리면 줄이 쓸려 장력이 오르고 물고기가 힘을 되찾습니다.
-import { createRng } from './rng.js?v=sh2';
+import { createRng } from './rng.js?v=mg4';
 
 export const TUNING = {
+  teleMin: .26,                                  // 어떤 돌진 신호도 이보다 짧지 않습니다(사람이 보고 반응할 수 있는 최소 시간)
   dangerT: .92, snapStrain: .2, strainRecover: .6,
   reelTarget: .30, reelPerForce: .75, releaseTargetPerForce: .10,
   reelRate: 2.4, reelRateBoost: 2.2, releaseRate: 4,
@@ -27,9 +28,10 @@ export class BiteSession {
   // depth: 0(가까움)~1(멀리). fishPool: 이 장소의 FISH 정의 목록(일반→특수 순).
   // windowMul: 낚싯대 장비가 늘려 주는 챔질 가능 시간 배율(goods.js 의 equipmentBonus)
   // bait: 미끼 효과 { waitMul(입질 대기 시간 배율), rareMul(희귀·특수 확률 배율) } (goods.js 의 baitEffect). 없으면 효과 없음.
-  constructor(fishPool, depth, rng = createRng(), windowMul = 1, bait = {}) {
+  // forced: 던진 곳에 보이던 물고기 그림자(그 물고기가 곧바로 다가옵니다). 없으면 깊이에 따라 뽑습니다.
+  constructor(fishPool, depth, rng = createRng(), windowMul = 1, bait = {}, forced = null) {
     this.rng = rng; this.depth = depth; this.bait = { waitMul:bait.waitMul || 1, rareMul:bait.rareMul || 1 };
-    this.fish = BiteSession.pickFish(fishPool, depth, rng, this.bait.rareMul);
+    this.fish = forced || BiteSession.pickFish(fishPool, depth, rng, this.bait.rareMul);
     const bite = this.fish.bite;
     this.t = 0; this.state = 'waiting'; this.result = null;
     this.nibbles = []; // 가짜 입질 시각들
@@ -79,12 +81,12 @@ export class BiteSession {
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 export class Fight {
   constructor(fish, rng = createRng(), tuning = TUNING) {
-    this.fish = fish; this.f = fish.fight; this.rng = rng; this.k = tuning;
+    this.fish = fish; this.f = fish.fight; this.rng = rng; this.k = { ...tuning, ...(fish.fight.tune || {}) };   // 물고기마다 장력 구역·끊어지는 한계가 조금씩 다릅니다
     this.dist0 = this.f.dist; this.dist = this.f.dist * .9; // 챔질 직후엔 살짝 끌려와 있습니다
     this.stamina = this.f.stamina; this.tension = .25; this.strain = 0; this.loose = 0;
     this.x = rng.range(-.2, .2); this.vx = 0; this.lean = 0;
     this.phase = 'swim'; this.timer = rng.range(1.2, 2.2); this.dashDir = 1; this.dashForce = 0; this.chainLeft = 0;
-    this.sinceDash = 0; this.nextDashIn = rng.range(this.f.dashEvery[0], this.f.dashEvery[1]) + 1.2;
+    this.zig = false; this.zigged = false; this.dashLen = 0; this.sinceDash = 0; this.nextDashIn = rng.range(this.f.dashEvery[0], this.f.dashEvery[1]) + 1.2;
     this.reeling = false; this.momentum = 0; this.over = null; this.reason = ''; this.t = 0;
     this.time = { reeling: 0 }; this.tele = 0;           // tele: 신호 진행도(0~1), UI 연출용
     this.lastCause = ''; this.events = [];
@@ -104,7 +106,7 @@ export class Fight {
     const f = this.f, rng = this.rng;
     if (this.stamina < this.k.tiredAt) { this.#setPhase('tired', 99); return; }
     // 연속 돌진(chain): 방향을 바꿔 한 번 더. 신호는 더 짧습니다.
-    if (this.chainLeft > 0) { this.chainLeft--; this.dashDir *= -1; this.#startTelegraph(.78); return; }
+    if (this.chainLeft > 0) { this.chainLeft--; this.dashDir *= -1; this.#startTelegraph(.85); return; }
     if (this.phase === 'dash' || this.phase === 'telegraph') { this.#setPhase('rest', rng.range(f.rest[0], f.rest[1])); return; }
     if (this.phase === 'rest') { this.#setPhase('swim', rng.range(f.swim[0], f.swim[1])); this.nextDashIn = Math.max(.4, this.nextDashIn - this.timer * .4); return; }
     // swim 이 끝났으면: 돌진 시기가 되었으면 신호, 아니면 쉬거나 계속 헤엄
@@ -112,10 +114,13 @@ export class Fight {
     if (rng.chance(f.restP)) this.#setPhase('rest', rng.range(f.rest[0], f.rest[1]));
     else this.#setPhase('swim', rng.range(f.swim[0], f.swim[1]));
   }
+  // 연속 돌진 횟수(최대 chainMax 번까지 이어질 수 있고, 이어질수록 확률이 줄어듭니다)
+  #rollChain() { const f = this.f; let n = 0; while (n < (f.chainMax || 1) && this.rng.chance((f.chain || 0) * (n ? .65 : 1))) n++; return n; }
   #startTelegraph(scale) {
-    const f = this.f, d = this.rng.range(f.tele[0], f.tele[1]) * scale;
+    const f = this.f, d = Math.max(this.k.teleMin, this.rng.range(f.tele[0], f.tele[1]) * scale);
     // 지친 척(sulk) 물고기는 쉬는 동안 신호가 짧아집니다.
     this.#setPhase('telegraph', d); this.teleLen = d;
+    this.zig = this.rng.chance(f.zig || 0); this.zigged = false;   // 지그재그 돌진: 신호에 ◀▶ 표시가 붙고, 돌진 도중 한 번 방향을 바꿉니다
     this.dashForce = this.rng.range(f.dashForce[0], f.dashForce[1]);
     this.chainPlanned = false;
   }
@@ -132,13 +137,14 @@ export class Fight {
     if (this.phase === 'telegraph') this.tele = clamp(1 - this.timer / this.teleLen, 0, 1); else this.tele = 0;
     if (this.timer <= 0) {
       if (this.phase === 'telegraph') {
-        this.#setPhase('dash', this.rng.range(f.dash[0], f.dash[1]));
+        this.dashLen = this.rng.range(f.dash[0], f.dash[1]); this.#setPhase('dash', this.dashLen);
         this.sinceDash = 0; this.nextDashIn = this.rng.range(f.dashEvery[0], f.dashEvery[1]) * (f.sulk && this.rng.chance(.5) ? 1.5 : 1);
-        this.chainLeft = this.rng.chance(f.chain) ? 1 : 0;
+        this.chainLeft = this.#rollChain();
       } else this.#nextBehavior();
     }
     if (this.phase !== 'tired' && this.stamina < k.tiredAt && this.phase !== 'dash' && this.phase !== 'telegraph') this.#setPhase('tired', 99);
 
+    if (this.phase === 'dash' && this.zig && !this.zigged && this.timer < this.dashLen * .5) { this.zigged = true; this.dashDir *= -1; this.events.push('turn'); }
     const force = this.force;
     // --- 좌우 위치 ---
     let push = 0;

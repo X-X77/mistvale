@@ -59,7 +59,7 @@ test('낚시: 모든 돌진에는 신호가 먼저 있고, 장력은 한 프레�
     const rng = createRng(seed), f = new Fight(fish, rng); let prev = f.phase, teleStart = 0, prevT = f.tension, i = 0;
     while (!f.over && f.t < 60) {
       f.step(1 / 60, { reel:(i++ % 90) < 70, lean:0 });
-      if (f.phase !== prev) { if (f.phase === 'telegraph') teleStart = f.t; if (f.phase === 'dash') { assert.equal(prev, 'telegraph', fish.id + ' 신호 없이 돌진'); assert.ok(f.t - teleStart >= .3, fish.id + ' 신호가 너무 짧음 ' + (f.t - teleStart)); } prev = f.phase; }
+      if (f.phase !== prev) { if (f.phase === 'telegraph') teleStart = f.t; if (f.phase === 'dash') { assert.equal(prev, 'telegraph', fish.id + ' 신호 없이 돌진'); assert.ok(f.t - teleStart >= .25, fish.id + ' 신호가 너무 짧음 ' + (f.t - teleStart)); } prev = f.phase; }
       const jump = f.tension - prevT; if (f.phase !== 'dash' && Math.abs(f.x) <= TUNING.hazardAt) assert.ok(jump < .06, fish.id + ' 신호 없는 장력 급등 ' + jump + ' (' + f.phase + ')'); assert.ok(jump < .16, fish.id + ' 장력 급등 ' + jump); prevT = f.tension;
     }
   }
@@ -74,8 +74,8 @@ test('낚시: 신호를 보고 놓는 법을 익히면 일반 물고기는 안�
 test('낚시: 희귀·특수는 평균 플레이어에게 어렵고, 숙련자가 확실히 더 잘 잡는다 (등급 간 난이도 차)', () => {
   for (const [rare, special] of [['mist-trout', 'moon-carp'], ['lighthouse-bass', 'fog-anglerfish']]) {
     const avg = [rate(FISH[rare], 'average'), rate(FISH[special], 'average')], skl = [rate(FISH[rare], 'skilled'), rate(FISH[special], 'skilled')], slow = rate(FISH[rare], 'slow');
-    assert.ok(avg[0] < .9 && avg[0] > .3, rare + ' 평균 ' + avg[0]); assert.ok(avg[1] < .3, special + ' 평균 ' + avg[1]);
-    assert.ok(skl[0] > avg[0] + .1 && skl[1] > avg[1] + .35, '숙련 차이 ' + skl + ' vs ' + avg); assert.ok(skl[1] < skl[0], '특수가 희귀보다 어려움'); assert.ok(slow < .25, rare + ' 느린 반응 ' + slow);
+    assert.ok(avg[0] < .6 && avg[0] > .1, rare + ' 평균 ' + avg[0]); assert.ok(avg[1] < .12, special + ' 평균 ' + avg[1]);
+    assert.ok(skl[0] > avg[0] + .3 && skl[1] > avg[1] + .1 && skl[1] < .55, '숙련 차이 ' + skl + ' vs ' + avg); assert.ok(skl[1] < skl[0], '특수가 희귀보다 어려움'); assert.ok(slow < .25, rare + ' 느린 반응 ' + slow);
   }
 });
 test('낚시: 연타(mash)는 희귀 물고기에 통하지 않는다', () => { for (const id of ['mist-trout', 'lighthouse-bass', 'moon-carp', 'fog-anglerfish']) assert.ok(rate(FISH[id], 'mash') < .05, id); });
@@ -148,4 +148,29 @@ test('채광: 모든 스윙은 횟수를 소모하고, 횟수가 끝나면 종�
   for (let i = 0; i < 20 && !m.over; i++) m.strike(.02, .02); assert.ok(m.over); assert.equal(m.strike(.5, .5), null);
   const good = mine(ORES['moss-copper'], 'expert', 5); assert.equal(good.over, 'cracked'); assert.ok(good.yieldCount() >= ORES['moss-copper'].mine.yield[0]);
   const bad = new MineSession(ORES['moondrop-crystal'], createRng(2)); for (let i = 0; i < 5; i++) bad.strike(.1, .1); assert.equal(bad.over, 'out'); assert.equal(bad.yieldCount(), 0);
+});
+
+/* ---------- 낚시: 난이도 등급·지그재그·그림자 낚시 ---------- */
+test('낚시: 모든 돌진(지그재그 포함)은 신호 뒤에 오고, 방향 전환은 돌진 도중 신호(zig)가 있는 물고기만 한다', () => {
+  for (const fish of Object.values(FISH)) for (let seed = 1; seed <= 6; seed++) {
+    const f = new Fight(fish, createRng(seed)); let prev = f.phase, turns = 0;
+    for (let i = 0; i < 60 * 40 && !f.over; i++) {
+      f.step(1 / 60, { reel: i % 90 < 50, lean: 0 });
+      if (f.phase === 'dash') assert.ok(prev === 'dash' || prev === 'telegraph', `${fish.id}: ${prev} → dash`);
+      if (f.events.includes('turn')) { turns++; assert.ok(fish.fight.zig > 0, `${fish.id} turned without zig`); }
+      prev = f.phase;
+    }
+  }
+});
+
+test('낚시: 등급(쉬움→최고 난도)이 높을수록 같은 숙련 플레이어의 성공률이 낮다', () => {
+  const rate = (g, kind) => { const fs = Object.values(FISH).filter(f => f.grade === g); let w = 0, n = 0; for (const f of fs) for (let s = 0; s < 60; s++) { n++; if (runFight(f, kind, 500 + s).result === 'caught') w++; } return w / n; };
+  const r = [1, 2, 3, 4].map(g => rate(g, 'average'));
+  assert.ok(r[0] >= r[1] && r[1] > r[2] && r[2] >= r[3], r.join(','));
+  assert.ok(r[0] > .9 && r[3] < .1, '쉬움은 평균 실력으로 안정적, 최고 난도는 평균 실력으로 거의 불가: ' + r.join(','));
+});
+
+test('낚시: 그림자 낚시 — 지정한 물고기가 그대로 입질한다', () => {
+  const fish = FISH['mist-trout'] || Object.values(FISH).find(f => f.grade === 3);
+  const b = new BiteSession(Object.values(FISH), 1, createRng(3), 1, {}, fish); assert.equal(b.fish.id, fish.id);
 });

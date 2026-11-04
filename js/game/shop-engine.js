@@ -1,8 +1,8 @@
 // 상점 거래 규칙(화면 없이 계산만 합니다). 사고팔기는 모두 progress.transact 한 번으로 처리됩니다.
 //   다시 읽기 → 검증 → (코인·소지품을 한꺼번에) 반영 → 저장 순서라서, 중복 클릭·다른 탭·수량 오류가 있어도 코인이나 물건이 복제되지 않습니다.
-import { describeItem } from './items.js?v=sh2';
-import { groupOf, isProtected } from './goods.js?v=sh2';
-import { SHOPS, PRICES, GIFT, buyPrice, baseSell, MAX_COINS, MAX_STACK, MAX_QTY } from './shop-data.js?v=sh2';
+import { describeItem } from './items.js?v=mg4';
+import { groupOf, isProtected } from './goods.js?v=mg4';
+import { SHOPS, PRICES, GIFT, buyPrice, baseSell, MAX_COINS, MAX_STACK, MAX_QTY } from './shop-data.js?v=mg4';
 
 /* ---------------- 가격 ---------------- */
 export function sellRate(shop, id) {
