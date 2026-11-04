@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Progress, levelOf, normalizeState, START_GOLD } from '../js/game/progress.js';
+import { Progress, levelOf, normalizeState, START_COINS } from '../js/game/progress.js';
 import { FISH, FISHING_SPOTS, ORES, MINING_SPOTS, RECIPES, GATHER_SPOTS, INGREDIENTS, describeItem, qualityOf, josa } from '../js/game/items.js';
 import { places } from '../js/world/place-data.js';
 import { BiteSession, Fight, TUNING } from '../js/game/fishing-engine.js';
@@ -14,7 +14,7 @@ const memoryStorage = () => { let v = null; return { getItem:() => v, setItem:(_
 /* ---------- 진행 상태 ---------- */
 test('진행 상태: 시작 소지금은 오프닝의 500G, 아이템 증감·부족 시 소비 거부', () => {
   const p = new Progress(memoryStorage());
-  assert.equal(p.state.gold, START_GOLD);
+  assert.equal(p.state.coins, START_COINS);
   p.add('herb', 2); assert.equal(p.count('herb'), 2);
   assert.equal(p.remove({ herb:3 }), false); assert.equal(p.count('herb'), 2);
   assert.equal(p.remove({ herb:2 }), true); assert.equal(p.count('herb'), 0);
@@ -22,7 +22,7 @@ test('진행 상태: 시작 소지금은 오프닝의 500G, 아이템 증감·�
 test('진행 상태: 저장 후 다시 읽으면 같고, 깨진 값은 안전하게 무시', () => {
   const s = memoryStorage(); const a = new Progress(s); a.add('moss-copper', 3); a.addXp('mining', 40); a.recordCatch('silver-minnow', 12);
   const b = new Progress(s); assert.equal(b.count('moss-copper'), 3); assert.equal(b.skill('mining').level, 2); assert.equal(b.state.caught['silver-minnow'].best, 12);
-  const bad = normalizeState({ gold:-5, items:{ x:-1, y:'a', z:2 }, skills:{ fishing:'?' } }); assert.equal(bad.gold, 0); assert.deepEqual(bad.items, { z:2 }); assert.equal(bad.skills.fishing, 0);
+  const bad = normalizeState({ gold:-5, items:{ x:-1, y:'a', z:2 }, skills:{ fishing:'?' } }); assert.equal(bad.coins, 0); assert.deepEqual(bad.items, { z:2 }); assert.equal(bad.skills.fishing, 0);
 });
 test('진행 상태: 저장소가 막혀 있어도 메모리로 동작하고 persistent=false 로 알린다', () => {
   const blocked = { getItem() { throw Error('blocked'); }, setItem() { throw Error('blocked'); } };

@@ -1,7 +1,7 @@
 // 미니게임 시작/종료: 화면을 덮고 → 오버레이를 올리고 → 걷어내는 전환. 장소 화면(world.html)에서 호출합니다.
-import { Progress } from './progress.js?v=sh1';
-import { Sfx } from './sfx.js?v=sh1';
-import { MinigameHost } from './host.js?v=sh1';
+import { Progress } from './progress.js?v=sh2';
+import { Sfx } from './sfx.js?v=sh2';
+import { MinigameHost } from './host.js?v=sh2';
 
 export const progress = new Progress();
 const sfx = new Sfx();
@@ -11,9 +11,9 @@ export function shopSfx() { let sound = true; try { sound = localStorage.getItem
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 const loaders = {
-  fishing: () => import('./fishing-ui.js?v=sh1').then(m => m.createFishing),
-  cooking: () => import('./cooking-ui.js?v=sh1').then(m => m.createCooking),
-  mining:  () => import('./mining-ui.js?v=sh1').then(m => m.createMining),
+  fishing: () => import('./fishing-ui.js?v=sh2').then(m => m.createFishing),
+  cooking: () => import('./cooking-ui.js?v=sh2').then(m => m.createCooking),
+  mining:  () => import('./mining-ui.js?v=sh2').then(m => m.createMining),
 };
 const TITLES = { fishing:'낚시', cooking:'요리', mining:'채광' };
 

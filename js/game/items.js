@@ -2,7 +2,7 @@
 // value 는 상점을 만들기 전의 옛 기준값이라 더 이상 가격으로 쓰이지 않습니다. 실제 구매가·판매가는 shop-data.js 의 가격표에서만 정합니다.
 // 이름·설명은 시범용 문구입니다. 세계관에 맞게 고쳐도 게임 로직은 id 만 쓰므로 영향이 없습니다.
 
-import { GOODS } from './goods.js?v=sh1';
+import { GOODS } from './goods.js?v=sh2';
 
 export const TIERS = { common: '일반', rare: '희귀', special: '특수' };
 

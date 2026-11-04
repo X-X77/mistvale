@@ -1,12 +1,12 @@
 // 채광 화면(픽셀 캔버스): 동굴 안 광석 하나를 가운데 두고, 약점의 위치와 빛나는 순간을 맞춰 곡괭이로 내리칩니다.
 // 규칙(약점·맥박·등급·피해)은 mining-engine.js 가 그대로 담당하고, 이 파일은 입력과 그림(바위·균열·곡괭이·파편)을 맡습니다.
-import { MINING_SPOTS, ORES, TIERS, josa } from './items.js?v=sh1';
-import { equipmentBonus } from './goods.js?v=sh1';
-import { MineSession } from './mining-engine.js?v=sh1';
-import { createRng } from './rng.js?v=sh1';
-import { itemIcon } from './host.js?v=sh1';
-import { Pix, pixelSurface, blit, clamp, lerp, mix, light, dark, INK, hash } from './pixel.js?v=sh1';
-import { rockSprite, rockShards, iconSprite, uiIcon } from './art.js?v=sh1';
+import { MINING_SPOTS, ORES, TIERS, josa } from './items.js?v=sh2';
+import { equipmentBonus } from './goods.js?v=sh2';
+import { MineSession } from './mining-engine.js?v=sh2';
+import { createRng } from './rng.js?v=sh2';
+import { itemIcon } from './host.js?v=sh2';
+import { Pix, pixelSurface, blit, clamp, lerp, mix, light, dark, INK, hash } from './pixel.js?v=sh2';
+import { rockSprite, rockShards, iconSprite, uiIcon } from './art.js?v=sh2';
 
 const TAU = Math.PI * 2;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
