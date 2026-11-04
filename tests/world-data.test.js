@@ -48,6 +48,19 @@ test('지도 핀은 모든 장소를 가리키고 서로 겹치지 않는다', (
   }
 });
 
+test('지도 눌림 영역(hx, hy, r)이 지도 안에 있고 서로 크게 겹치지 않는다', () => {
+  const spots = villageMap.locations;
+  for (const l of spots) {
+    assert.ok(Number.isFinite(l.hx) && Number.isFinite(l.hy) && Number.isFinite(l.r), l.placeId + ' 눌림 영역 없음');
+    assert.ok(l.hx > 2 && l.hx < 98 && l.hy > 4 && l.hy < 96, l.placeId + ' 지도 밖');
+  }
+  for (let i = 0; i < spots.length; i++) for (let j = i + 1; j < spots.length; j++) {
+    const a = spots[i], b = spots[j];
+    const distance = Math.hypot(a.hx - b.hx, (a.hy - b.hy) * 9 / 16);   // 가로 % 기준 거리
+    assert.ok(distance >= (a.r + b.r) / 2 * 0.55, a.placeId + ' / ' + b.placeId + ' 눌림 영역이 너무 겹침');
+  }
+});
+
 test('모든 장소에 최소 한 명 이상의 인물이 있다', () => {
   for (const id of Object.keys(places)) assert.ok(entries.some(([, n]) => n.placeId === id), id + ' 인물 없음');
 });

@@ -25,15 +25,26 @@
   <link rel="stylesheet" href="./sprite-test.css?v=20261103">
 <link rel="stylesheet" href="./chibi-scenes.css?v=scene-polish-2">
 <link rel="stylesheet" href="./visual-novel.css?v=20261104">
-<script type="module" src="./js/world/world.js?v=scene-polish-2"></script>
+<link rel="stylesheet" href="./world-map-v3.css?v=20261104g">
+<script type="module" src="./js/world/world.js?v=20261104h"></script>
 </head>
 <body class="mv-world mv-chibi-world">
 <main id="world" class="mv-world-app" data-view="map">
   <header class="mv-world-header"><a href="./index.html#store" class="mv-brand" aria-label="X_XPLAY로 돌아가기">MISTVALE<span>WORLD GUIDE</span></a><nav aria-label="마을 안내 메뉴"><button id="world-map-back" hidden>← 마을 지도</button><a href="./index.html#choices">집으로 돌아가기</a></nav></header>
   <section id="map-view" class="mv-view" aria-labelledby="map-title">
-    <div class="mv-heading"><p class="mv-overline">마을 안내</p><h1 id="map-title">미스트베일</h1><p id="map-subtitle"></p></div>
-    <div class="mv-stage mv-map-stage" id="map-stage"><img id="map-art" class="mv-background" alt=""><div id="map-markers"></div><span class="mv-compass" aria-hidden="true">N<br>✧</span><p id="map-fallback" class="mv-fallback" hidden>지도 이미지를 불러오지 못했습니다.<br>장소 표시나 아래 목록으로 들어갈 수 있습니다.</p></div>
-    <div class="mv-map-bottom"><div><p class="mv-overline">둘러볼 수 있는 장소</p><p class="mv-map-hint">장소 표시를 선택해 안으로 들어가 보세요.</p></div><div id="place-list"><section id="place-group-town" aria-labelledby="town-label"><h2 id="town-label" class="mv-group-label">마을 시설</h2><div id="place-list-town" class="mv-place-grid"></div></section><section id="place-group-outside" aria-labelledby="outside-label"><h2 id="outside-label" class="mv-group-label">마을 밖 · 숲, 해안, 동굴, 호수</h2><div id="place-list-outside" class="mv-place-grid"></div></section></div></div>
+    <div class="mv-map-layout">
+      <div class="mv-map-main">
+        <div class="mv-map-heading"><div class="mv-map-title"><p class="mv-overline">마을 안내</p><h1 id="map-title">미스트베일</h1><p id="map-subtitle"></p></div><p id="map-hint" class="mv-map-hint"><i aria-hidden="true"></i><span>지도 위의 장소를 눌러 안으로 들어가 보세요.</span></p></div>
+        <div class="mv-stage mv-map-stage" id="map-stage"><div class="mv-map-canvas" id="map-canvas"><img id="map-art" class="mv-background" alt=""><div id="map-markers"></div><span class="mv-compass" aria-hidden="true">N<br>✧</span></div><p id="map-fallback" class="mv-fallback" hidden>지도 이미지를 불러오지 못했습니다.<br>오른쪽 여행 수첩에서 장소로 들어갈 수 있습니다.</p></div>
+      </div>
+      <aside id="map-journal" class="mv-journal" aria-labelledby="journal-title">
+        <header class="mv-journal-head"><div><p class="mv-overline">TRAVEL NOTEBOOK</p><h2 id="journal-title">여행 수첩</h2></div><button id="journal-toggle" class="mv-journal-toggle" type="button" aria-expanded="true" aria-controls="place-list">접기</button></header>
+        <div id="place-list" class="mv-journal-body">
+          <details id="place-group-town" class="mv-journal-group" open><summary><h3 id="town-label" class="mv-group-label">마을 시설<em id="town-count"></em></h3></summary><div id="place-list-town" class="mv-place-grid"></div></details>
+          <details id="place-group-outside" class="mv-journal-group" open><summary><h3 id="outside-label" class="mv-group-label">마을 밖 · 숲, 해안, 동굴, 호수<em id="outside-count"></em></h3></summary><div id="place-list-outside" class="mv-place-grid"></div></details>
+        </div>
+      </aside>
+    </div>
   </section>
   <section id="place-view" class="mv-view" hidden aria-labelledby="place-title">
     <div class="mv-stage mv-place-stage" id="place-stage"><img id="place-art" class="mv-background" alt=""><div class="mv-scenery" aria-hidden="true"></div><p id="place-fallback" class="mv-fallback" hidden>배경을 불러오지 못했습니다.</p><span id="scene-note" class="mv-scene-note"></span></div>

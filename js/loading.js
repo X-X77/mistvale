@@ -130,7 +130,7 @@ function syncVerOnProgressBar(){
 
 export function createPixelLoader(canvas,{mode='farm',reduced=()=>false,sprite=null}={}){
  const ctx=canvas?.getContext('2d');
- if(!ctx)return {start(){},stop(){}};
+ if(!ctx)return {start(){},stop(){},glitch(){}};
  // Wide virtual scene: keeps placements consistent across viewports.
  const width=960,height=540;canvas.width=width;canvas.height=height;
  // Render pixel art on a limited logical grid and scale back with nearest-neighbor.
@@ -141,11 +141,34 @@ export function createPixelLoader(canvas,{mode='farm',reduced=()=>false,sprite=n
  // Allow replacing with a uniform horizontal sprite atlas later.
  let sheet=null;
  if(sprite?.src){const img=new Image();img.onload=()=>sheet=img;img.src=sprite.src;}
- let running=false,frameId=0,origin=0;
+ let running=false,frameId=0,origin=0,glitchLevel=0,frozenAt=0,glitchSeed=1,glitchFrame=null;
+ // 오류 연출: 장면 시간을 멈추고(프레임 정지) 가로 띠를 어긋나게 한다. 밝기는 바꾸지 않고, 어긋남은 약 4Hz 이하로만 갱신한다(깜빡임 방지).
+ function rand(){glitchSeed=(glitchSeed*1664525+1013904223)>>>0;return glitchSeed/4294967296;}
+ function paintGlitch(stamp){
+  const step=Math.floor((stamp-origin)/(reduced()?100000:260));
+  glitchSeed=(step*2654435761+7)>>>0;
+  const W=lowRes.width,H=lowRes.height,strong=glitchLevel>1;
+  const frame=glitchFrame||(glitchFrame=document.createElement('canvas'));frame.width=W;frame.height=H;
+  frame.getContext('2d').drawImage(lowRes,0,0);
+  lowCtx.imageSmoothingEnabled=false;
+  const slices=strong?9:5;
+  for(let n=0;n<slices;n++){
+   const sh=4+Math.floor(rand()*(strong?34:20)),sy=Math.floor(rand()*(H-sh)),dx=Math.round((rand()-.5)*(strong?58:34));
+   lowCtx.drawImage(frame,0,sy,W,sh,dx,sy,W,sh);
+  }
+  // 픽셀 블록이 엉뚱한 자리에 복사되는 손상
+  for(let n=0;n<(strong?6:3);n++){
+   const bw=14+Math.floor(rand()*34),bh=6+Math.floor(rand()*16),sx=Math.floor(rand()*(W-bw)),sy=Math.floor(rand()*(H-bh));
+   lowCtx.drawImage(frame,sx,sy,bw,bh,Math.floor(rand()*(W-bw)),Math.floor(rand()*(H-bh)),bw,bh);
+  }
+  // 얇은 색 번짐 띠(저대비)
+  lowCtx.fillStyle='rgba(214,84,142,.16)';lowCtx.fillRect(0,Math.floor(rand()*H),W,2);
+  lowCtx.fillStyle='rgba(96,214,224,.14)';lowCtx.fillRect(0,Math.floor(rand()*H),W,2);
+ }
  function paint(stamp){
   if(!running)return;
   // Reduced-motion keeps the farming actions progressing; only decorative bouncing/particles are removed.
-  const t=stamp-origin;
+  const t=glitchLevel?frozenAt:stamp-origin;
   ctx.clearRect(0,0,width,height);ctx.imageSmoothingEnabled=false;
   if(mode==='ver')sceneVer(ctx,art,t,reduced(),width,height);
   else sceneFarm(ctx,art,t,reduced(),width,height);
@@ -163,6 +186,7 @@ export function createPixelLoader(canvas,{mode='farm',reduced=()=>false,sprite=n
     lowCtx.clearRect(0,0,lowRes.width,lowRes.height);
     lowCtx.imageSmoothingEnabled=false;
     lowCtx.drawImage(canvas,0,0,lowRes.width,lowRes.height);
+    if(glitchLevel)paintGlitch(stamp);
     ctx.clearRect(0,0,width,height);
     ctx.imageSmoothingEnabled=false;
     ctx.drawImage(lowRes,0,0,width,height);
@@ -171,8 +195,9 @@ export function createPixelLoader(canvas,{mode='farm',reduced=()=>false,sprite=n
   frameId=requestAnimationFrame(paint);
  }
  return {
-  start(){if(running)return;running=true;origin=performance.now();frameId=requestAnimationFrame(paint);},
-  stop(){running=false;cancelAnimationFrame(frameId);}
+  start(){if(running)return;running=true;glitchLevel=0;origin=performance.now();frameId=requestAnimationFrame(paint);},
+  stop(){running=false;glitchLevel=0;cancelAnimationFrame(frameId);},
+  glitch(level){if(level&&!glitchLevel)frozenAt=performance.now()-origin;glitchLevel=level;}
  };
 }
 export function prepareImages(urls,{signal,onProgress=()=>{},timeout=8000}={}){
