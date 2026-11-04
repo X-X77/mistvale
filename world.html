@@ -26,11 +26,12 @@
 <link rel="stylesheet" href="./chibi-scenes.css?v=scene-polish-2">
 <link rel="stylesheet" href="./visual-novel.css?v=20261104">
 <link rel="stylesheet" href="./world-map-v3.css?v=20261104g">
-<script type="module" src="./js/world/world.js?v=20261104i"></script>
+<link rel="stylesheet" href="./minigames.css?v=mg8">
+<script type="module" src="./js/world/world.js?v=mg2"></script>
 </head>
 <body class="mv-world mv-chibi-world">
 <main id="world" class="mv-world-app" data-view="map">
-  <header class="mv-world-header"><a href="./index.html#store" class="mv-brand" aria-label="X_XPLAY로 돌아가기">MISTVALE<span>WORLD GUIDE</span></a><nav aria-label="마을 안내 메뉴"><button id="world-map-back" hidden>← 마을 지도</button><a href="./index.html#choices">집으로 돌아가기</a></nav></header>
+  <header class="mv-world-header"><a href="./index.html#store" class="mv-brand" aria-label="X_XPLAY로 돌아가기">MISTVALE<span>WORLD GUIDE</span></a><nav aria-label="마을 안내 메뉴"><button id="world-map-back" hidden>← 마을 지도</button><button id="pack-open" type="button" aria-haspopup="dialog">소지품 <b id="pack-gold">500G</b></button><a href="./index.html#choices">집으로 돌아가기</a></nav></header>
   <section id="map-view" class="mv-view" aria-labelledby="map-title">
     <div class="mv-map-layout">
       <div class="mv-map-main">
@@ -52,11 +53,12 @@
       <div class="mv-place-heading"><div><p id="place-category" class="mv-overline"></p><h1 id="place-title" tabindex="-1"></h1></div><span id="place-hours" class="mv-hours"></span></div>
       <div class="mv-place-info"><p id="place-purpose"></p><p id="place-description"></p></div>
       <span class="mv-location-rule" aria-hidden="true">✧</span>
+      <div id="place-activities" class="mv-activities" hidden aria-label="이곳에서 할 수 있는 일"></div>
     </div>
     <button id="featured-npc" class="mv-featured-npc" aria-label="인물에게 말 걸기" hidden><span class="mv-featured-frame"><img id="featured-art" alt=""><span id="featured-fallback" hidden>원화 준비 중</span></span><span class="mv-featured-caption"><span><strong id="featured-name"></strong><small id="featured-role"></small></span><span class="mv-talk-action">이야기 나누기 <b aria-hidden="true">↗</b></span></span></button>
     <div class="mv-encounters"><p class="mv-encounters-label">이곳에서 만나는 인연</p><div id="npc-layer"></div></div>
   </section>
-  <footer class="mv-world-footer"><span>케이브덕 캐릭터 시뮬레이션 · 세계관 안내</span><span>시범 공개 · 마을 시설 13곳 · 숲·해안·동굴·호수 · 인물 23명</span></footer>
+  <footer class="mv-world-footer"><span>케이브덕 캐릭터 시뮬레이션 · 세계관 안내</span><span>시범 공개 · 마을 시설 13곳 · 외곽 농가 · 숲·해안·동굴·호수 · 인물 23명</span></footer>
   <div class="mv-transition" aria-hidden="true"></div>
   <p id="world-status" class="mv-sr-only" role="status"></p>
 </main>
@@ -64,6 +66,8 @@
   <div class="mv-dialog-content"><div class="mv-portrait-area"><img id="npc-portrait" alt=""><span id="portrait-fallback" class="mv-portrait-fallback" hidden aria-label="원화 준비 중"><i>?</i><em>원화 준비 중</em></span></div>
   <div class="mv-dialog-box"><header><div><h2 id="npc-name"></h2><small id="npc-note"></small></div><button id="dialog-close" aria-label="대화 닫기">×</button></header><button id="npc-text-next" class="mv-dialog-text-button" aria-label="대사 완성 또는 다음 대사"><span id="npc-text" aria-hidden="true"></span><span id="npc-accessible-text" class="mv-sr-only" aria-live="polite"></span></button><footer><span>클릭 / Enter로 계속</span><button id="dialog-next">다음 대사 <span aria-hidden="true">▸</span></button></footer></div></div>
 </dialog>
+<dialog id="pack-dialog" class="mv-pack" aria-labelledby="pack-title"><div class="mv-pack-card"><header><h2 id="pack-title">소지품</h2><button type="button" id="pack-close" aria-label="소지품 닫기">닫기 ✕</button></header><div id="pack-body"></div></div></dialog>
+<div id="mv-toast" class="mv-toast" role="status" aria-live="polite"></div>
 <noscript>마을 안내의 장소 선택과 대화를 사용하려면 JavaScript를 켜 주세요.</noscript>
 </body>
 </html>

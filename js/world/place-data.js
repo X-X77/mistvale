@@ -96,6 +96,15 @@ export const places = {
     background:'./assets/world/scene-tailor.jpg', alt:'원단과 마네킹이 놓인 의상실 분위기',
     mood:{ a:'#4b2d3f', b:'#d9a3ba', glow:'#ffe5ef' },
   },
+  // ---- 나의 집: 오프닝의 '미스트베일 외곽 농가'. 주민은 없고, 직접 요리할 수 있는 주방이 있습니다.
+  farmhouse: {
+    id:'farmhouse', name:'외곽 농가 · 주방', category:'나의 집 · 미스트베일 외곽', hours:null, home:true,
+    purpose:'낡은 농가의 주방. 직접 구하거나 낚아 온 재료로 요리를 합니다',
+    description:'손때 묻은 화덕과 작은 식탁이 있는 농가의 주방입니다.',
+    background:'./assets/room.jpg', alt:'햇살이 드는 낡은 농가의 실내',
+    mood:{ a:'#3a2a1b', b:'#8a6a3e', glow:'#ffe2a0' },
+    activities:['cooking'],
+  },
   // ---- 마을 밖 : 지도의 길 입구로 드는 서식지 ----
   'whisper-forest': {
     id:'whisper-forest', name:'속삭임 숲', category:'마을 밖 · 숲', hours:null,
@@ -103,6 +112,7 @@ export const places = {
     description:'속삭이는 바람 소리를 따라 숲 안쪽으로 들어갑니다. 거미줄 둥지, 정령의 공터, 버섯 군락지, 버려진 온실이 흩어져 있습니다.',
     background:'./assets/world/scene-whisper-forest.jpg', alt:'안개가 낀 짙은 숲 분위기',
     mood:{ a:'#0e271f', b:'#2f5c47', glow:'#b9f2cc' },
+    activities:['gather'],
   },
   'blue-coast': {
     id:'blue-coast', name:'푸른물결 해안', category:'마을 밖 · 해안', hours:null,
@@ -110,6 +120,7 @@ export const places = {
     description:'등대가 서 있고, 암초 너머로 안개 낀 바다가 이어집니다. 밤 밀물 때에는 동굴 쪽에서 푸른 빛이 일렁입니다.',
     background:'./assets/world/scene-blue-coast.jpg', alt:'등대와 암초가 보이는 해안 분위기',
     mood:{ a:'#0f2a47', b:'#4f89ab', glow:'#d2efff' },
+    activities:['fishing'],
   },
   'wet-cave': {
     id:'wet-cave', name:'숲의 습한 동굴', category:'마을 밖 · 동굴', hours:null,
@@ -117,6 +128,7 @@ export const places = {
     description:'절벽 아래 물소리가 울리는 동굴입니다. 바닥이 젖어 있고 안개가 낮게 깔려 있습니다.',
     background:'./assets/world/scene-wet-cave.jpg', alt:'물이 떨어지는 습한 동굴 분위기',
     mood:{ a:'#0c1d1b', b:'#214b46', glow:'#7ed8b2' },
+    activities:['mining'],
   },
   'silver-lake': {
     id:'silver-lake', name:'은빛 호수', category:'마을 밖 · 호수', hours:null,
@@ -124,5 +136,6 @@ export const places = {
     description:'잔잔한 물결과 갈대밭이 이어지는 호수입니다. 물가는 늘 촉촉합니다.',
     background:'./assets/world/scene-silver-lake.jpg', alt:'잔잔하게 반짝이는 호숫가 분위기',
     mood:{ a:'#1a3046', b:'#92b5cb', glow:'#f3fbff' },
+    activities:['fishing'],
   },
 };
