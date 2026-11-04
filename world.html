@@ -25,9 +25,9 @@
   <link rel="stylesheet" href="./sprite-test.css?v=20261103">
 <link rel="stylesheet" href="./chibi-scenes.css?v=scene-polish-2">
 <link rel="stylesheet" href="./visual-novel.css?v=20261104">
-<link rel="stylesheet" href="./world-map-v3.css?v=20261104g">
+<link rel="stylesheet" href="./world-map-v3.css?v=atlas1">
 <link rel="stylesheet" href="./minigames.css?v=mg4"><link rel="stylesheet" href="./minigames-px.css?v=mg-art1"><link rel="stylesheet" href="./shop.css?v=mg4">
-<script type="module" src="./js/world/world.js?v=mg-art1"></script>
+<script type="module" src="./js/world/world.js?v=atlas1"></script>
 </head>
 <body class="mv-world mv-chibi-world">
 <main id="world" class="mv-world-app" data-view="map">
@@ -36,13 +36,15 @@
     <div class="mv-map-layout">
       <div class="mv-map-main">
         <div class="mv-map-heading"><div class="mv-map-title"><p class="mv-overline">마을 안내</p><h1 id="map-title">미스트베일</h1><p id="map-subtitle"></p></div><p id="map-hint" class="mv-map-hint"><i aria-hidden="true"></i><span>지도 위의 장소를 눌러 안으로 들어가 보세요.</span></p></div>
+        <nav id="atlas-pages" aria-label="지도 전환"><button type="button" data-page="town">마을 중심</button><button type="button" data-page="region">주변 지역</button></nav>
         <div class="mv-stage mv-map-stage" id="map-stage"><div class="mv-map-canvas" id="map-canvas"><img id="map-art" class="mv-background" alt=""><div id="map-markers"></div><span class="mv-compass" aria-hidden="true">N<br>✧</span></div><p id="map-fallback" class="mv-fallback" hidden>지도 이미지를 불러오지 못했습니다.<br>오른쪽 여행 수첩에서 장소로 들어갈 수 있습니다.</p></div>
+        <div id="atlas-caption" aria-live="polite"><strong id="atlas-name"></strong><span id="atlas-note"></span><button id="atlas-enter" type="button" hidden>장소로 들어가기 ›</button></div>
       </div>
       <aside id="map-journal" class="mv-journal" aria-labelledby="journal-title">
         <header class="mv-journal-head"><div><p class="mv-overline">TRAVEL NOTEBOOK</p><h2 id="journal-title">여행 수첩</h2></div><button id="journal-toggle" class="mv-journal-toggle" type="button" aria-expanded="true" aria-controls="place-list">접기</button></header>
         <div id="place-list" class="mv-journal-body">
           <details id="place-group-town" class="mv-journal-group" open><summary><h3 id="town-label" class="mv-group-label">마을 시설<em id="town-count"></em></h3></summary><div id="place-list-town" class="mv-place-grid"></div></details>
-          <details id="place-group-outside" class="mv-journal-group" open><summary><h3 id="outside-label" class="mv-group-label">마을 밖 · 숲, 해안, 동굴, 호수<em id="outside-count"></em></h3></summary><div id="place-list-outside" class="mv-place-grid"></div></details>
+          <details id="place-group-outside" class="mv-journal-group" open><summary><h3 id="outside-label" class="mv-group-label">주변 지역<em id="outside-count"></em></h3></summary><div id="place-list-outside" class="mv-place-grid"></div></details>
         </div>
       </aside>
     </div>

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
-import { villageMap } from '../js/world/map-data.js';
+import { atlas } from '../js/world/map-data.js';
 import { places } from '../js/world/place-data.js';
 import { chibiResidents } from '../js/world/chibi-data.js';
 import { portraitAssets } from '../js/world/portrait-data.js';
@@ -37,27 +37,20 @@ test('원화 23장이 모두 연결되어 있고, 실제 파일이며, 서로 �
   assert.equal(used.size, 23);
 });
 
-test('지도 핀은 모든 장소를 가리키고 서로 겹치지 않는다', () => {
-  const ids = villageMap.locations.map(l => l.placeId);
-  assert.equal(new Set(ids).size, ids.length);
-  for (const id of Object.keys(places)) assert.ok(ids.includes(id), id + ' 지도 핀 없음');
-  for (const l of villageMap.locations) assert.ok(places[l.placeId], l.placeId);
-  for (let i = 0; i < villageMap.locations.length; i++) for (let j = i + 1; j < villageMap.locations.length; j++) {
-    const a = villageMap.locations[i], b = villageMap.locations[j];
-    assert.ok(Math.abs(a.x - b.x) >= 4 || Math.abs(a.y - b.y) >= 7, a.placeId + ' / ' + b.placeId + ' 핀이 겹침');
-  }
+test('두 지도에서 기존 장소는 한 번씩 연결되고 명소는 안내를 제공한다', () => {
+  const sites = Object.values(atlas).flatMap(sheet => sheet.sites);
+  assert.equal(new Set(sites.map(s => s.id)).size, sites.length);
+  for (const id of Object.keys(places)) assert.ok(sites.some(site => site.id === id), id);
+  for (const site of sites) assert.ok(places[site.id] || site.name && site.note);
 });
 
-test('지도 눌림 영역(hx, hy, r)이 지도 안에 있고 서로 크게 겹치지 않는다', () => {
-  const spots = villageMap.locations;
-  for (const l of spots) {
-    assert.ok(Number.isFinite(l.hx) && Number.isFinite(l.hy) && Number.isFinite(l.r), l.placeId + ' 눌림 영역 없음');
-    assert.ok(l.hx > 2 && l.hx < 98 && l.hy > 4 && l.hy < 96, l.placeId + ' 지도 밖');
-  }
-  for (let i = 0; i < spots.length; i++) for (let j = i + 1; j < spots.length; j++) {
-    const a = spots[i], b = spots[j];
-    const distance = Math.hypot(a.hx - b.hx, (a.hy - b.hy) * 9 / 16);   // 가로 % 기준 거리
-    assert.ok(distance >= (a.r + b.r) / 2 * 0.55, a.placeId + ' / ' + b.placeId + ' 눌림 영역이 너무 겹침');
+test('각 그림의 클릭 영역이 지도 안에 있고 서로 겹치지 않는다', () => {
+  for (const { sites, art } of Object.values(atlas)) {
+    assert.ok(existsSync(new URL(art, root)));
+    for (const [i, a] of sites.entries()) {
+      assert.ok(a.x >= a.w/2 && a.x <= 100-a.w/2 && a.y >= a.h/2 && a.y <= 100-a.h/2);
+      for (const b of sites.slice(i+1)) assert.ok(Math.abs(a.x-b.x) >= (a.w+b.w)/2 || Math.abs(a.y-b.y) >= (a.h+b.h)/2, a.id+' / '+b.id);
+    }
   }
 });
 
