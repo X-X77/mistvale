@@ -1,44 +1,54 @@
-// 낚시 화면(캔버스): 위에서 내려다본 물가. 물고기의 그림자·물보라·줄의 휘어짐·찌의 움직임으로 상태를 보여 줍니다.
-import { FISH, FISHING_SPOTS, TIERS, josa } from './items.js';
-import { BiteSession, Fight, TUNING, rollSize } from './fishing-engine.js';
-import { createRng } from './rng.js';
+// 낚시 화면(픽셀 캔버스): 위에서 내려다본 물가. 찌·물보라·줄의 휘어짐·낚싯대의 휘어짐·물고기의 몸짓으로 상태를 보여 줍니다.
+// 규칙(장력·체력·저항 패턴)은 fishing-engine.js 가 그대로 담당하고, 이 파일은 입력과 그림만 맡습니다.
+import { FISH, FISHING_SPOTS, TIERS, josa } from './items.js?v=px2';
+import { BiteSession, Fight, TUNING, rollSize } from './fishing-engine.js?v=px2';
+import { createRng } from './rng.js?v=px2';
+import { Pix, pixelSurface, blit, text, clamp, lerp, mix, light, dark, INK, hash } from './pixel.js?v=px2';
+import { fishSprite, uiIcon, iconImg } from './art.js?v=px2';
 
-const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-const lerp = (a, b, t) => a + (b - a) * t;
 const TAU = Math.PI * 2;
 
 export function createFishing({ host, placeId, progress, sfx, reduced }) {
   const spot = FISHING_SPOTS[placeId], pool = spot.fish.map(id => FISH[id]);
   const rng = createRng();
   const stage = host.stage; stage.classList.add('fs-stage');
+  const zoneChip = (cls, id, label) => `<div class="fs-zone ${cls}">${iconImg({ id, kind:'fish', color:FISH[id].color }, 24)}<span>${label}</span></div>`;
   stage.innerHTML = `<canvas class="fs-canvas" aria-label="낚시터 화면"></canvas>
+    <div class="fs-zones" aria-hidden="true">${zoneChip('z1', pool[0].id, '얕은 곳 · 일반')}${zoneChip('z2', pool[2].id, '중간 · 희귀')}${zoneChip('z3', pool[3].id, '깊은 곳 · 특수')}</div>
+    <div class="fs-gauge pxt" aria-hidden="true">줄 장력</div>
     <div class="fs-call" aria-hidden="true"></div>
     <div class="fs-hint" aria-hidden="true"></div>
-    <div class="fs-controls" hidden><button type="button" class="fs-btn fs-left" aria-label="왼쪽으로 기울이기">◀</button><button type="button" class="fs-btn fs-reel" aria-label="감기 (누르고 있는 동안)">감기<small>누르고 있기</small></button><button type="button" class="fs-btn fs-right" aria-label="오른쪽으로 기울이기">▶</button></div>`;
-  const canvas = stage.querySelector('canvas'), ctx = canvas.getContext('2d');
-  const callEl = stage.querySelector('.fs-call'), hintEl = stage.querySelector('.fs-hint'), controls = stage.querySelector('.fs-controls');
+    <div class="fs-controls" hidden><button type="button" class="fs-btn side fs-left" aria-label="왼쪽으로 기울이기"><img class="pxi" src="${uiIcon('left')}" alt=""></button><button type="button" class="fs-btn fs-reel" aria-label="감기 (누르고 있는 동안)">감기<small>꾹 누르기</small></button><button type="button" class="fs-btn side fs-right" aria-label="오른쪽으로 기울이기"><img class="pxi" src="${uiIcon('right')}" alt=""></button></div>`;
+  const canvas = stage.querySelector('canvas'), surf = pixelSurface(canvas, stage, { maxH:220 }), g = surf.g;
+  const callEl = stage.querySelector('.fs-call'), hintEl = stage.querySelector('.fs-hint'), controls = stage.querySelector('.fs-controls'), gaugeEl = stage.querySelector('.fs-gauge');
+  const zoneEls = [...stage.querySelectorAll('.fs-zone')];
   const coarse = matchMedia('(pointer: coarse)').matches || matchMedia('(hover: none)').matches;
   controls.hidden = !coarse;
 
-  let W = 0, H = 0, dpr = 1, raf = 0, last = 0, time = 0, paused = false, destroyed = false;
+  let W = 0, H = 0, PX = 3, raf = 0, last = 0, time = 0, paused = false, destroyed = false, bg = null;
   const S = { phase:'aim', bite:null, fight:null, fish:null, floatX:0, floatY:0, castT:0, from:null, shake:0, flash:0, reeling:false, lean:0,
     keys:{ reel:false, left:false, right:false }, ptr:{ down:false, id:null, x0:0 }, btn:{ reel:false, left:false, right:false },
     particles:[], rings:[], fishPos:{ x:0, y:0, vx:0, vy:0 }, floatDip:0, dipV:0, call:'', callTone:'', callT:0, lastTick:0, lastWarn:-9, maxT:0, dangerSeen:false,
-    mouse:{ x:0, y:0, in:false }, ended:false, endT:0, endInfo:null, pxPerM:30, hookedAt:0, reelAcc:0, dashShown:'' , jumpT:0 };
+    mouse:{ x:0, y:0, in:false }, ended:false, endT:0, endInfo:null, pxPerM:30, hookedAt:0, reelAcc:0, dashShown:'' , jumpT:0, catchFrom:null, splash:0 };
 
-  function layout() {
-    const r = stage.getBoundingClientRect(); W = Math.max(300, r.width); H = Math.max(300, r.height); dpr = Math.min(2, devicePixelRatio || 1);
-    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr); canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
-  }
   const bottomPad = () => (coarse ? 112 : 0);
   const shoreY = () => H - bottomPad() - Math.max(54, H * .1);
   const waterTop = () => 12;
   const halfW = () => Math.min(W * .38, 340);
   const depthToY = d => shoreY() - 54 - d * (shoreY() - waterTop() - 120);
   const yToDepth = y => clamp((shoreY() - 54 - y) / (shoreY() - waterTop() - 120), 0, 1);
+  const dial = () => ({ x:W - 26 * PX, y:shoreY() - 22 * PX });
+  function layout() {
+    surf.layout(); W = surf.W; H = surf.H; PX = surf.PX; bg = buildBg(); placeZones();
+  }
+  function placeZones() {
+    const left = Math.max(10, W / 2 - halfW() * .8 - 4);
+    [.16, .5, .84].forEach((d, i) => { zoneEls[i].style.top = Math.round(depthToY(d) - 15) + 'px'; zoneEls[i].style.left = Math.round(left) + 'px'; });
+    const d = dial(); gaugeEl.style.left = Math.round(d.x) + 'px'; gaugeEl.style.top = Math.round(d.y + 18 * PX) + 'px';
+  }
 
   /* ---------- 상태 전환 ---------- */
-  function setCall(text, tone = '', hold = 1.2) { S.call = text; S.callTone = tone; S.callT = hold; callEl.textContent = text; callEl.dataset.tone = tone; callEl.classList.toggle('on', !!text); }
+  function setCall(text, tone = '', hold = 1.2) { if (text) hintEl.classList.remove('on'); S.call = text; S.callTone = tone; S.callT = hold; callEl.textContent = text; callEl.dataset.tone = tone; callEl.classList.toggle('on', !!text); }
   let hintTimer = 0;
   function setHint(text, ttl = 0) { hintEl.textContent = text; hintEl.classList.toggle('on', !!text); clearTimeout(hintTimer); if (text && ttl) hintTimer = setTimeout(() => hintEl.classList.remove('on'), ttl); }
   function burst(x, y, n, color = '#e8f6ff', speed = 120) { if (reduced) n = Math.ceil(n / 3); for (let i = 0; i < n; i++) { const a = rng.range(0, TAU), v = rng.range(.3, 1) * speed; S.particles.push({ x, y, vx:Math.cos(a) * v, vy:Math.sin(a) * v - speed * .3, life:rng.range(.4, .8), max:.8, size:rng.range(1.5, 3.2), color }); } }
@@ -48,7 +58,7 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
 
   function toAim() {
     S.phase = 'aim'; S.bite = null; S.fight = null; S.fish = null; S.ended = false; S.reeling = false; S.dashShown = '';
-    sfx.stopHum(); setCall(''); setHint(coarse ? '물 위를 눌러 낚싯줄을 던지세요. 멀리 던질수록 희귀한 물고기가 걸립니다.' : '물 위를 눌러 낚싯줄을 던지세요. 멀리 던질수록 희귀한 물고기가 걸립니다.');
+    sfx.stopHum(); setCall(''); setHint(coarse ? '물 위를 눌러 던져요' : '물 위를 눌러 던져요 (Space: 아무 데나)');
     stage.dataset.phase = 'aim';
   }
   function cast(x, y) {
@@ -59,7 +69,7 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
   }
   function afterCast() {
     S.phase = 'wait'; stage.dataset.phase = 'wait'; ring(S.floatX, S.floatY, '#ffffff', 40, 1.1); sfx.play('splash');
-    setHint('찌를 지켜보세요. 살짝 까딱이는 건 탐색 중인 가짜 입질입니다.'); host.say('낚싯줄을 던졌습니다. 입질을 기다리는 중.');
+    setHint('찌를 지켜봐요. 까딱이는 건 가짜 입질!'); host.say('낚싯줄을 던졌습니다. 입질을 기다리는 중.');
   }
   function onHookPress() {
     if (S.phase === 'wait' || S.phase === 'bite') {
@@ -75,7 +85,7 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
     // 좌우 위치는 던진 위치에서 시작
     S.fight.x = clamp((S.floatX - W / 2) / halfW(), -.6, .6);
     sfx.play('hook'); shake(7); buzz(40); burst(S.floatX, S.floatY, 18, '#ffffff', 160); ring(S.floatX, S.floatY, '#ffe9a8', 60, .6);
-    setHint(coarse ? '“감기”를 꾹 누르면 끌어옵니다. 물보라가 보이면 손을 떼세요.' : '마우스(또는 스페이스)를 꾹 누르면 끌어옵니다. 물보라가 보이면 놓으세요.', 6000); host.say('걸렸습니다! 힘겨루기 시작.');
+    setHint(coarse ? '‘감기’를 꾹 눌러 끌어와요. 물보라가 보이면 손을 떼요!' : '꾹 눌러(마우스·Space) 끌어와요. 물보라가 보이면 놓아요!', 6000); host.say('걸렸습니다! 힘겨루기 시작.');
   }
   function endBite(kind) {
     S.phase = 'ending'; stage.dataset.phase = 'ending'; sfx.stopHum(); setHint('');
@@ -87,26 +97,26 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
   function finishFight() {
     const f = S.fight; S.phase = 'ending'; stage.dataset.phase = 'ending'; sfx.stopHum(); setHint('');
     S.endInfo = { result:f.over, reason:f.reason }; S.endT = 0; S.ended = true;
-    if (f.over === 'caught') { sfx.play('win'); S.jumpT = 0; burst(S.fishPos.x, S.fishPos.y, 30, '#ffffff', 220); setCall('낚았다!', 'win', 2); buzz(60); }
+    if (f.over === 'caught') { sfx.play('win'); S.jumpT = 0; S.catchFrom = [Math.round(S.fishPos.x / PX), Math.round(S.fishPos.y / PX)]; burst(S.fishPos.x, S.fishPos.y, 30, '#ffffff', 220); setCall('낚았다!', 'win', 2); buzz(60); }
     else { sfx.play(f.over === 'snap' ? 'snap' : 'lose'); shake(f.over === 'snap' ? 14 : 5); buzz(f.over === 'snap' ? 120 : 40);
       setCall(f.over === 'snap' ? '줄이 끊어졌다!' : f.over === 'loose' ? '바늘이 빠졌다!' : '도망쳤다!', 'bad', 2); }
   }
   function showOutcome() {
-    const info = S.endInfo, fish = S.fish, again = { label:'한 번 더 던지기', primary:true, run:() => { toAim(); } }, leave = { label:'낚시터 떠나기', run:() => host.close() };
+    const info = S.endInfo, fish = S.fish, again = { label:'다시 던지기', primary:true, run:() => { toAim(); } }, leave = { label:'돌아가기', run:() => host.close() };
     S.ended = false;
     if (info.result === 'caught') {
       const size = rollSize(fish, rng), rec = progress.recordCatch(fish.id, size); progress.add(fish.id, 1);
       const xp = progress.addXp('fishing', fish.xp), lvl = xp.leveled ? `낚시 Lv.${xp.after.level} 달성!` : '';
       if (xp.leveled) sfx.play('level');
-      host.showResult({ tone:'win', title:`${fish.name}${josa(fish.name, '을/를')} 낚았습니다`, message:`${size}cm · ${TIERS[fish.tier]} 물고기${rec.first ? ' · 처음 낚은 물고기입니다!' : rec.best === size && progress.state.caught[fish.id].count > 1 ? ' · 최대 기록!' : ''}`,
+      host.showResult({ tone:'win', title:'낚았다!', message:`${size}cm${rec.first ? ' · 처음 낚았어요!' : rec.best === size && progress.state.caught[fish.id].count > 1 ? ' · 최대 기록!' : ''}`,
         rewards:[{ item:fish.id, n:1, note:fish.desc }], xp:`낚시 경험치 +${fish.xp}`, level:lvl, actions:[again, leave] });
     } else {
-      const reasons = { early:['너무 일찍 당겼습니다', '가짜 입질에 속아 챔질했습니다. 찌가 완전히 잠기고 물보라가 일 때까지 기다리세요.'],
-        missed:['입질을 놓쳤습니다', '진짜 입질이 왔을 때 제한 시간 안에 챔질하지 못했습니다. 찌가 푹 잠기면 바로 누르세요.'],
-        snap:['줄이 끊어졌습니다', info.reason], loose:['물고기를 놓쳤습니다', info.reason], escaped:['물고기가 도망쳤습니다', info.reason] };
+      const reasons = { early:['너무 일찍!', '가짜 입질에 속았어요. 찌가 푹 잠기고 물보라가 일 때까지 기다려요.'],
+        missed:['입질을 놓쳤어요', '진짜 입질이 왔을 때 제때 누르지 못했어요. 찌가 푹 잠기면 바로 눌러요.'],
+        snap:['줄이 끊어졌어요', info.reason], loose:['바늘이 빠졌어요', info.reason], escaped:['도망쳤어요', info.reason] };
       const [title, why] = reasons[info.result] || ['실패', ''];
-      const xp = progress.addXp('fishing', 2);
-      host.showResult({ tone:'lose', title, message:info.result === 'early' || info.result === 'missed' ? '물고기가 달아났습니다.' : `${fish.name}${josa(fish.name, '은/는')} 놓쳤습니다.`, detail:why, xp:'낚시 경험치 +2 (도전 보상)', actions:[again, leave] });
+      progress.addXp('fishing', 2);
+      host.showResult({ tone:'lose', title, message:info.result === 'early' || info.result === 'missed' ? '물고기가 달아났어요.' : `${fish.name}${josa(fish.name, '은/는')} 놓쳤어요.`, detail:why, xp:'낚시 경험치 +2 (도전 보상)', actions:[again, leave] });
     }
   }
 
@@ -176,15 +186,15 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
       f.step(dt, { reel:S.reeling, lean:lean });
       S.maxT = Math.max(S.maxT, f.tension);
       for (const ev of f.events) {
-        if (ev === 'phase:telegraph') { const dir = f.dashDir; setCall(dir < 0 ? '◀ 물보라! 놓으세요' : '물보라! 놓으세요 ▶', 'alert', f.teleLen + .6); sfx.play('warn'); ring(S.fishPos.x, S.fishPos.y, '#fff1a8', 54, f.teleLen + .3); buzz(25); S.dashShown = 'tele'; }
+        if (ev === 'phase:telegraph') { const dir = f.dashDir; setCall(dir < 0 ? '◀ 물보라! 놓아요' : '물보라! 놓아요 ▶', 'alert', f.teleLen + .6); sfx.play('warn'); ring(S.fishPos.x, S.fishPos.y, '#fff1a8', 54, f.teleLen + .3); buzz(25); S.dashShown = 'tele'; }
         if (ev === 'phase:dash') { burst(S.fishPos.x, S.fishPos.y, 12, '#ffffff', 190); sfx.play('splash'); shake(4); setCall('', '', .01); callEl.classList.remove('on'); }
-        if (ev === 'phase:rest') { if (!f.tired) setCall('힘을 아낀다 — 지금 감자', 'info', 1.1); }
-        if (ev === 'phase:tired') { setCall('지쳤다! 쭉 감자', 'good', 1.8); sfx.play('good'); }
+        if (ev === 'phase:rest') { if (!f.tired) setCall('힘을 아끼는 중 — 지금 감아요', 'info', 1.1); }
+        if (ev === 'phase:tired') { setCall('지쳤다! 쭉 감아요', 'good', 1.8); sfx.play('good'); }
         if (ev === 'phase:swim' && f.stamina > .5 && S.dashShown === 'tired') { setCall('힘을 되찾았다!', 'alert', 1.2); }
       }
       if (f.phase === 'tired') S.dashShown = 'tired';
       if (f.tension > TUNING.dangerT - .05 && time - S.lastWarn > .55) { S.lastWarn = time; sfx.play('warn'); buzz(15); if (f.phase !== 'telegraph') setCall('장력 위험! 놓아요', 'danger', .5); }
-      if (Math.abs(f.x) > TUNING.hazardAt && time - S.lastWarn > .8) { S.lastWarn = time; setCall(f.x < 0 ? '◀ 갈대에 쓸린다! 반대로' : '갈대에 쓸린다! 반대로 ▶', 'danger', .8); }
+      if (Math.abs(f.x) > TUNING.hazardAt && time - S.lastWarn > .8) { S.lastWarn = time; setCall(f.x < 0 ? '◀ 갈대에 쓸려요! 반대로' : '갈대에 쓸려요! 반대로 ▶', 'danger', .8); }
       // 감는 소리
       if (S.reeling) { S.reelAcc += Math.max(0, before - f.dist); if (S.reelAcc > .09) { S.reelAcc = 0; sfx.play('tick', clamp(f.tension, 0, 1)); } }
       sfx.humTo(f.tension);
@@ -203,176 +213,186 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
     }
   }
 
-  /* ---------- 그리기 ---------- */
-  function drawWater() {
-    const w = spot.water, top = waterTop(), sy = shoreY();
-    const g = ctx.createLinearGradient(0, top, 0, sy); g.addColorStop(0, w.deep); g.addColorStop(.55, w.mid); g.addColorStop(1, w.shallow);
-    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-    // 일렁이는 물결선
-    ctx.lineWidth = 1.4; ctx.globalAlpha = .13;
-    for (let i = 0; i < 26; i++) {
-      const y = lerp(top + 20, sy - 10, i / 26), amp = 2 + 3 * (i / 26), ph = time * (.5 + (i % 5) * .1) + i * 1.7;
-      ctx.beginPath(); ctx.strokeStyle = i % 3 ? '#e9fbff' : '#04202e';
-      for (let x = 0; x <= W; x += 18) { const yy = y + Math.sin(x * .02 + ph) * amp; x ? ctx.lineTo(x, yy) : ctx.moveTo(x, yy); }
-      ctx.stroke();
-    }
-    ctx.globalAlpha = 1;
-    // 빛 반짝임
-    ctx.fillStyle = '#ffffff'; for (let i = 0; i < 28; i++) { const x = (i * 193 + Math.sin(time * .3 + i) * 20) % W, y = top + ((i * 71) % (sy - top - 40)) + 10, a = (Math.sin(time * 1.4 + i * 2.2) + 1) / 2; ctx.globalAlpha = .05 + .14 * a; ctx.fillRect(x, y, 3, 2); }
-    ctx.globalAlpha = 1;
-    // 위험 구역(갈대·바위)
-    const cx = W / 2, hz = halfW() * TUNING.hazardAt;
-    for (const side of [-1, 1]) {
-      const edge = cx + side * hz, outer = side < 0 ? 0 : W;
-      const hot = S.fight && Math.abs(S.fight.x) > TUNING.hazardAt && Math.sign(S.fight.x) === side;
-      const gg = ctx.createLinearGradient(edge, 0, outer, 0); gg.addColorStop(0, 'rgba(26,56,34,0)'); gg.addColorStop(.35, hot ? 'rgba(120,96,30,.6)' : 'rgba(22,52,32,.72)'); gg.addColorStop(1, 'rgba(14,34,24,.92)');
-      ctx.fillStyle = gg; ctx.fillRect(Math.min(edge, outer), top, Math.abs(outer - edge), sy - top);
-      ctx.strokeStyle = hot ? '#e8c35c' : '#5d8b4d'; ctx.lineWidth = 2;
-      const count = Math.floor(Math.abs(outer - edge) / 9);
-      for (let i = 0; i < count; i++) {
-        const x = edge + side * (10 + i * 9 + (i * 37 % 7)), baseY = top + ((i * 131) % (sy - top)) + 20, hh = 26 + (i * 53 % 30);
-        const sway = Math.sin(time * (hot ? 9 : 1.4) + i) * (hot ? 5 : 3);
-        ctx.beginPath(); ctx.moveTo(x, baseY); ctx.quadraticCurveTo(x + sway, baseY - hh * .6, x + sway * 1.6, baseY - hh); ctx.stroke();
+  /* ---------- 그리기 (모든 좌표는 '한 칸(PX)' 단위로 환산해서 찍습니다) ---------- */
+  const R = x => Math.round(x / PX);
+  const BAYER = [[.125, .625], [.875, .375]];
+  const reedBase = (frame) => { // 부들(갈대): 줄기 + 갈색 이삭
+    const key = 'reed' + frame; if (reedBase[key]) return reedBase[key];
+    const p = new Pix(9, 20), lean = frame === 1 ? 1 : frame === 2 ? -1 : 0;
+    for (let y = 0; y < 18; y++) { const x = 4 + Math.round(lean * (1 - y / 18) * 2); p.px(x, 19 - y, y % 5 === 4 ? '#6faa5e' : '#4a8a4c'); if (y > 3 && y < 9) p.px(x + (y & 1 ? 1 : -1), 19 - y, '#6faa5e'); }
+    const hx = 4 + lean * 2; p.rect(hx - 1, 1, 2, 6, '#8a5a32'); p.px(hx - 1, 1, '#c28a52'); p.px(hx - 1, 2, '#c28a52'); p.px(hx, 0, '#6a4527'); p.line(hx + 1, 7, hx + 3, 11, '#4a8a4c'); p.line(hx - 2, 9, hx - 4, 12, '#4a8a4c');
+    p.outline(INK); reedBase[key] = p; return p;
+  };
+  const padSprite = (() => { const p = new Pix(11, 8); p.ellipse(5, 4, 4.5, 3, '#5aa05a'); p.px(9, 4, '#25607a'); p.px(10, 4, '#25607a'); p.px(9, 3, '#25607a'); p.px(3, 3, '#8fd07a'); p.px(4, 3, '#8fd07a'); p.px(5, 2, '#8fd07a'); p.outline('#1a4a3a'); return p; })();
+  const stoneSprite = (n) => { const p = new Pix(11 + n, 8 + (n >> 1)); p.ellipse(6 + n / 2, 4 + n / 4, 4.5 + n / 2, 3 + n / 4, '#6f7f7a'); p.ellipse(5 + n / 2, 3 + n / 4, 3 + n / 2, 2, '#98a8a2'); p.px(4 + n / 2, 2 + n / 4, '#d6e2dc'); p.outline(INK); return p; };
+  const bucket = (() => { const p = new Pix(11, 12); p.poly([[2, 4], [9, 4], [8, 10], [3, 10]], '#98a8a2'); p.rect(2, 4, 7, 1, '#d6e2dc'); p.rect(3, 6, 5, 1, '#7c8a90'); p.line(2, 4, 3, 1, '#7c8a90'); p.line(8, 1, 9, 4, '#7c8a90'); p.line(3, 1, 8, 1, '#7c8a90'); p.outline(INK); return p; })();
+  const starSprite = (big, color) => { const k = (big ? 7 : 5), p = new Pix(k, k), c = (k - 1) / 2; p.rect(c, 0, 1, k, color); p.rect(0, c, k, 1, color); p.px(c, c, '#ffffff'); return p; };
+  const bangSprite = (() => { const p = new Pix(7, 12); p.ellipse(3, 4, 3, 4, '#ffe27a'); p.rect(2, 2, 3, 4, '#ffe27a'); p.rect(3, 2, 1, 3, INK); p.px(3, 6, INK); p.px(3, 8, '#ffe27a'); p.px(3, 9, INK); p.line(2, 8, 3, 10, '#ffe27a'); p.outline(INK); return p; })();
+
+  function buildBg() {
+    const vw = surf.vw, vh = surf.vh, sy = R(shoreY()), p = new Pix(vw, vh), w = spot.water, cx = R(W / 2), hz = R(halfW() * TUNING.hazardAt);
+    const pal = [mix(w.deep, '#071a26', .3), w.deep, mix(w.deep, w.mid, .5), w.mid, mix(w.mid, w.shallow, .5), w.shallow, light(w.shallow, .14)];
+    const bank = pal.map(c => mix(c, '#14382c', .6)), nb = pal.length;
+    for (let y = 0; y < sy; y++) {
+      const t = clamp(y / sy, 0, .999) * (nb - 1), i = Math.floor(t), f = t - i, gd = clamp((f - .3) / .4, 0, 1);
+      for (let x = 0; x < vw; x++) {
+        const k = clamp((Math.abs(x - cx) - hz) / 7, 0, 1), useBank = k > BAYER[y & 1][x & 1] * 1;
+        const row = useBank ? bank : pal; p.px(x, y, gd > BAYER[y & 1][x & 1] ? row[i + 1] : row[i]);
       }
-      // 바위
-      ctx.fillStyle = '#34423a'; for (let i = 0; i < 5; i++) { const x = edge + side * (40 + i * 52 + (i * 13 % 9)), y = top + 60 + ((i * 197) % (sy - top - 140)); ctx.beginPath(); ctx.ellipse(x, y, 16 + (i % 3) * 5, 10 + (i % 2) * 4, 0, 0, TAU); ctx.fill(); }
     }
+    // 연잎·돌: 위험 구역(갈대밭) 바깥쪽 장식
+    for (let i = 0; i < 26; i++) { const side = i % 2 ? 1 : -1, x = cx + side * (hz + 8 + hash(i * 7) * Math.max(10, vw / 2 - hz - 14)), y = 8 + hash(i * 13 + 5) * (sy - 24); if (i % 3 === 0) blit(p.g, stoneSprite(i % 3), x, y); else if (i % 3 === 1 && i % 4) blit(p.g, padSprite, x, y); }
+    for (let i = 0; i < 5; i++) blit(p.g, padSprite, cx - hz + 6 + hash(i * 31) * hz * 2 - 4, 10 + hash(i * 17 + 2) * (sy * .55), { flip:i & 1 === 1 });
+    // 물가(모래·거품)와 부두
+    p.rect(0, sy, vw, vh - sy, '#6b5a3a'); p.rect(0, sy + 3, vw, vh - sy, '#5c4d32');
+    for (let x = 0; x < vw; x++) { const yy = sy + Math.round(Math.sin(x * .45) * 1); p.px(x, yy - 1, '#dff2f0'); p.px(x, yy, '#a9ccc8'); p.px(x, yy + 1, '#8f7a4c'); }
+    for (let i = 0; i < 40; i++) { const x = hash(i * 3) * vw, y = sy + 4 + hash(i * 9) * (vh - sy - 4); p.px(x, y, i % 3 ? '#8a7648' : '#4a3d28'); if (i % 7 === 0) p.px(x + 1, y, '#a89460'); }
+    for (let i = 0; i < 9; i++) { const x = hash(i * 21 + 4) * vw; if (Math.abs(x - cx) < 18) continue; const y = sy + 5 + hash(i * 5) * 6; p.line(x, y, x - 1, y - 3, '#3f7a4e'); p.line(x, y, x + 1, y - 4, '#5f9a52'); p.line(x, y, x + 2, y - 2, '#3f7a4e'); }
+    const dx0 = cx - 15; p.rect(dx0, sy - 3, 30, vh - sy + 3, '#a77746');
+    for (let y = sy - 3, row = 0; y < vh; y += 4, row++) { p.rect(dx0, y, 30, 1, '#6a4527'); p.rect(dx0 + 1, y + 1, 28, 1, row & 1 ? '#c08a52' : '#b8834a'); p.px(dx0 + 3 + (row & 1) * 18, y + 2, '#5a3a1c'); p.px(dx0 + 26 - (row & 1) * 18, y + 2, '#5a3a1c'); }
+    p.rect(dx0, sy - 3, 1, vh, INK); p.rect(dx0 + 29, sy - 3, 1, vh, INK); p.rect(dx0, sy - 4, 30, 1, INK);
+    for (const x of [dx0 - 1, dx0 + 28]) { p.rect(x, sy - 6, 3, 8, '#4a2f17'); p.rect(x, sy - 6, 3, 1, '#8a5a32'); p.rect(x - 1, sy - 6, 1, 8, INK); p.rect(x + 3, sy - 6, 1, 8, INK); }
+    blit(p.g, bucket, dx0 + 36, sy + 8);
+    return p;
   }
-  function drawShore() {
-    const sy = shoreY(), cx = W / 2;
-    const g = ctx.createLinearGradient(0, sy - 6, 0, H); g.addColorStop(0, '#6a5a3c'); g.addColorStop(.18, '#4c4630'); g.addColorStop(1, '#283426');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(0, sy + 10);
-    for (let x = 0; x <= W; x += 24) ctx.lineTo(x, sy + Math.sin(x * .03) * 5); ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath(); ctx.fill();
-    // 부두 판자
-    ctx.fillStyle = '#7a5c36'; ctx.fillRect(cx - 54, sy - 4, 108, H - sy + 4); ctx.strokeStyle = '#3d2a17'; ctx.lineWidth = 2;
-    for (let y = sy; y < H; y += 16) { ctx.beginPath(); ctx.moveTo(cx - 54, y); ctx.lineTo(cx + 54, y); ctx.stroke(); }
-    ctx.strokeRect(cx - 54, sy - 4, 108, H - sy + 4);
-  }
+
+  function sampleCurve(x0, y0, cx_, cy_, x1, y1, n) { const pts = []; for (let i = 0; i <= n; i++) { const t = i / n, a = (1 - t) * (1 - t), b = 2 * (1 - t) * t, c = t * t; pts.push([a * x0 + b * cx_ + c * x1, a * y0 + b * cy_ + c * y1]); } return pts; }
+  function polyline(pts, color, thick = 1) { const p = surf.pix; for (let i = 0; i < pts.length - 1; i++) { p.line(pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1], color); if (thick > 1) p.line(pts[i][0] + 1, pts[i][1], pts[i + 1][0] + 1, pts[i + 1][1], color); } }
+
   function rodTip() {
     const f = S.fight, sy = shoreY(), cx = W / 2;
     const bend = f ? f.tension : 0, lean = (S.lean || 0) * 26;
-    // 낚싯대: 손잡이 → 끝(장력이 클수록 휘어짐)
-    const bx = cx, by = sy + 18, tx = cx + lean + (f ? clamp(f.x, -1, 1) * 22 : 0) * .6, ty = sy - 70 + bend * 10;
+    const bx = cx, by = sy + 18, tx = cx + lean + (f ? clamp(f.x, -1, 1) * 22 : 0) * .6, ty = sy - 116 + bend * 14;
     return { bx, by, tx, ty, bend };
   }
+  function lineColor(T) { return T < .6 ? '#f7f3e6' : T < .82 ? '#ffd778' : T < .92 ? '#ff9d4a' : '#ff4a3c'; }
   function drawRod() {
-    const r = rodTip(), ctl = { x:(r.bx + r.tx) / 2 + (S.fight ? (r.tx - r.bx) * 0 : 0) - r.bend * 18 * Math.sign(S.fight?.x || 1) * .4, y:(r.by + r.ty) / 2 - r.bend * 6 };
-    ctx.lineCap = 'round'; ctx.strokeStyle = '#2b1d10'; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(r.bx, r.by); ctx.quadraticCurveTo(ctl.x, ctl.y, r.tx, r.ty); ctx.stroke();
-    ctx.strokeStyle = '#a77746'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(r.bx, r.by); ctx.quadraticCurveTo(ctl.x, ctl.y, r.tx, r.ty); ctx.stroke();
-    ctx.strokeStyle = '#e6b77a'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(r.bx, r.by); ctx.quadraticCurveTo(ctl.x, ctl.y, r.tx, r.ty); ctx.stroke();
+    const r = rodTip(), p = surf.pix, B = [R(r.bx), R(r.by)], T = [R(r.tx), R(r.ty)];
+    const wob = S.reeling && r.bend > .75 && !reduced ? Math.round(Math.sin(time * 70)) : 0;
+    const side = Math.sign((S.fight?.x || 0) + (S.lean || 0) * .6) || 1, ctl = [(B[0] + T[0]) / 2 - r.bend * 5 * side * -1 * .6, (B[1] + T[1]) / 2 + r.bend * 3];
+    const pts = sampleCurve(B[0], B[1], ctl[0], ctl[1], T[0] + wob, T[1], 22);
+    for (const [ox, oy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) polyline(pts.map(([x, y]) => [x + ox, y + oy]), INK, 2);
+    polyline(pts, '#8a5a32', 2); polyline(pts.slice(7).map(([x, y]) => [x, y]), '#d19a60', 1); polyline(pts.slice(0, 7), '#5a3a1c', 2);
+    for (const i of [6, 12, 17]) p.rect(pts[i][0], pts[i][1], 2, 1, '#f0d890');
+    p.disc(pts[pts.length - 1][0], pts[pts.length - 1][1], 1, '#f0d890'); // 낚싯대 끝 고리
     // 릴
-    ctx.fillStyle = '#c9c4a8'; ctx.strokeStyle = '#2b1d10'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(r.bx, r.by - 12, 10, 0, TAU); ctx.fill(); ctx.stroke();
-    ctx.strokeStyle = '#6b6650'; ctx.lineWidth = 2; ctx.beginPath(); const rot = S.reeling ? time * 18 : 0; ctx.moveTo(r.bx, r.by - 12); ctx.lineTo(r.bx + Math.cos(rot) * 8, r.by - 12 + Math.sin(rot) * 8); ctx.stroke();
-    ctx.lineCap = 'butt'; return r;
+    const rx = B[0] - 4, ry = B[1] - 5; p.disc(rx, ry, 4, INK); p.disc(rx, ry, 3, '#c5d0d2'); p.disc(rx, ry, 1, '#7c8e92');
+    const k = S.reeling ? Math.floor(time * 20) % 4 : 0, hx = [[0, -3], [3, 0], [0, 3], [-3, 0]][k]; p.px(rx + hx[0], ry + hx[1], INK); p.px(rx + hx[0] * .7, ry + hx[1] * .7, '#ffe27a');
+    return { ...r, vx:T[0] + wob, vy:T[1] };
   }
-  function lineColor(T) { return T < .6 ? '#f3efe0' : T < .82 ? '#ffd778' : T < .92 ? '#ff9d4a' : '#ff4a3c'; }
-  function drawLine(r, ex, ey, T, slack = 0) {
-    const mx = (r.tx + ex) / 2, my = (r.ty + ey) / 2;
-    const sag = (1 - clamp(T * 1.6, 0, 1)) * (40 + slack * 30) * (ex > r.tx ? 1 : -1) + (S.fight ? 0 : 6);
-    const vib = Math.max(0, T - .55) * 6 * Math.sin(time * 60);
-    ctx.strokeStyle = lineColor(T); ctx.lineWidth = T > .88 ? 2.6 : 1.8; ctx.globalAlpha = .95;
-    if (T > .88 && !reduced) { ctx.shadowColor = '#ff3b2a'; ctx.shadowBlur = 8; }
-    ctx.beginPath(); ctx.moveTo(r.tx, r.ty); ctx.quadraticCurveTo(mx + sag + vib, my + (T < .3 ? 12 : 0), ex, ey); ctx.stroke();
-    ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+  function drawLine(r, ex, ey, T, slack = 0) { // ex,ey: 화면 좌표(CSS px)
+    const p = surf.pix, tx = r.vx, ty = r.vy, X = R(ex), Y = R(ey), mx = (tx + X) / 2, my = (ty + Y) / 2;
+    const sag = (1 - clamp(T * 1.6, 0, 1)) * (13 + slack * 10) * (X > tx ? 1 : -1) + (S.fight ? 0 : 2), vib = Math.max(0, T - .55) * 2 * Math.sin(time * 60) * (reduced ? 0 : 1);
+    const pts = sampleCurve(tx, ty, mx + sag + vib, my + (T < .3 ? 4 : 0), X, Y, Math.max(8, Math.round(Math.hypot(X - tx, Y - ty) / 2)));
+    if (T > .86) polyline(pts.map(([x, y]) => [x - 1, y]), '#ff3b2a55'.slice(0, 7), 1);
+    polyline(pts, lineColor(T), T > .88 ? 2 : 1);
+    return pts;
   }
-  function drawFloat(x, y, bite) {
-    const dip = clamp(S.floatDip, -4, 26), bob = Math.sin(time * 2.2) * 1.2;
-    ctx.save(); ctx.translate(x, y + bob + dip);
-    ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(0, 4, 9, 4, 0, 0, TAU); ctx.fill();
-    const sink = bite ? 10 : 0;
-    ctx.fillStyle = '#f7f3e6'; ctx.beginPath(); ctx.arc(0, sink, 6, 0, TAU); ctx.fill();
-    ctx.fillStyle = '#e0483a'; ctx.beginPath(); ctx.arc(0, sink - 3, 6, Math.PI, TAU); ctx.fill();
-    ctx.strokeStyle = '#16251f'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(0, sink, 6, 0, TAU); ctx.stroke();
-    ctx.restore();
+  function drawFloat(x, y, bite, submerge = 0) {
+    const X = R(x), Y = R(y + clamp(S.floatDip, -4, 26) * 0 + Math.sin(time * 2.2) * 1.2) + Math.round(clamp(S.floatDip, -4, 40) / PX) + (bite ? 3 : 0) + submerge;
+    const p = surf.pix; g.save(); g.beginPath(); g.rect(0, 0, surf.vw, Y + 3); g.clip();
+    p.ellipse(X, Y + 3, 4, 1.5, '#0a2a3a'); // 물속 그림자
+    p.rect(X, Y - 8, 1, 3, INK); p.px(X, Y - 9, '#ffe27a'); // 안테나
+    p.ellipse(X, Y - 2, 3, 4, INK); p.ellipse(X, Y - 2, 2, 3, '#f7f3e6'); p.rect(X - 2, Y - 5, 5, 2, '#e0503c'); p.px(X - 1, Y - 5, '#ff9d8a'); p.rect(X - 2, Y - 3, 5, 1, INK);
+    g.restore();
   }
-  function drawFishShape(x, y, ang, len, color, wag, alpha, tier) {
-    ctx.save(); ctx.translate(x, y); ctx.rotate(ang); ctx.globalAlpha = alpha;
-    const w = len * .34, tail = Math.sin(wag) * len * .16;
-    ctx.fillStyle = 'rgba(5,16,24,.55)'; // 그림자
-    ctx.beginPath(); ctx.moveTo(len * .5, 0); ctx.bezierCurveTo(len * .3, -w, -len * .2, -w * .9, -len * .38, tail * .6);
-    ctx.lineTo(-len * .6, tail + w * .75); ctx.lineTo(-len * .55, tail - w * .75); ctx.lineTo(-len * .38, tail * .6);
-    ctx.bezierCurveTo(-len * .2, w * .9, len * .3, w, len * .5, 0); ctx.fill();
-    ctx.fillStyle = color; ctx.globalAlpha = alpha * .62; ctx.beginPath(); ctx.ellipse(len * .05, 0, len * .36, w * .6, 0, 0, TAU); ctx.fill();
-    // 지느러미
-    ctx.globalAlpha = alpha * .8; ctx.fillStyle = 'rgba(5,16,24,.6)';
-    ctx.beginPath(); ctx.moveTo(len * .08, -w * .8); ctx.lineTo(-len * .1, -w * 1.5 - Math.sin(wag * .7) * 3); ctx.lineTo(-len * .18, -w * .7); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(len * .08, w * .8); ctx.lineTo(-len * .1, w * 1.5 + Math.sin(wag * .7) * 3); ctx.lineTo(-len * .18, w * .7); ctx.fill();
-    if (tier === 'special') { ctx.strokeStyle = '#fff3b0'; ctx.globalAlpha = alpha * (.45 + .25 * Math.sin(time * 4)); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(len * .02, 0, len * .5, w * 1.1, 0, 0, TAU); ctx.stroke(); }
-    ctx.restore();
+  function drawFish(x, y, heading, fish, bendIdx, alpha = 1, scale = 1) {
+    const spr = fishSprite(fish.id, bendIdx, fish.color); blit(g, spr, R(x), R(y), { rot:heading, alpha, scale });
+    return spr;
   }
-  function drawDial() {
-    const f = S.fight; const r = W < 640 ? 46 : 60, cx = W - r - 22, cy = shoreY() - r - 6;
-    ctx.save(); ctx.translate(cx, cy);
-    ctx.fillStyle = 'rgba(12,28,24,.78)'; ctx.strokeStyle = '#d8c58a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, 0, r + 8, 0, TAU); ctx.fill(); ctx.stroke();
-    const a0 = Math.PI * .78, a1 = Math.PI * 2.22, at = t => lerp(a0, a1, t);
-    const zones = [[0, TUNING.sweetLow, '#5b8aa6'], [TUNING.sweetLow, TUNING.sweetHigh, '#6fb36a'], [TUNING.sweetHigh, TUNING.dangerT, '#e0a53c'], [TUNING.dangerT, 1.02, '#d9402f']];
-    ctx.lineWidth = 8; for (const [s, e, c] of zones) { ctx.strokeStyle = c; ctx.beginPath(); ctx.arc(0, 0, r - 8, at(s), at(Math.min(e, 1))); ctx.stroke(); }
-    const T = f ? f.tension : 0, jit = f && T > .85 && !reduced ? Math.sin(time * 70) * .015 : 0, ang = at(clamp(T + jit, 0, 1));
-    ctx.strokeStyle = '#fff5d6'; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(ang) * (r - 14), Math.sin(ang) * (r - 14)); ctx.stroke(); ctx.lineCap = 'butt';
-    ctx.fillStyle = '#fff5d6'; ctx.beginPath(); ctx.arc(0, 0, 5, 0, TAU); ctx.fill();
-    ctx.fillStyle = '#d9d2b0'; ctx.font = '600 11px "Noto Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.fillText('줄 장력', 0, r * .55);
-    if (f && f.strain > .02) { ctx.fillStyle = '#ff6a52'; ctx.fillRect(-r * .5, r * .66, r * clamp(f.strain / TUNING.snapStrain, 0, 1), 4); }
-    ctx.restore();
-  }
-  function drawFight(r) {
-    const f = S.fight, fp = S.fishPos, T = f.tension;
-    // 줄과 물고기
-    drawLine(r, fp.x, fp.y, T, f.loose / TUNING.looseLimit);
-    const speed = Math.hypot(fp.vx, fp.vy), baseAng = Math.atan2(-(fp.vy || -1), fp.vx || 0);
-    let ang = f.phase === 'dash' ? Math.atan2(-.55, f.dashDir * 1) : (-Math.PI / 2 + Math.sin(time * 1.3) * .4 + (f.phase === 'telegraph' ? f.dashDir * .5 : 0));
-    const len = ({ common:46, rare:62, special:80 })[S.fish.tier] * (W < 640 ? .8 : 1);
-    const act = f.phase === 'dash' ? 26 : f.phase === 'telegraph' ? 18 : f.phase === 'tired' ? 3 : f.phase === 'rest' ? 4 : 10;
-    const alpha = f.phase === 'tired' ? .7 : .95;
-    // 신호: 물보라 링 + 방향 물결
-    if (f.phase === 'telegraph') {
-      const k = f.tele; ctx.strokeStyle = '#fff1a8'; ctx.lineWidth = 2.5;
-      for (let i = 0; i < 3; i++) { const t = (k * 2 + i / 3) % 1; ctx.globalAlpha = (1 - t) * .8; ctx.beginPath(); ctx.arc(fp.x, fp.y, 14 + t * 46, 0, TAU); ctx.stroke(); }
-      ctx.globalAlpha = .9; ctx.fillStyle = '#fff1a8'; const dx = f.dashDir; for (let i = 0; i < 3; i++) { const ox = dx * (30 + i * 16 + k * 14); ctx.beginPath(); ctx.moveTo(fp.x + ox, fp.y - 10); ctx.lineTo(fp.x + ox + dx * 12, fp.y); ctx.lineTo(fp.x + ox, fp.y + 10); ctx.closePath(); ctx.globalAlpha = .35 + .2 * i; ctx.fill(); }
-      ctx.globalAlpha = 1;
+  const mouthOf = (x, y, heading, spr) => { const d = (spr.headX - spr.w / 2) * 1; return [x + Math.cos(heading) * d * PX, y + Math.sin(heading) * d * PX]; };
+
+  function drawWater() {
+    g.drawImage(bg.cv, 0, 0); const p = surf.pix, vw = surf.vw, sy = R(shoreY());
+    // 물결 무늬와 반짝임
+    for (let i = 0; i < 46; i++) { const sp = 2 + hash(i * 3) * 4, x = ((hash(i * 11) * (vw + 30) + time * sp * (i & 1 ? 1 : -1)) % (vw + 30) + (vw + 30)) % (vw + 30) - 15, y = 4 + hash(i * 5 + 1) * (sy - 10), w = 3 + Math.floor(hash(i * 7) * 5); p.g.globalAlpha = i % 3 ? .2 : .28; p.rect(x, y, w, 1, i % 3 ? '#e9fbff' : '#06202e'); }
+    p.g.globalAlpha = 1;
+    for (let i = 0; i < 14; i++) { const a = (Math.sin(time * 1.6 + i * 2.3) + 1) / 2; if (a < .7) continue; const x = hash(i * 17) * vw, y = 4 + hash(i * 23 + 3) * (sy - 12); p.px(x, y, '#ffffff'); p.px(x - 1, y, '#ffffff88'); p.px(x + 1, y, '#ffffff88'); p.px(x, y - 1, '#ffffff88'); p.px(x, y + 1, '#ffffff88'); }
+    // 갈대밭(위험 구역): 물고기가 그쪽으로 몰리면 노란 표시와 함께 거세게 흔들립니다
+    const cx = W / 2, hz = halfW() * TUNING.hazardAt;
+    for (const side of [-1, 1]) {
+      const hot = S.fight && Math.abs(S.fight.x) > TUNING.hazardAt && Math.sign(S.fight.x) === side, ex = R(cx + side * hz), edge = hot ? (Math.floor(time * 12) & 1 ? '#fff3a8' : '#ffb13c') : '#cfe9a8';
+      p.g.globalAlpha = hot ? 1 : .4; for (let y = 4; y < sy - 2; y += 4) p.rect(ex, y, 1, hot ? 3 : 2, edge); p.g.globalAlpha = 1;
+      for (let i = 0; i < 20; i++) {
+        const x = cx / PX + side * (hz / PX + 5 + hash(i * 7 + (side > 0 ? 91 : 0)) * Math.max(8, vw / 2 - hz / PX - 9)), y = 12 + hash(i * 13 + (side > 0 ? 37 : 0)) * (sy - 14), ph = Math.sin(time * (hot ? 11 : 1.5) + i * 1.9);
+        blit(g, reedBase(ph > .35 ? 1 : ph < -.35 ? 2 : 0), x, y - 10);
+      }
     }
-    if (f.phase === 'dash') { ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 2; for (let i = 0; i < 4; i++) { const t = ((time * 3 + i * .25) % 1); ctx.globalAlpha = (1 - t) * .6; ctx.beginPath(); ctx.moveTo(fp.x - f.dashDir * (10 + t * 60), fp.y + (i - 1.5) * 6); ctx.lineTo(fp.x - f.dashDir * (30 + t * 90), fp.y + (i - 1.5) * 9); ctx.stroke(); } ctx.globalAlpha = 1; }
-    drawFishShape(fp.x, fp.y, ang, len, S.fish.color, time * act, alpha, S.fish.tier);
-    // 남은 거리 라벨
-    ctx.font = '600 12px "Noto Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#eaf6ff'; ctx.strokeStyle = 'rgba(8,24,32,.85)'; ctx.lineWidth = 3;
-    const label = `${Math.max(0, f.dist).toFixed(1)}m`; ctx.strokeText(label, fp.x, fp.y + len * .62 + 6); ctx.fillText(label, fp.x, fp.y + len * .62 + 6);
-    if (f.phase === 'tired') { ctx.fillStyle = '#bfe8ff'; ctx.font = '12px sans-serif'; for (let i = 0; i < 3; i++) ctx.fillText('·', fp.x + 14 + i * 8, fp.y - 18 - ((time * 20 + i * 8) % 14)); }
-    // 끊어질 듯한 줄 경고 플래시
-    if (T > TUNING.dangerT - .02 && !reduced) { ctx.fillStyle = `rgba(255,60,40,${.08 + .07 * Math.sin(time * 40)})`; ctx.fillRect(0, 0, W, H); }
+  }
+  function drawDialPx() {
+    const f = S.fight, d = dial(), cx = R(d.x), cy = R(d.y), rr = 15, p = surf.pix, T = f ? f.tension : 0;
+    const hotLevel = f ? clamp(f.strain / TUNING.snapStrain, 0, 1) : 0;
+    p.disc(cx, cy, rr + 3, INK); p.disc(cx, cy, rr + 2, hotLevel > .05 && (Math.floor(time * 14) & 1) ? '#8a2a20' : '#c9a24a'); p.disc(cx, cy, rr + 1, INK); p.disc(cx, cy, rr, '#142a21');
+    const a0 = Math.PI * .78, a1 = Math.PI * 2.22, N = 22, zones = [[0, TUNING.sweetLow, '#5b8aa6'], [TUNING.sweetLow, TUNING.sweetHigh, '#6fb36a'], [TUNING.sweetHigh, TUNING.dangerT, '#e0a53c'], [TUNING.dangerT, 1.02, '#e0503c']];
+    for (let i = 0; i < N; i++) { const t = i / (N - 1), a = lerp(a0, a1, t), z = zones.find(zz => t >= zz[0] && t < zz[1]) || zones[3], on = t <= T + .001; p.g.globalAlpha = on ? 1 : .42; const x = cx + Math.cos(a) * (rr - 4), y = cy + Math.sin(a) * (rr - 4); p.rect(x - 1, y - 1, 2, 2, z[2]); }
+    p.g.globalAlpha = 1;
+    const jit = f && T > .85 && !reduced ? Math.sin(time * 70) * .03 : 0, ang = lerp(a0, a1, clamp(T + jit, 0, 1));
+    p.line(cx, cy, cx + Math.cos(ang) * (rr - 6), cy + Math.sin(ang) * (rr - 6), '#fff5d6'); p.disc(cx, cy, 2, '#fff5d6'); p.px(cx, cy, INK);
+    if (T > TUNING.dangerT - .05 && !reduced && (Math.floor(time * 10) & 1)) text(g, '!', cx, cy + 3, '#ff8a72', INK);
+  }
+
+  function drawFightScene(r) {
+    const f = S.fight, fp = S.fishPos, T = f.tension, p = surf.pix, fish = S.fish;
+    const toRod = Math.atan2(r.ty - fp.y, r.tx - fp.x);
+    let heading = toRod + Math.sin(time * 1.3) * .3;
+    if (f.phase === 'dash') heading = toRod - f.dashDir * .95 + Math.sin(time * 30) * .08; else if (f.phase === 'telegraph') heading = toRod - f.dashDir * .5 + Math.sin(time * 40) * .06; else if (f.phase === 'tired') heading = toRod + .15; else if (f.phase === 'rest') heading = toRod + Math.sin(time * .8) * .1;
+    const act = f.phase === 'dash' ? 26 : f.phase === 'telegraph' ? 18 : f.phase === 'tired' ? 3 : f.phase === 'rest' ? 4 : 10, bend = Math.sin(time * act);
+    const bendIdx = bend > .45 ? 1 : bend < -.45 ? -1 : 0, alpha = f.phase === 'tired' ? .75 : 1;
+    const spr = fishSprite(fish.id, bendIdx, fish.color), mouth = mouthOf(fp.x, fp.y, heading, spr);
+    drawLine(r, mouth[0], mouth[1], T, f.loose / TUNING.looseLimit);
+    const X = R(fp.x), Y = R(fp.y);
+    // 돌진 신호: 물보라 링과 방향 화살표, 머리 위 느낌표
+    if (f.phase === 'telegraph') {
+      const k = f.tele; for (let i = 0; i < 3; i++) { const t = (k * 2 + i / 3) % 1; p.g.globalAlpha = (1 - t) * .9; p.ring(X, Y, 5 + t * 15, 3 + t * 9, '#fff1a8'); } p.g.globalAlpha = 1;
+      const dx = f.dashDir; for (let i = 0; i < 3; i++) { const ox = X + dx * (14 + i * 6 + Math.floor(k * 4)); p.g.globalAlpha = .45 + .2 * i; for (let j = 0; j < 4; j++) p.rect(ox - dx * j, Y - 3 + j, 1, 7 - j * 2, '#fff1a8'); } p.g.globalAlpha = 1;
+      blit(g, bangSprite, X, Y - R(fish.tier === 'special' ? 20 * PX : 14 * PX) - Math.abs(Math.sin(time * 14)) * 2);
+    }
+    if (f.phase === 'dash') { for (let i = 0; i < 5; i++) { const t = (time * 3 + i * .2) % 1; p.g.globalAlpha = (1 - t) * .8; p.rect(X - f.dashDir * (6 + t * 24), Y + (i - 2) * 3, 4 + t * 4, 1, '#ffffff'); } p.g.globalAlpha = 1; }
+    blit(g, spr, X, Y, { rot:heading, alpha });
+    if (fish.tier === 'special' && !reduced) { const k = (Math.sin(time * 4) + 1) / 2; if (k > .6) blit(g, starSprite(false, '#fff3a8'), X + Math.cos(time * 3) * 13, Y + Math.sin(time * 2.2) * 9); }
+    text(g, `${Math.max(0, f.dist).toFixed(1)}m`, X, Y + 11 + Math.round(spr.len / 3), '#eaf6ff', INK);
+    if (f.phase === 'tired') for (let i = 0; i < 3; i++) { const t = ((time * .9 + i / 3) % 1); p.px(X + 9 + i * 3, Y - 10 - t * 8, '#bfe8ff'); p.px(X + 9 + i * 3, Y - 9 - t * 8, '#7ec0e8'); }
+    if (T > TUNING.dangerT - .02 && !reduced && (Math.floor(time * 12) & 1)) { const col = '#e0503c'; p.g.globalAlpha = .75; p.rect(0, 0, surf.vw, 2, col); p.rect(0, surf.vh - 2, surf.vw, 2, col); p.rect(0, 0, 2, surf.vh, col); p.rect(surf.vw - 2, 0, 2, surf.vh, col); p.g.globalAlpha = 1; }
   }
   function draw() {
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
-    ctx.save();
-    if (S.shake > 0) ctx.translate((Math.random() - .5) * S.shake, (Math.random() - .5) * S.shake);
+    const p = surf.pix; g.setTransform(1, 0, 0, 1, 0, 0); g.imageSmoothingEnabled = false; g.clearRect(0, 0, surf.vw, surf.vh);
+    if (S.shake > 0 && !reduced) canvas.style.transform = `translate(${Math.round((Math.random() - .5) * S.shake / PX) * PX}px,${Math.round((Math.random() - .5) * S.shake / PX) * PX}px)`; else if (canvas.style.transform) canvas.style.transform = '';
     drawWater();
-    // 조준 구역 안내
-    if (S.phase === 'aim') {
-      const sy = shoreY(), top = waterTop(); ctx.setLineDash([6, 8]); ctx.strokeStyle = 'rgba(235,250,255,.28)'; ctx.lineWidth = 1.5;
-      for (const d of [.33, .66]) { const y = depthToY(d); ctx.beginPath(); ctx.moveTo(W / 2 - halfW() * .8, y); ctx.lineTo(W / 2 + halfW() * .8, y); ctx.stroke(); }
-      ctx.setLineDash([]); ctx.fillStyle = 'rgba(235,250,255,.5)'; ctx.font = '600 11px "Noto Sans KR", sans-serif'; ctx.textAlign = 'left';
-      const lx = W / 2 - halfW() * .8 + 4; ctx.fillText('가까운 물가 · 일반', lx, depthToY(.16) + 4); ctx.fillText('중간 · 일반~희귀', lx, depthToY(.5) + 4); ctx.fillText('깊은 곳 · 희귀·특수', lx, depthToY(.84) + 4);
-      if (S.mouse.in && !coarse) { const my = clamp(S.mouse.y, top + 40, sy - 70), mx = clamp(S.mouse.x, W / 2 - halfW() * .78, W / 2 + halfW() * .78); ctx.strokeStyle = '#fff4c8'; ctx.lineWidth = 2; const pulse = 12 + Math.sin(time * 5) * 2; ctx.beginPath(); ctx.arc(mx, my, pulse, 0, TAU); ctx.stroke(); ctx.beginPath(); ctx.arc(mx, my, 3, 0, TAU); ctx.stroke(); }
+    if (S.phase === 'aim') { // 던질 수 있는 구역 안내선과 조준
+      const sy = shoreY(), top = waterTop(); p.g.globalAlpha = .5;
+      for (const d of [.33, .66]) { const y = R(depthToY(d)); for (let x = R(W / 2 - halfW() * .8); x < R(W / 2 + halfW() * .8); x += 5) p.rect(x, y, 3, 1, '#e9fbff'); } p.g.globalAlpha = 1;
+      if (S.mouse.in && !coarse) { const my = R(clamp(S.mouse.y, top + 40, sy - 70)), mx = R(clamp(S.mouse.x, W / 2 - halfW() * .78, W / 2 + halfW() * .78)), pulse = 5 + Math.round(Math.sin(time * 5) * 1); p.ring(mx, my, pulse, pulse * .6, '#fff4c8'); p.px(mx, my, '#fff4c8'); for (const [ox, oy] of [[0, -pulse - 2], [0, pulse], [-pulse - 2, 0], [pulse, 0]]) p.rect(mx + ox, my + oy * .6, 1, 1, '#fff4c8'); }
     }
-    for (const rg of S.rings) { const k = rg.t / rg.dur; ctx.globalAlpha = (1 - k) * .8; ctx.strokeStyle = rg.color; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(rg.x, rg.y, rg.max * k, rg.max * k * .6, 0, 0, TAU); ctx.stroke(); } ctx.globalAlpha = 1;
+    for (const rg of S.rings) { const k = rg.t / rg.dur; p.g.globalAlpha = (1 - k) * .9; p.ring(R(rg.x), R(rg.y), rg.max / PX * k, rg.max / PX * k * .55, rg.color); } p.g.globalAlpha = 1;
     const r = drawRod();
     if (S.phase === 'cast') {
-      const k = clamp(S.castT / .55, 0, 1), e = 1 - Math.pow(1 - k, 2); const x = lerp(r.tx, S.floatX, e), y = lerp(r.ty, S.floatY, e) - Math.sin(k * Math.PI) * 90;
-      drawLine(r, x, y, .3); ctx.fillStyle = '#f7f3e6'; ctx.beginPath(); ctx.arc(x, y, 5, 0, TAU); ctx.fill();
+      const k = clamp(S.castT / .55, 0, 1), e = 1 - Math.pow(1 - k, 2), x = lerp(r.tx, S.floatX, e), y = lerp(r.ty, S.floatY, e) - Math.sin(k * Math.PI) * 90;
+      drawLine(r, x, y, .3); p.disc(R(x), R(y), 2, INK); p.disc(R(x), R(y), 1, '#f7f3e6');
     } else if (S.phase === 'wait' || S.phase === 'bite') {
-      if (S.phase === 'bite') { ctx.fillStyle = 'rgba(255,230,140,.12)'; ctx.beginPath(); ctx.arc(S.floatX, S.floatY, 40 + Math.sin(time * 18) * 4, 0, TAU); ctx.fill(); }
+      if (S.phase === 'bite') { const k = (Math.floor(time * 10) & 1); p.ring(R(S.floatX), R(S.floatY), 8 + k, 5 + k, '#ffe08a'); blit(g, bangSprite, R(S.floatX), R(S.floatY) - 17 - Math.abs(Math.sin(time * 16)) * 2); }
       drawLine(r, S.floatX, S.floatY, .12 + (S.phase === 'bite' ? .3 : 0)); drawFloat(S.floatX, S.floatY, S.phase === 'bite');
-    } else if (S.phase === 'fight') drawFight(r);
+    } else if (S.phase === 'fight') drawFightScene(r);
     else if (S.phase === 'ending') {
-      if (S.endInfo.result === 'caught') {
-        const k = clamp(S.endT / 1.4, 0, 1), fp = S.fishPos, len = ({ common:46, rare:62, special:80 })[S.fish.tier] * (1 + k * .5), jump = Math.sin(k * Math.PI) * 60;
-        drawLine(r, fp.x, fp.y - jump, .6); drawFishShape(fp.x, fp.y - jump, -Math.PI / 2 + Math.sin(time * 30) * .3, len, S.fish.color, time * 30, 1, S.fish.tier);
-      } else if (S.endInfo.result === 'snap') { drawLine(r, r.tx + 6, r.ty + 30, .2); }
-      else if (S.endInfo.result === 'early' || S.endInfo.result === 'missed') { drawFloat(S.floatX, S.floatY, false); }
+      const info = S.endInfo, fish = S.fish, fp = S.fishPos;
+      if (info.result === 'caught') {
+        const k = clamp(S.endT / 1.1, 0, 1), cxv = R(W / 2) + 9, land = [cxv, R(shoreY()) + 9], from = S.catchFrom || [R(fp.x), R(fp.y)];
+        if (k < 1) { const e = 1 - Math.pow(1 - k, 2), x = lerp(from[0], land[0], e), y = lerp(from[1], land[1], e) - Math.sin(k * Math.PI) * 26, spr = fishSprite(fish.id, Math.floor(time * 18) % 2 ? 1 : -1, fish.color); drawLine(r, x * PX, y * PX, .6); blit(g, spr, x, y, { rot:k * TAU * 1.5 - Math.PI / 2 }); }
+        else { const hop = Math.abs(Math.sin(S.endT * 9)) * Math.max(0, 1 - (S.endT - 1.1) * 1.2) * 4, spr = fishSprite(fish.id, Math.floor(time * 14) % 2 ? 1 : -1, fish.color); p.ellipse(land[0], land[1] + 4, spr.len / 3, 1.5, '#00000044'); blit(g, spr, land[0], land[1] - hop, { rot:Math.sin(S.endT * 22) * .12 }); }
+        const stars = Math.min(6, Math.floor(S.endT * 9)); for (let i = 0; i < stars; i++) { const a = i / 6 * TAU + S.endT * 1.5, rad = 10 + (S.endT * 30) % 18; if (S.endT < 1.4) blit(g, starSprite(i % 2 === 0, i % 3 ? '#fff3a8' : '#ffffff'), land[0] + Math.cos(a) * rad, land[1] - 6 + Math.sin(a) * rad * .8); }
+      } else if (info.result === 'snap') { // 줄이 끊어져 낚싯대 끝에서 흩날림
+        const pts = sampleCurve(r.vx, r.vy, r.vx + 4, r.vy + 8, r.vx + 7 + S.endT * 6, r.vy + 16 + S.endT * 8, 8); polyline(pts, '#ff4a3c', 1);
+        if (S.endT < .9) { const spr = fishSprite(fish.id, Math.floor(time * 20) % 2 ? 1 : -1, fish.color); blit(g, spr, R(fp.x), R(fp.y) - S.endT * 70 / PX, { rot:-Math.PI / 2 + Math.sin(S.endT * 20) * .4, alpha:1 - S.endT }); }
+      } else if (info.result === 'early' || info.result === 'missed') {
+        const spr = fishSprite(fish.id, Math.floor(time * 16) % 2 ? 1 : -1, fish.color); blit(g, spr, R(S.floatX) + Math.sin(S.endT * 5) * 3, R(S.floatY) - S.endT * 30 / PX, { rot:-Math.PI / 2, alpha:clamp(1 - S.endT * .8, 0, 1) });
+        drawFloat(S.floatX, S.floatY, false); if (info.result === 'early') p.line(r.vx, r.vy, R(S.floatX), R(S.floatY) - 12, '#f7f3e6'); else drawLine(r, S.floatX, S.floatY, .1);
+      } else { // 바늘이 빠지거나 도망침: 낚싯대 끝에서 줄이 힘없이 늘어짐
+        const pts = sampleCurve(r.vx, r.vy, r.vx + 2, r.vy + 10, r.vx + 3, r.vy + 22 + Math.sin(S.endT * 6) * 2, 8); polyline(pts, '#f7f3e6', 1);
+        if (S.endT < 1.1) { const spr = fishSprite(fish.id, Math.floor(time * 20) % 2 ? 1 : -1, fish.color); blit(g, spr, R(fp.x), R(fp.y) - S.endT * 60 / PX, { rot:-Math.PI / 2, alpha:clamp(1 - S.endT * .9, 0, 1) }); }
+      }
     }
-    for (const p of S.particles) { ctx.globalAlpha = clamp(p.life / p.max, 0, 1); ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, p.size, p.size); } ctx.globalAlpha = 1;
-    drawShore(); drawRod();
-    ctx.restore();
-    if (S.phase === 'fight') drawDial();
-    if (S.flash > 0) { ctx.fillStyle = `rgba(255,255,255,${S.flash})`; ctx.fillRect(0, 0, W, H); }
+    for (const q of S.particles) { p.g.globalAlpha = clamp(q.life / q.max, 0, 1); p.rect(q.x / PX, q.y / PX, Math.max(1, Math.round(q.size / PX / 1.4)), Math.max(1, Math.round(q.size / PX / 1.4)), q.color); } p.g.globalAlpha = 1;
+    if (S.phase === 'fight') drawDialPx();
+    if (S.flash > 0) { p.g.globalAlpha = S.flash; p.rect(0, 0, surf.vw, surf.vh, '#ffffff'); p.g.globalAlpha = 1; }
   }
   function frame(now) {
     raf = requestAnimationFrame(frame);
@@ -384,16 +404,17 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
   const ro = new ResizeObserver(() => layout()); ro.observe(stage);
   layout(); toAim(); last = performance.now(); raf = requestAnimationFrame(frame);
 
+  const chip = (t, cls = '') => `<span class="demo-chip ${cls}">${t}</span>`, key = t => `<span class="demo-key">${t}</span>`;
   const game = {
     tutorial:{ title:'낚시', pages:[
-      { title:'낚싯줄 던지기', demo:'<div class="demo-fs demo-aim"><i></i><i></i><i></i><span>◎</span></div>', text:'물 위를 눌러(탭) 던집니다. <b>가까운 곳</b>은 일반 물고기, <b>깊은 곳</b>일수록 희귀·특수 물고기가 걸리지만 훨씬 힘이 셉니다.' },
-      { title:'입질과 챔질', demo:'<div class="demo-fs demo-bite"><b>찌</b><em>까딱…</em><em class="big">푹!</em></div>', text:'찌가 <b>살짝 까딱이면 가짜 입질</b>입니다 — 기다리세요. 찌가 <b>푹 잠기고 물보라</b>가 일면 진짜 입질입니다. 제한 시간 안에 누르면(클릭·탭·스페이스) 챔질합니다. 일찍 누르면 달아납니다.' },
-      { title:'당기기와 놓기', demo:'<div class="demo-fs demo-fight"><span class="a">꾹 누름 = 감기 (장력↑)</span><span class="b">놓음 = 풀기 (장력↓, 물고기가 멀어짐)</span></div>', text:'<b>꾹 누르는 동안 감깁니다.</b> 감을수록 줄 장력(우측 게이지)이 오르고, 위험선(붉은 구간)을 오래 넘으면 줄이 끊어집니다. 너무 오래 놓아 두면 바늘이 빠집니다.' },
-      { title:'물보라 = 돌진 신호', demo:'<div class="demo-fs demo-tele"><span>◎ 물보라!</span><span>→ 돌진! 놓기</span><span>→ 다시 감기</span></div>', text:'물고기는 돌진하기 <b>직전에 물보라와 화살표</b>를 보입니다. 그때 손을 떼서 장력을 낮추고, 돌진이 끝나면 다시 감으세요. 힘을 아끼는 때와 <b>지쳤을 때</b>는 쭉 감아 올릴 기회입니다.' },
-      { title:'좌우 방향 잡기', demo:'<div class="demo-fs demo-lean"><span>◀ A / ← </span><b>물고기</b><span> D / → ▶</span></div>', text:'물고기가 좌우 <b>갈대·바위 쪽</b>으로 몰리면 줄이 쓸려 장력이 오릅니다. 좌우 방향키(A/D), 화면 ◀▶ 버튼, 또는 누른 채 좌우로 끌어서 중앙으로 되돌리세요.' },
+      { title:'낚싯줄 던지기', demo:chip('얕은 곳 · 일반') + chip('깊은 곳 · 희귀', 'warn'), text:'물 위를 눌러(탭) 던져요. <b>멀리</b> 던질수록 귀한 물고기가 걸리지만 힘도 훨씬 세요.' },
+      { title:'입질과 챔질', demo:chip('까딱… 가짜', 'bad') + chip('푹! 진짜', 'ok') + key('Space'), text:'찌가 <b>푹 잠기고 물보라</b>가 일 때 눌러요. 일찍 누르면 도망쳐요.' },
+      { title:'당기기와 놓기', demo:key('꾹') + chip('감기 · 장력↑') + key('뗌') + chip('풀기 · 장력↓'), text:'누르는 동안 감겨요. 장력 바늘이 <b>빨간 구역</b>에 오래 있으면 줄이 끊어지고, 너무 오래 풀어 두면 바늘이 빠져요.' },
+      { title:'물보라 = 돌진 신호', demo:chip('! 물보라', 'warn') + chip('돌진 → 놓기', 'bad') + chip('끝나면 다시 감기', 'ok'), text:'물고기가 <b>!</b> 표시와 물보라를 보이면 곧 돌진해요. 손을 떼고, 지쳐서 힘이 빠질 때 쭉 감아 올려요.' },
+      { title:'좌우 방향 잡기', demo:key('←') + key('→') + key('A') + key('D') + chip('끌기'), text:'물고기가 <b>갈대밭</b>으로 쏠리면 줄이 쓸려요. 반대 방향으로 기울여 가운데로 돌려요.' },
     ] },
     busy: () => S.phase === 'fight' || S.phase === 'bite',
-    leaveWarning: () => '힘겨루기 중입니다. 지금 나가면 물고기를 놓칩니다.',
+    leaveWarning: () => '힘겨루기 중이에요. 지금 나가면 물고기를 놓쳐요.',
     pause: () => { paused = true; sfx.stopHum(); }, resume: () => { paused = false; }, layerClosed: () => { paused = false; },
     abort: () => { sfx.stopHum(); },
     destroy: () => { destroyed = true; cancelAnimationFrame(raf); ro.disconnect(); document.removeEventListener('keydown', kd); document.removeEventListener('keyup', ku); sfx.stopHum(); },

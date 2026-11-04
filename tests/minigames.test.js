@@ -5,7 +5,7 @@ import { FISH, FISHING_SPOTS, ORES, MINING_SPOTS, RECIPES, GATHER_SPOTS, INGREDI
 import { places } from '../js/world/place-data.js';
 import { BiteSession, Fight, TUNING } from '../js/game/fishing-engine.js';
 import { runFight } from '../scripts/fishing-sim.mjs';
-import { HeatFlip, DropStep, StirStep, FinishStep, buildSteps, dishScore } from '../js/game/cooking-engine.js';
+import { HeatFlip, DropStep, ChopStep, StirStep, FinishStep, buildSteps, dishScore } from '../js/game/cooking-engine.js';
 import { MineSession } from '../js/game/mining-engine.js';
 import { createRng } from '../js/game/rng.js';
 
@@ -109,10 +109,19 @@ test('요리: 재료 넣기·젓기·내리기는 타이밍이 정확할수록 �
   const fin = t => { const s = new FinishStep(); while (!s.done) { s.step(dt); if (s.t >= t) s.press(); } return s.score; };
   assert.equal(fin(8), 100); assert.ok(fin(2) < 30); const burn = new FinishStep(); while (!burn.done) burn.step(dt); assert.equal(burn.score, 0);
 });
+test('요리: 썰기는 표시선이 칼 밑에 올 때 눌러야 점수가 높고, 못 누르면 0점이다', () => {
+  const rng = createRng(9);
+  const chop = jit => { const s = new ChopStep({ items:3 }); const q = s.times.map(t => t + (rng() - .5) * 2 * jit); let qi = 0; while (!s.done && s.t < 40) { s.step(dt); while (qi < q.length && s.t >= q[qi]) { s.press(); qi++; } } return s; };
+  const good = chop(.03), sloppy = chop(.4);
+  assert.equal(good.cuts, 6); assert.ok(good.score >= 90, '정확하면 높은 점수'); assert.ok(good.score > sloppy.score);
+  assert.ok(good.cutAt.every(v => v !== null), '누른 칼질은 눌린 시각이 기록된다');
+  const idle = new ChopStep({ items:2 }); while (!idle.done && idle.t < 60) idle.step(dt); assert.equal(idle.score, 0); assert.ok(idle.cutAt.every(v => v === null));
+  const early = new ChopStep({ items:1 }); early.press(); assert.equal(early.stray, 1);
+});
 test('요리: 헛젓기는 감점되고, 점수→품질 등급이 정해진 구간으로 나뉜다', () => {
   const s = new StirStep({ beats:3, period:1 }); s.t = .5; s.press(); assert.equal(s.stray, 1);
   assert.deepEqual([0, 24, 25, 59, 60, 87, 88, 100].map(v => qualityOf(v).id), ['burnt', 'burnt', 'normal', 'normal', 'good', 'good', 'great', 'great']);
-  const steps = buildSteps(RECIPES['forest-mushroom-soup']); assert.deepEqual(steps.map(x => x.id), ['drop', 'stir']); assert.equal(dishScore(steps), 0);
+  const steps = buildSteps(RECIPES['forest-mushroom-soup']); assert.deepEqual(steps.map(x => x.id), ['chop', 'stir']); assert.equal(dishScore(steps), 0);
 });
 
 /* ---------- 채광 ---------- */

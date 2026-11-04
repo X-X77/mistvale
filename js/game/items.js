@@ -79,8 +79,8 @@ export const MINING_SPOTS = { 'wet-cave': { name:'숲의 습한 동굴', ores:['
 export const RECIPES = {
   'herb-grilled-fish': { id:'herb-grilled-fish', name:'허브 구이 생선', desc:'프라이팬에서 불 세기를 맞추고, 알맞은 때에 뒤집어 굽습니다.',
     need:{ herb:1 }, fishAny:true, steps:['heat','flip'], value:40, xp:16, color:'#d9a05b' },
-  'forest-mushroom-soup': { id:'forest-mushroom-soup', name:'숲 버섯 수프', desc:'재료를 넣을 때를 맞추고, 박자에 맞춰 저어 끓입니다.',
-    need:{ mushroom:2, herb:1 }, steps:['drop','stir'], value:34, xp:15, color:'#b98c5c' },
+  'forest-mushroom-soup': { id:'forest-mushroom-soup', name:'숲 버섯 수프', desc:'도마에서 재료를 썰고, 박자에 맞춰 저어 끓입니다.',
+    need:{ mushroom:2, herb:1 }, steps:['chop','stir'], value:34, xp:15, color:'#b98c5c' },
   'dew-berry-jam': { id:'dew-berry-jam', name:'이슬 베리 잼', desc:'베리를 박자에 맞춰 저으며 졸이다가, 윤기가 돌 때 불에서 내립니다.',
     need:{ berry:3 }, steps:['stir','finish'], value:36, xp:15, color:'#a8456f' },
 };
