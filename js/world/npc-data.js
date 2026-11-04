@@ -1,7 +1,7 @@
-import { chibiResidents } from './chibi-data.js?v=20261104f';
-import { portraitAssets } from './portrait-data.js?v=20261104f';
+import { chibiResidents } from './chibi-data.js?v=scene-polish-2';
+import { portraitAssets } from './portrait-data.js?v=scene-polish-2';
 import { sceneArt } from './scene-art.js';
-import { firstMeetings } from './first-meetings.js';
+import { firstMeetings } from './first-meetings.js?v=scene-polish-2';
 import { npcPresentation } from './npc-presentation.js';
 const assetRoot = new URL('../../assets/npc/', import.meta.url);
 const asset = path => path ? new URL(path, assetRoot).href : '';

@@ -6,7 +6,7 @@ export const portraitAssets = {
     "alt": "에델린 대화 원화"
   },
   "serepina": {
-    "src": "./assets/characters/dialogue/serepina.png?v=20261104f",
+    "src": "./assets/characters/dialogue/serepina.png?v=scene-polish-2",
     "fallback": "./assets/npc/../characters/portraits/seraphina.png",
     "alt": "세레피나 대화 원화"
   },

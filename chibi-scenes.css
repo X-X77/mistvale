@@ -50,3 +50,19 @@
  .mv-chibi-world #place-view[data-residents="5"] .mv-chibi{top:calc((var(--mg) - 8)*1%)}
 }
 html.mv-reduced-motion .mv-chibi img,html.mv-reduced-motion .mv-chibi-name{transition:none}
+
+/* Light follows the scene. Keep the floor visible beneath the residents. */
+.mv-chibi-world #place-stage {--light-x:70%;--light-y:25%;--exposure:.98;--colour:.96;--light-strength:9%}
+.mv-chibi-world #place-stage:is([data-place="library"],[data-place="workshop"],[data-place="bakery"],[data-place="clinic"]){--light-x:27%;--light-y:24%;--exposure:1.02}
+.mv-chibi-world #place-stage:is([data-place="forge"],[data-place="pub"],[data-place="inn"]){--light-x:38%;--light-y:48%;--colour:1.03;--light-strength:12%}
+.mv-chibi-world #place-stage:is([data-place="whisper-forest"],[data-place="blue-coast"],[data-place="wet-cave"],[data-place="silver-lake"]){--light-x:58%;--light-y:41%;--exposure:1.05;--colour:.9;--light-strength:6%}
+.mv-chibi-world #place-stage .mv-background{filter:saturate(var(--colour)) brightness(var(--exposure))}
+.mv-chibi-world #place-stage:before{background:linear-gradient(90deg,#111a16b5, #111a1659 32%,transparent 57%),linear-gradient(0deg,#18221d45,transparent 26%)}
+.mv-chibi-world #place-stage:after{background:radial-gradient(ellipse at var(--light-x) var(--light-y),color-mix(in srgb,var(--mood-glow) var(--light-strength),transparent),transparent 62%);box-shadow:none}
+.mv-chibi-world .mv-talking #place-stage:before{background:linear-gradient(0deg,#15211a75,transparent 48%)}
+.mv-chibi-world .mv-chibi[data-npc="nepia"]:before,.mv-chibi-world .mv-chibi[data-npc="neri"]:before{opacity:.35}
+@media(max-width:700px){
+ .mv-chibi-world #place-stage:before{background:linear-gradient(180deg,#111d18dc,#15221f75 24%,transparent 51%,#18211b35)}
+ .mv-chibi-world #place-view[data-residents="5"] .mv-chibi{max-width:28vw;min-height:0}
+ .mv-chibi-world #place-view[data-residents="3"] .mv-chibi{max-width:37vw}
+}
