@@ -5,7 +5,7 @@
 export const places = {
   clover: {
     id:'clover', name:'클로버 잡화점', category:'생활과 준비', hours:'09:00–18:00',
-    purpose:'씨앗, 농기구, 생활 잡화 판매',
+    purpose:'씨앗과 비료, 생활 잡화를 파는 잡화점',
     description:'미스트베일의 생활에 필요한 물건을 소개하는 장소입니다.',
     background:'./assets/world/scene-clover.jpg',
     alt:'나무 선반과 생활 잡화, 계산대가 놓인 클로버 잡화점 시범 내부',
@@ -21,28 +21,28 @@ export const places = {
   },
   forge: {
     id:'forge', name:'검은모루 대장간', category:'도구와 불', hours:null,
-    purpose:'농기구와 도구를 두드려 만들고 고치는 대장간',
+    purpose:'농기구와 채광 도구를 팔고, 장비를 강화해 주는 대장간',
     description:'화덕의 열기와 쇠 냄새가 가득한 대장간입니다.',
     background:'./assets/world/forge-interior.jpg', alt:'화덕의 불빛과 모루, 작업 도구가 놓인 검은모루 대장간 내부',
     mood:{ a:'#24140f', b:'#5e2f19', glow:'#ff9340' },
   },
   workshop: {
     id:'workshop', name:'참나무 공방', category:'나무와 손길', hours:null,
-    purpose:'가구와 집수리를 맡는 목공방',
+    purpose:'목재와 제작 재료, 농장 시설과 가구를 다루는 목공방',
     description:'톱밥 냄새와 따뜻한 나뭇결이 머무는 공방입니다.',
     background:'./assets/world/scene-workshop.jpg', alt:'작업대와 목재가 놓인 공방 분위기',
     mood:{ a:'#3a2a1b', b:'#7a5732', glow:'#f6cd85' },
   },
   ranch: {
     id:'ranch', name:'푸른목초 목장', category:'가축과 초원', hours:null,
-    purpose:'가축을 기르고 우유와 치즈를 만드는 목장',
+    purpose:'가축을 기르고 우유와 치즈를 파는 목장',
     description:'풍차가 돌아가는 너른 초원의 목장입니다.',
     background:'./assets/world/scene-ranch.jpg', alt:'울타리와 초원이 펼쳐진 목장 분위기',
     mood:{ a:'#34552f', b:'#a2bf68', glow:'#fff3b8' },
   },
   pub: {
     id:'pub', name:'달맞이 주점', category:'저녁의 사랑방', hours:null,
-    purpose:'마을 소문과 이야기가 모이는 주점',
+    purpose:'마을 소문과 이야기가 모이고, 생선과 요리를 받아 주는 주점',
     description:'해가 지면 등불이 켜지고 사람들이 모여드는 주점입니다.',
     background:'./assets/world/scene-pub.jpg', alt:'등불이 켜진 주점 분위기',
     mood:{ a:'#1d1731', b:'#4a2b3c', glow:'#f7b95e' },
@@ -63,7 +63,7 @@ export const places = {
   },
   apothecary: {
     id:'apothecary', name:'보랏빛 약방', category:'약초와 포션', hours:null,
-    purpose:'포션과 약초를 다루는 작은 약방',
+    purpose:'포션과 약초, 기본 마법 소모품을 파는 작은 약방',
     description:'말린 약초와 작은 병들이 빼곡한 약방입니다.',
     background:'./assets/world/scene-apothecary.jpg', alt:'약초와 포션 병이 놓인 약방 분위기',
     mood:{ a:'#241a35', b:'#5e3f7a', glow:'#c9a6ff' },
@@ -77,7 +77,7 @@ export const places = {
   },
   bakery: {
     id:'bakery', name:'햇살 제과점', category:'빵과 달콤함', hours:null,
-    purpose:'갓 구운 빵과 과자를 파는 제과점',
+    purpose:'갓 구운 빵과 과자, 베이킹 재료를 파는 제과점',
     description:'버터와 설탕 냄새가 따뜻하게 퍼지는 제과점입니다.',
     background:'./assets/world/scene-bakery.jpg', alt:'빵과 과자가 진열된 제과점 분위기',
     mood:{ a:'#5c3b22', b:'#e5ad6e', glow:'#fff1c6' },

@@ -26,8 +26,8 @@
 <link rel="stylesheet" href="./chibi-scenes.css?v=scene-polish-2">
 <link rel="stylesheet" href="./visual-novel.css?v=20261104">
 <link rel="stylesheet" href="./world-map-v3.css?v=20261104g">
-<link rel="stylesheet" href="./minigames.css?v=px2"><link rel="stylesheet" href="./minigames-px.css?v=px2">
-<script type="module" src="./js/world/world.js?v=px2"></script>
+<link rel="stylesheet" href="./minigames.css?v=sh1"><link rel="stylesheet" href="./minigames-px.css?v=sh1"><link rel="stylesheet" href="./shop.css?v=sh1">
+<script type="module" src="./js/world/world.js?v=sh1"></script>
 </head>
 <body class="mv-world mv-chibi-world">
 <main id="world" class="mv-world-app" data-view="map">
@@ -64,7 +64,7 @@
 </main>
 <dialog id="npc-dialog" class="mv-npc-dialog" aria-labelledby="npc-name">
   <div class="mv-dialog-content"><div class="mv-portrait-area"><img id="npc-portrait" alt=""><span id="portrait-fallback" class="mv-portrait-fallback" hidden aria-label="원화 준비 중"><i>?</i><em>원화 준비 중</em></span></div>
-  <div class="mv-dialog-box"><header><div><h2 id="npc-name"></h2><small id="npc-note"></small></div><button id="dialog-close" aria-label="대화 닫기">×</button></header><button id="npc-text-next" class="mv-dialog-text-button" aria-label="대사 완성 또는 다음 대사"><span id="npc-text" aria-hidden="true"></span><span id="npc-accessible-text" class="mv-sr-only" aria-live="polite"></span></button><footer><span>클릭 / Enter로 계속</span><button id="dialog-next">다음 대사 <span aria-hidden="true">▸</span></button></footer></div></div>
+  <div class="mv-dialog-box"><header><div><h2 id="npc-name"></h2><small id="npc-note"></small></div><button id="dialog-close" aria-label="대화 닫기">×</button></header><button id="npc-text-next" class="mv-dialog-text-button" aria-label="대사 완성 또는 다음 대사"><span id="npc-text" aria-hidden="true"></span><span id="npc-accessible-text" class="mv-sr-only" aria-live="polite"></span></button><footer><span>클릭 / Enter로 계속</span><button id="dialog-shop" type="button" hidden>상점 보기</button><button id="dialog-next">다음 대사 <span aria-hidden="true">▸</span></button></footer></div></div>
 </dialog>
 <dialog id="pack-dialog" class="mv-pack" aria-labelledby="pack-title"><div class="mv-pack-card"><header><h2 id="pack-title">소지품</h2><button type="button" id="pack-close" aria-label="소지품 닫기">닫기 ✕</button></header><div id="pack-body"></div></div></dialog>
 <div id="mv-toast" class="mv-toast" role="status" aria-live="polite"></div>

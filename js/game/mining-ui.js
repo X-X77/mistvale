@@ -1,11 +1,12 @@
 // 채광 화면(픽셀 캔버스): 동굴 안 광석 하나를 가운데 두고, 약점의 위치와 빛나는 순간을 맞춰 곡괭이로 내리칩니다.
 // 규칙(약점·맥박·등급·피해)은 mining-engine.js 가 그대로 담당하고, 이 파일은 입력과 그림(바위·균열·곡괭이·파편)을 맡습니다.
-import { MINING_SPOTS, ORES, TIERS, josa } from './items.js?v=px2';
-import { MineSession } from './mining-engine.js?v=px2';
-import { createRng } from './rng.js?v=px2';
-import { itemIcon } from './host.js?v=px2';
-import { Pix, pixelSurface, blit, clamp, lerp, mix, light, dark, INK, hash } from './pixel.js?v=px2';
-import { rockSprite, rockShards, iconSprite, uiIcon } from './art.js?v=px2';
+import { MINING_SPOTS, ORES, TIERS, josa } from './items.js?v=sh1';
+import { equipmentBonus } from './goods.js?v=sh1';
+import { MineSession } from './mining-engine.js?v=sh1';
+import { createRng } from './rng.js?v=sh1';
+import { itemIcon } from './host.js?v=sh1';
+import { Pix, pixelSurface, blit, clamp, lerp, mix, light, dark, INK, hash } from './pixel.js?v=sh1';
+import { rockSprite, rockShards, iconSprite, uiIcon } from './art.js?v=sh1';
 
 const TAU = Math.PI * 2;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -63,13 +64,13 @@ export function createMining({ host, placeId, progress, sfx, reduced }) {
     run = null; playEl.hidden = true; selectEl.hidden = false; stage.dataset.mode = 'select'; clearTimeout(hintTimer);
     selectEl.innerHTML = `<div class="ms-select-in"><h2>어느 광맥을 캘까요?</h2><p class="mg-body">약점이 가장 밝을 때, 약점 한가운데를 내리쳐요.</p>
       <div class="ms-veins">${spot.ores.map(id => { const o = ORES[id]; return `<article class="ms-vein px tier-${o.tier}" data-ore="${id}"><span class="rock">${itemIcon({ id:o.id, kind:'ore', color:o.color }, 72)}</span><h3>${esc(o.name)}</h3><em class="tier-${o.tier}">${TIERS[o.tier]}</em>
-        <dl><div><dt>곡괭이</dt><dd>${o.mine.swings}번</dd></div><div><dt>약점</dt><dd>${esc(weakText(o))}</dd></div><div><dt>얻는 양</dt><dd>${o.mine.yield[0] === o.mine.yield[1] ? o.mine.yield[0] : o.mine.yield[0] + '~' + o.mine.yield[1]}개</dd></div></dl>
+        <dl><div><dt>곡괭이</dt><dd>${o.mine.swings + equipmentBonus(progress.state.items).mineSwings}번${equipmentBonus(progress.state.items).mineSwings ? ' (장비 +' + equipmentBonus(progress.state.items).mineSwings + ')' : ''}</dd></div><div><dt>약점</dt><dd>${esc(weakText(o))}</dd></div><div><dt>얻는 양</dt><dd>${o.mine.yield[0] === o.mine.yield[1] ? o.mine.yield[0] : o.mine.yield[0] + '~' + o.mine.yield[1]}개</dd></div></dl>
         <button type="button" class="px-btn">캐기 시작</button></article>`; }).join('')}</div></div>`;
     selectEl.querySelectorAll('.ms-vein').forEach(card => card.querySelector('button').addEventListener('click', () => { sfx.play('ui'); begin(ORES[card.dataset.ore]); }));
     host.say('캘 광맥을 고르세요.');
   }
   function begin(ore) {
-    run = { ore, m:new MineSession(ore, rng), phase:'play', seed:rng.int(1, 1e6) }; S.rx = .5; S.ry = .62; S.swing = 0; S.cracks = []; S.broken = []; S.parts = []; S.shards = []; S.pops = []; S.dust = []; S.endT = 0; S.nodeFlash = 0; S.lastPeak = -1; S.squash = 0; S.hitFlash = 0; S.bounce = 0;
+    run = { ore, m:new MineSession(ore, rng, { extraSwings:equipmentBonus(progress.state.items).mineSwings }), phase:'play', seed:rng.int(1, 1e6) }; S.rx = .5; S.ry = .62; S.swing = 0; S.cracks = []; S.broken = []; S.parts = []; S.shards = []; S.pops = []; S.dust = []; S.endT = 0; S.nodeFlash = 0; S.lastPeak = -1; S.squash = 0; S.hitFlash = 0; S.bounce = 0;
     selectEl.hidden = true; playEl.hidden = false; stage.dataset.mode = 'mine'; layout(); rebuildRock();
     setHint(coarse ? '약점이 가장 밝을 때 눌러요!' : '약점에 조준하고, 가장 밝을 때 클릭!', 5200); renderTop(); strikeBtn.hidden = coarse;
   }

@@ -2,7 +2,7 @@
 // 바위 면 위에서 약점(균열 위의 빛나는 점)을 찾아, 알맞은 위치(정확도)와 알맞은 순간(맥박)에 곡괭이를 내리칩니다.
 //   좌표: 바위 면 0~1 (가운데 0.5, 0.5).  약점은 맥박(pulse)에 맞춰 밝아졌다 어두워지고, 희귀·특수 광석에서는 균열을 따라 움직입니다.
 //   등급: perfect(약점 한가운데 + 가장 밝을 때) / good / weak(약점은 맞췄지만 어설픔) / miss(바위만 맞힘). 모든 스윙은 1회 소모입니다.
-import { createRng } from './rng.js?v=px2';
+import { createRng } from './rng.js?v=sh1';
 
 export const DAMAGE = {
   common:  { perfect:42, good:30, weak:14, miss:4 },
@@ -12,8 +12,10 @@ export const DAMAGE = {
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
 export class MineSession {
-  constructor(ore, rng = createRng()) {
-    this.ore = ore; this.cfg = ore.mine; this.rng = rng; this.t = 0; this.swings = this.cfg.swings; this.swingsMax = this.cfg.swings;
+  // bonus.extraSwings: 곡괭이 장비가 주는 추가 곡괭이질(goods.js 의 equipmentBonus)
+  constructor(ore, rng = createRng(), bonus = {}) {
+    const extra = Math.max(0, Math.floor(bonus.extraSwings || 0));
+    this.ore = ore; this.cfg = ore.mine; this.rng = rng; this.t = 0; this.swings = this.cfg.swings + extra; this.swingsMax = this.cfg.swings + extra;
     this.hp = this.cfg.hp; this.node = 0; this.over = null; this.stats = { perfect:0, good:0, weak:0, miss:0 }; this.hits = [];
     this.pulsePeriod = this.cfg.weak.pulse; this.dmg = DAMAGE[ore.tier];
     // 약점 후보 위치(균열)
