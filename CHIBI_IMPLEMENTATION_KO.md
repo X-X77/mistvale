@@ -50,3 +50,7 @@
 - **누끼**: 흰색 일괄 삭제 대신 AI 전경 분리(isnet-anime) + 알파 매팅으로 `assets/characters/chibis-matted/<id>.webp` 23장을 새로 만들었습니다. 원본(`chibi-originals`)과 이전 보정본(`chibis-refined`)은 그대로 있습니다. 만드는 방법은 `tools/chibi-matting/README.md`.
 - **원본에서 이미 잘려 있는 그림**(모렐 우산갓, 세레피나 모자, 세이라 꼬리, 네리 머리끝, 레피온 날개 끝, 아라크네 옆 머리카락)은 그림을 새로 그리지 않고 잘린 변만 부드럽게 흐렸습니다(`matte-report.json`의 `sourceCutSides`).
 - **농사 연출**(`js/loading.js`): 씨앗은 손 끝, 물은 물뿌리개 주둥이에서 출발해 캐릭터가 바라보는 쪽(화면 왼쪽) 밭으로 떨어지고, 닿은 자리에 씨앗 자국 → 젖은 흙 → 새싹이 생깁니다.
+
+## 2026-11-04 대화용 원화 교체 (새 zip)
+- 새로 받은 대화용 일러스트 23장을 배경 제거해 `assets/characters/dialogue/<id>.png` 로 교체했습니다. 받은 그대로의 파일은 `assets/characters/dialogue-originals/` 에 보존합니다.
+- 원본 그림에서 옆이 잘려 있던 변은 부드럽게 흐렸습니다. 이후 파일만 같은 이름으로 바꿔 넣으면 됩니다(경로 뒤 `?v=` 값을 올리면 브라우저가 새 파일을 받습니다).
