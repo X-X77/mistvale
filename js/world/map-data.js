@@ -29,6 +29,7 @@ export const villageMap = {
     { placeId: 'whisper-forest', x: 7, y: 84, hx: 6.9, hy: 77.4, r: 7.5, kind: 'route', glyph: '♣' },
     { placeId: 'wet-cave', x: 8, y: 20, hx: 8.2, hy: 14, r: 6.5, kind: 'route', glyph: '◖' },
     { placeId: 'silver-lake', x: 47, y: 26, hx: 47.4, hy: 19.8, r: 7, kind: 'route', glyph: '≈' },
+    { placeId: 'farmhouse', x: 38, y: 90, hx: 38, hy: 84, r: 7, kind: 'route', glyph: '⌂' },
     { placeId: 'blue-coast', x: 91, y: 91, hx: 91, hy: 84.6, r: 6.6, kind: 'route', glyph: '≈' },
   ],
 };

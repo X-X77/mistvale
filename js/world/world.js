@@ -4,6 +4,9 @@ import { npcs, npcsAt } from './npc-data.js?v=cutout-d';
 import { hasMet, completeFirstMeeting } from './encounter-session.js';
 import { readSave } from '../storage.js';
 import { chibiResidents } from './chibi-data.js?v=cutout-d';
+import { startMinigame, progress } from '../game/launcher.js?v=mg1';
+import { renderPack } from '../game/host.js?v=mg1';
+import { GATHER_SPOTS, INGREDIENTS, ACTIVITIES, FISHING_SPOTS } from '../game/items.js?v=mg1';
 
 const $ = id => document.getElementById(id);
 const app = $('world'), dialog = $('npc-dialog');
@@ -128,6 +131,56 @@ function mountMap() {
   $('map-art').addEventListener('load', centerMap); addEventListener('resize', () => { if (!$('map-view').hidden && $('map-stage').scrollLeft === 0) centerMap(); });
   $('map-stage').addEventListener('click', event => { if (!event.target.closest('.mv-map-marker')) setSelected(''); });
 }
+
+// ---- 활동(낚시·요리·채광·채집) : 장소 데이터의 activities 로 버튼이 만들어집니다 ----------------------------
+const ACTIVITY_COPY = {
+  fishing: place => ({ label:'낚시하기', hint:'장력과 물고기의 움직임을 읽는 힘겨루기', icon:'≈' }),
+  cooking: () => ({ label:'요리하기', hint:'불 조절·타이밍·젓기로 직접 조리', icon:'♨' }),
+  mining:  () => ({ label:'광맥 캐기', hint:'약점을 정확히 노려 내리치기', icon:'⛏' }),
+};
+let gathered = new Set();
+function toast(message) { const node = $('mv-toast'); node.textContent = message; node.classList.add('on'); clearTimeout(toast.timer); toast.timer = setTimeout(() => node.classList.remove('on'), 2600); }
+function refreshGold() { $('pack-gold').textContent = progress.state.gold.toLocaleString('ko-KR') + 'G'; }
+function mountActivities(place) {
+  const box = $('place-activities'); box.replaceChildren();
+  const list = place.activities || [];
+  box.hidden = !list.length; if (!list.length) return;
+  gathered = new Set();
+  for (const kind of list) {
+    if (kind === 'gather') {
+      const spot = GATHER_SPOTS[place.id]; if (!spot) continue;
+      for (const pick of spot.picks) {
+        const info = INGREDIENTS[pick.id], button = document.createElement('button');
+        button.type = 'button'; button.className = 'mv-activity mv-gather'; button.dataset.activity = 'gather'; button.dataset.pick = pick.id;
+        button.innerHTML = '<i aria-hidden="true">✿</i><span><strong></strong><small></small></span>';
+        button.querySelector('strong').textContent = pick.label; button.querySelector('small').textContent = info.name + ' ' + pick.min + '~' + pick.max + '개'; button.title = pick.label + ' 살펴보기 · ' + info.name + ' ' + pick.min + '~' + pick.max + '개';
+        button.addEventListener('click', () => {
+          if (gathered.has(pick.id)) return; gathered.add(pick.id);
+          const n = pick.min + Math.floor(Math.random() * (pick.max - pick.min + 1)); progress.add(pick.id, n);
+          button.disabled = true; button.classList.add('is-done'); button.querySelector('small').textContent = '채집 완료'; button.title = info.name + ' ×' + n + ' 채집 완료 (다음에 들를 때 다시 자랍니다)';
+          toast('소지품에 ' + info.name + ' ×' + n + ' 넣었습니다.'); refreshGold();
+        });
+        box.append(button);
+      }
+      continue;
+    }
+    const copy = ACTIVITY_COPY[kind]?.(place); if (!copy) continue;
+    const button = document.createElement('button');
+    button.type = 'button'; button.className = 'mv-activity mv-activity-' + kind; button.dataset.activity = kind;
+    button.innerHTML = '<i aria-hidden="true"></i><span><strong></strong><small></small></span><b aria-hidden="true">▸</b>';
+    button.querySelector('i').textContent = copy.icon; button.querySelector('strong').textContent = copy.label; button.querySelector('small').textContent = copy.hint;
+    button.addEventListener('click', () => {
+      startMinigame({ type:kind, placeId:place.id, placeName:place.name, app, reduced:reduced(), onExit: () => { refreshGold(); button.focus({ preventScroll:true }); } });
+    });
+    box.append(button);
+  }
+}
+function openPack() { $('pack-body').innerHTML = renderPack(progress); if (!$('pack-dialog').open) $('pack-dialog').showModal(); }
+$('pack-open').addEventListener('click', openPack);
+$('pack-close').addEventListener('click', () => $('pack-dialog').close());
+$('pack-dialog').addEventListener('click', event => { if (event.target === $('pack-dialog')) $('pack-dialog').close(); });
+progress.subscribe(() => { refreshGold(); if ($('pack-dialog').open) $('pack-body').innerHTML = renderPack(progress); });
+refreshGold();
 // ---- NPC 표시 (모든 NPC 공통) -------------------------------------------------
 // 장소 화면: 큰 원화와 하단 인물 선택 버튼이 같은 원화·대화 데이터를 사용합니다.
 // 원화 또는 선택 버튼을 누르면 기존 대화창을 엽니다. 미등록 원화는 대체 안내로 표시합니다.
@@ -182,6 +235,7 @@ function render(value) {
     if (place.background) loadImage($('place-art'), place.background, $('place-fallback'));
     else { $('place-art').hidden = true; $('place-art').removeAttribute('src'); $('place-fallback').hidden = true; }
     $('scene-note').textContent = '';
+    mountActivities(place);
     mountNpcs(place); setStatus(place.name + '. 인물을 선택하면 대화가 열립니다.');
     $('place-title').focus({preventScroll:true});
   }
