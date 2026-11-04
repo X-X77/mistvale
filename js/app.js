@@ -2,7 +2,7 @@ import { narrative, scripts, assets } from './data.js';
 import { readSave, writeSave } from './storage.js';
 import { Sound } from './audio.js';
 import { Music } from './music.js';
-import { createPixelLoader, prepareImages } from './loading.js?v=20261104d';
+import { createPixelLoader, prepareImages } from './loading.js?v=20261104g';
 import { readingTime } from './dialogue-timing.js';
 
 const $ = id => document.getElementById(id);
@@ -61,12 +61,24 @@ function scheduleAuto(){
     if(!signal.aborted&&line===expectedLine&&auto&&!settings.open&&!document.hidden)advance(false);
   },readingTime(fullText,script[line].speaker,preferences.speed));
 }
+/* 장면이 바뀔 때 새 장면만 짧게 페이드인합니다. 진행 상태에는 손대지 않는 순수 표시용 효과입니다. */
+function resetVeil(){
+  const veil=document.querySelector('.reality-veil');
+  veil.getAnimations().forEach(item=>item.cancel());veil.style.opacity='';veil.style.visibility='';
+}
+function fadeIn(next){
+  if(reduced())return;
+  const element=$(next);if(!element||!['title','story','notification'].includes(next))return;
+  element.classList.remove('scene-fade');void element.offsetWidth;element.classList.add('scene-fade');
+}
 function setScene(next){
   controller.abort();controller=new AbortController();clearInterval(typeTimer);cancelAuto();typing=false;choosing=false;
   farmLoader.stop();scene=next;game.dataset.scene=next;
   music.setScene(next,{delay: next==='story'?1250:0});
-  game.classList.remove('anomaly','blooming','revealing');
+  game.classList.remove('anomaly','blooming','revealing','glitching','leaking');
+  $('sys-error').hidden=true;resetVeil();
   $('exit-veil').classList.remove('on');
+  fadeIn(next);
   for(const id of ['store','title','loading','story','notification'])$(id).hidden=id!==next;
   $('skip').hidden=!['loading','transition'].includes(next);
   $('continue').disabled=true;
@@ -90,42 +102,59 @@ function title(fromHistory=false){
   setScene('title');if(!fromHistory)routeHash('#title');
   window.scrollTo({top:0,behavior:'instant'});focus($('new-game'));
 }
+const LOAD_MESSAGES=[[0,'농장을 불러오는 중…'],[30,'씨앗 주머니를 챙기는 중…'],[62,'밭에 물을 주는 중…'],[88,'거의 다 됐어요…']];
+function setProgress(value){
+  $('progress').value=value;$('load-percent').textContent=Math.round(value)+'%';
+  const message=[...LOAD_MESSAGES].reverse().find(([from])=>value>=from)[1];
+  if(!game.classList.contains('glitching')&&$('loading-caption').textContent!==message)$('loading-caption').textContent=message;
+}
+/* 오류 연출: 한 번 끊기는 화면 → 짧은 시스템 오류 → 틈새로 새는 빛 → 하얗게 번짐. 같은 화면에서 이어집니다. */
+async function errorBeat(signal){
+  const fast=reduced();
+  game.classList.add('glitching');farmLoader.glitch(1);
+  $('loading-caption').textContent='농장을 불▒오는 중…';
+  if(!(await wait(fast?350:650,signal)))return false;
+  $('sys-error').hidden=false;
+  if(!(await wait(fast?900:1350,signal)))return false;
+  farmLoader.glitch(2);game.classList.add('leaking');
+  if(!(await wait(fast?450:1350,signal)))return false;
+  game.classList.add('blooming');
+  if(fast)veilFade(1,500);
+  return wait(fast?550:1500,signal);
+}
+function veilFade(to,duration){
+  const veil=document.querySelector('.reality-veil');
+  veil.style.visibility='visible';
+  veil.animate([{opacity:1-to},{opacity:to}],{duration,fill:'forwards',easing:'ease-in-out'}).finished.then(()=>{veil.style.opacity=to;}).catch(()=>{});
+}
 async function launch(){
   if(scene!=='title')return;
   sound.play();setScene('loading');routeHash('#opening');
-  const signal=controller.signal,start=performance.now(),minimum=reduced()?1600:6500;
+  const signal=controller.signal,start=performance.now(),minimum=reduced()?1600:6200;
   let ready=0;
-  $('progress').value=0;$('connection').textContent='';$('loading-caption').textContent='새로운 농장을 불러오는 중...';
+  setProgress(0);
   farmLoader.start();focus($('skip'));
   const preparation=prepareImages(Object.values(assets),{signal,onProgress:value=>{ready=value;}});
   while(!signal.aborted&&performance.now()-start<14000&&(performance.now()-start<minimum||ready<1)){
     if(!(await wait(80,signal)))return;
     const elapsed=Math.min(1,(performance.now()-start)/minimum);
-    $('progress').value=Math.min(96,Math.round((elapsed*.65+ready*.35)*96));
+    setProgress(Math.min(92,Math.round((elapsed*.65+ready*.35)*92)));
   }
   if(signal.aborted)return;
   await Promise.race([preparation,wait(1200,signal)]);if(signal.aborted)return;
-  $('progress').value=98;game.classList.add('anomaly');
-  $('loading-caption').textContent='잠시만요. 무언가 달라지고 있습니다.';
-  $('connection').textContent='PLAYER DATA — UNKNOWN';
-  if(!(await wait(reduced()?650:1300,signal)))return;
-  $('connection').textContent='CONNECTION ESTABLISHED';$('progress').value=100;
-  if(!(await wait(reduced()?550:1000,signal)))return;
-  transition();
-}
-async function transition(){
-  setScene('transition');$('loading').hidden=false;
-  const signal=controller.signal;game.classList.add('blooming');focus($('skip'));
-  if(!(await wait(reduced()?300:2200,signal)))return;
+  if(!(await errorBeat(signal)))return;
   awaken(false,true);
 }
 async function awaken(fromHistory=false,reveal=false){
   setScene('story');if(!fromHistory)routeHash('#awakening',true);
   script=narrative;line=0;$('ver-wrap').hidden=true;$('dialogue-shell').hidden=reveal;
   if(reveal){
-    game.classList.add('revealing');const signal=controller.signal;
-    if(!(await wait(reduced()?150:2000,signal)))return;
-    game.classList.remove('revealing');
+    // 하얀 빛 → 눈꺼풀 깜빡임 → 초점이 서서히 맞는 순서(CSS 키프레임). 일반 모션 4.8초, 동작 줄이기에서는 짧은 페이드.
+    const signal=controller.signal,fast=reduced();
+    game.classList.add('revealing');
+    if(fast){veilFade(0,700);}
+    if(!(await wait(fast?750:4900,signal)))return;
+    game.classList.remove('revealing');resetVeil();
   }
   $('dialogue-shell').hidden=false;showLine();focus($('dialogue'));
 }

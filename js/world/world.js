@@ -27,34 +27,91 @@ function routeValue() { const value = location.hash.slice(1); return places[valu
 function setHash(value, replace = false) {
   if (location.hash !== '#' + value) history[replace ? 'replaceState' : 'pushState'](null, '', '#' + value);
 }
+/* 지도: 작은 마커 + 눌러지는 영역(호버 때 은은하게 빛남) + 이름표. 오른쪽 '여행 수첩'의 항목과 서로 연결됩니다.
+   마우스: 올리면 강조, 누르면 입장. 터치(호버 없음): 한 번 누르면 선택·이름표, 같은 곳을 다시 누르면 입장. */
+const touchLike = matchMedia('(hover: none)');
+const markers = new Map(), cards = new Map();
+let selectedPlace = '', lastVisited = '';
+function setHighlight(id, on) {
+  markers.get(id)?.classList.toggle('is-hover', on);
+  cards.get(id)?.classList.toggle('is-hover', on);
+  $('map-stage').classList.toggle('has-focus', Boolean(document.querySelector('#map-stage .is-hover, #map-stage .is-selected')));
+}
+function setSelected(id) {
+  if (selectedPlace === id) return;
+  markers.get(selectedPlace)?.classList.remove('is-selected'); cards.get(selectedPlace)?.classList.remove('is-selected');
+  selectedPlace = id;
+  markers.get(id)?.classList.add('is-selected'); cards.get(id)?.classList.add('is-selected');
+  $('map-stage').classList.toggle('has-focus', Boolean(id) || Boolean(document.querySelector('#map-stage .is-hover')));
+}
+function activatePlace(id, fromMap) {
+  // 터치에서는 지도 위 첫 탭이 '선택'입니다. 같은 곳을 한 번 더 누르면 들어갑니다.
+  if (fromMap && touchLike.matches && selectedPlace !== id) {
+    setSelected(id); cards.get(id)?.scrollIntoView({block:'nearest', behavior: reduced() ? 'auto' : 'smooth'});
+    setStatus(places[id].name + ' 선택됨. 한 번 더 누르면 들어갑니다.'); return;
+  }
+  setSelected(id); lastVisited = id; navigate(id);
+}
 function mountMap() {
   $('map-subtitle').textContent = villageMap.subtitle;
   loadImage($('map-art'), villageMap.background, $('map-fallback'));
   $('map-art').alt = villageMap.alt;
   const groups = { building: $('place-list-town'), route: $('place-list-outside') };
+  const counts = { building: 0, route: 0 };
+  $('map-hint').querySelector('span').textContent = touchLike.matches
+    ? '좌우로 밀어 둘러보고, 장소를 눌러 확인한 뒤 다시 누르면 들어갑니다.' : '지도 위 장소에 마우스를 올리거나 눌러 보세요.';
   for (const location of villageMap.locations) {
     const place = places[location.placeId]; if (!place) continue;
     const kind = location.kind === 'route' ? 'route' : 'building';
+    const cx = bounded(location.hx ?? location.x, 3, 97, 50), cy = bounded(location.hy ?? location.y, 5, 95, 50);
     const button = document.createElement('button');
+    button.type = 'button';
     button.className = 'mv-map-marker' + (kind === 'route' ? ' mv-route' : '');
-    button.style.left = bounded(location.x, 3, 97, 50) + '%';
-    button.style.top = bounded(location.y, 8, 96, 50) + '%';
+    button.style.setProperty('--x', cx + '%'); button.style.setProperty('--y', cy + '%'); button.style.setProperty('--r', String(location.r ?? 7));
+    button.dataset.tag = cy < 22 ? 'below' : 'above';
+    button.dataset.edge = cx < 14 ? 'left' : cx > 86 ? 'right' : 'center';
     button.setAttribute('aria-label', place.name + (kind === 'route' ? ' 길로 들어가기' : ' 들어가기'));
-    button.title = place.name; button.dataset.place = place.id;
-    const pin = document.createElement('span'); pin.className = 'mv-marker-pin'; pin.textContent = location.glyph || '♧'; pin.setAttribute('aria-hidden', 'true');
-    const label = document.createElement('span'); label.className = 'mv-marker-name'; label.textContent = place.name;
-    button.append(pin, label); button.addEventListener('click', () => navigate(place.id));
-    $('map-markers').append(button);
-    const card = document.createElement('button'); card.className = 'mv-place-card'; card.dataset.place = place.id;
+    button.dataset.place = place.id;
+    const hot = document.createElement('span'); hot.className = 'mv-hot'; hot.setAttribute('aria-hidden', 'true');
+    const pin = document.createElement('span'); pin.className = 'mv-marker-pin'; pin.setAttribute('aria-hidden', 'true');
+    const label = document.createElement('span'); label.className = 'mv-marker-name'; label.setAttribute('aria-hidden', 'true');
+    const labelName = document.createElement('strong'); labelName.textContent = place.name;
+    const labelHint = document.createElement('small'); labelHint.textContent = kind === 'route' ? '길 입구' : '마을 시설';
+    label.append(labelName, labelHint);
+    button.append(hot, pin, label);
+    button.addEventListener('click', () => activatePlace(place.id, true));
+    button.addEventListener('pointerenter', event => { if (event.pointerType !== 'touch') setHighlight(place.id, true); });
+    button.addEventListener('pointerleave', () => setHighlight(place.id, false));
+    button.addEventListener('focus', () => { if (button.matches(':focus-visible')) setHighlight(place.id, true); }); button.addEventListener('blur', () => setHighlight(place.id, false));
+    $('map-markers').append(button); markers.set(place.id, button);
+    const card = document.createElement('button'); card.type = 'button'; card.className = 'mv-place-card' + (kind === 'route' ? ' mv-route' : ''); card.dataset.place = place.id;
+    const mark = document.createElement('i'); mark.className = 'mv-card-mark'; mark.setAttribute('aria-hidden', 'true');
     const title = document.createElement('strong'); title.textContent = place.name;
     const who = npcsAt(place.id).map(npc => npc.name).join(' · ');
-    const info = document.createElement('span'); info.textContent = who ? '만날 수 있는 인물 · ' + who : place.purpose;
-    const arrow = document.createElement('b'); arrow.textContent = '↗'; arrow.setAttribute('aria-hidden', 'true');
-    card.append(title, info, arrow); card.addEventListener('click', () => navigate(place.id));
-    groups[kind].append(card);
+    const info = document.createElement('span'); info.textContent = who ? who : place.purpose;
+    const arrow = document.createElement('b'); arrow.textContent = '›'; arrow.setAttribute('aria-hidden', 'true');
+    card.append(mark, title, info, arrow);
+    card.addEventListener('click', () => activatePlace(place.id, false));
+    card.addEventListener('pointerenter', event => { if (event.pointerType !== 'touch') setHighlight(place.id, true); });
+    card.addEventListener('pointerleave', () => setHighlight(place.id, false));
+    card.addEventListener('focus', () => { if (card.matches(':focus-visible')) setHighlight(place.id, true); }); card.addEventListener('blur', () => setHighlight(place.id, false));
+    groups[kind].append(card); cards.set(place.id, card); counts[kind]++;
   }
   $('place-group-town').hidden = !groups.building.children.length;
   $('place-group-outside').hidden = !groups.route.children.length;
+  $('town-count').textContent = counts.building; $('outside-count').textContent = counts.route;
+  $('map-view').dataset.count = String(counts.building + counts.route);
+  const body = $('place-list'), toggle = $('journal-toggle');
+  toggle.addEventListener('click', () => {
+    const open = toggle.getAttribute('aria-expanded') !== 'true';
+    toggle.setAttribute('aria-expanded', String(open)); toggle.textContent = open ? '접기' : '펼치기';
+    $('map-journal').classList.toggle('is-collapsed', !open);
+  });
+  // 지도 바깥(빈 곳)을 누르면 선택이 풀립니다.
+  // 좁은 화면에서는 지도가 가로로 넓어져 밀어서 볼 수 있습니다. 처음엔 마을 한가운데에 맞춥니다.
+  const centerMap = () => { const stage = $('map-stage'); if (stage.scrollWidth > stage.clientWidth + 4) stage.scrollLeft = (stage.scrollWidth - stage.clientWidth) * 0.55; };
+  $('map-art').addEventListener('load', centerMap); addEventListener('resize', () => { if (!$('map-view').hidden && $('map-stage').scrollLeft === 0) centerMap(); });
+  $('map-stage').addEventListener('click', event => { if (!event.target.closest('.mv-map-marker')) setSelected(''); });
 }
 // ---- NPC 표시 (모든 NPC 공통) -------------------------------------------------
 // 장소 화면: 큰 원화와 하단 인물 선택 버튼이 같은 원화·대화 데이터를 사용합니다.
@@ -93,7 +150,8 @@ function render(value) {
   $('world-map-back').hidden = value === 'map';
   if (value === 'map') {
     setStatus('미스트베일 마을 지도');
-    $('map-markers').querySelector('button')?.focus({preventScroll:true});
+    setSelected('');
+    markers.get(lastVisited)?.focus({preventScroll:true});
   } else {
     const place = places[value];
     $('place-title').textContent = place.name;
