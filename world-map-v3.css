@@ -160,3 +160,9 @@ body.mv-world{background:radial-gradient(ellipse 90% 60% at 50% 0,#244a3d 0,#173
   #map-view .mv-marker-name{padding:6px 10px 7px;}
   #map-view .mv-marker-name strong{font-size:12px;}
 }
+
+/* 대화 원화는 준비된 뒤 부드럽게 나타납니다 */
+.mv-chibi-world #npc-portrait:not([hidden]){animation:mv-vn-in .32s ease both;}
+.mv-chibi-world #npc-dialog{transition:opacity .18s ease;}
+.mv-chibi-world .mv-transition{transition:opacity .26s ease;}
+.mv-reduced-motion .mv-chibi-world #npc-portrait:not([hidden]){animation:none;}

@@ -24,7 +24,7 @@ Chromium 앱 내 브라우저:
 - 정상 사용 콘솔 오류 없음. git diff --check 통과.
 
 ## 보존 확인
-index.html, styles.css, js/app.js, js/loading.js, 지도·장소 데이터, NPC characters.json 및 23개 원화, 배포 워크플로는 변경하지 않음. 베르/초기 선택지/대사 데이터 변경 없음.
+index.html, styles.css, js/app.js, js/loading.js, 지도·장소 데이터, NPC characters.json 및 23개 원화, 배포 워크플로는 변경하지 않음. 엑스/초기 선택지/대사 데이터 변경 없음.
 
 ## 한계
 iOS/Android 실기기 및 Safari 미검증. OS 자체 모션 감소 토글은 별도 조작하지 않았으며 앱 설정으로 검증.

@@ -5,10 +5,12 @@
   --v3-cream:#fff3cf; --v3-leaf:#9fd58a; --v3-leaf-2:#cfe99f; --v3-pixel:'Noto Sans KR',sans-serif;
 }
 
-/* ───────── scene fade (title / story / choices) ───────── */
-@keyframes v3-scene-in{from{opacity:0}to{opacity:1}}
-.scene-fade{animation:v3-scene-in .42s ease-out both}
-.reduced-motion .scene-fade{animation:none!important}
+/* ───────── scene swap layer (JS: swap()) ───────── */
+/* 장면 밖으로 삐져나온 배경 확대(transform)가 #game 을 스크롤 가능하게 만들어 화면이 밀리던 문제 방지 */
+#game{overflow:clip;}
+#scene-fade{position:fixed;inset:0;z-index:45;opacity:0;pointer-events:none;background:#0e211c;}
+#scene-fade.on{pointer-events:auto;}
+.topbar{justify-content:flex-end;}
 
 /* ───────── title screen: finished-game look (art, logo, three menu buttons) ───────── */
 #title.title-scene::after{
@@ -58,37 +60,33 @@
   display:block;margin-top:14px;font:700 clamp(12px,1.25vw,15px)/1 var(--v3-pixel);letter-spacing:.7em;text-indent:.7em;color:#fffaf0;
   -webkit-text-stroke:0;text-shadow:0 1px 0 #17332c,0 2px 7px #0e2822,0 0 16px rgba(14,40,34,.8);
 }
-/* HUD plate: status line + pixel loading bar */
+/* status: no panel. One quiet line + small pixel gauge at the bottom centre. */
 #game #loading .load-hud{
-  position:absolute;z-index:3;left:50%;bottom:clamp(30px,7.5vh,70px);transform:translateX(-50%);
-  width:min(560px,calc(100vw - 40px));padding:16px 22px 20px;
-  background:linear-gradient(180deg,rgba(28,64,55,.94),rgba(18,42,37,.96));
-  border:3px solid var(--v3-gold);border-radius:3px;
-  box-shadow:0 0 0 3px var(--v3-ink),0 9px 0 3px rgba(5,16,14,.34),inset 0 0 0 2px rgba(255,255,255,.07);
+  position:absolute;z-index:3;left:50%;bottom:clamp(26px,6.5vh,58px);transform:translateX(-50%);
+  width:min(390px,calc(100vw - 52px));padding:0;background:none;border:0;border-radius:0;box-shadow:none;
+  display:flex;flex-direction:column-reverse;
 }
-#game #loading .load-hud::before,#game #loading .load-hud::after{
-  content:"";position:absolute;width:9px;height:9px;background:var(--v3-gold);box-shadow:0 0 0 2px var(--v3-ink);top:-8px;
-}
-#game #loading .load-hud::before{left:-8px;}#game #loading .load-hud::after{right:-8px;}
+#game #loading .load-hud::before,#game #loading .load-hud::after{display:none;}
 #game #loading .loading-caption{
-  min-height:0;margin:0 0 16px;text-align:center;font:700 clamp(14px,1.45vw,17px)/1.5 var(--v3-pixel);letter-spacing:.04em;color:var(--v3-cream);
-  text-shadow:0 2px 0 #10282a;
+  min-height:0;margin:10px 0 0;text-align:center;font:700 clamp(13px,1.2vw,15px)/1.4 var(--v3-pixel);letter-spacing:.05em;color:var(--v3-cream);
+  text-shadow:-1px 0 #10282a,1px 0 #10282a,0 -1px #10282a,0 1px #10282a,0 2px 0 #10282a,0 4px 10px rgba(5,18,15,.55);
 }
-#game #loading .load-track{display:flex;align-items:flex-end;gap:14px;width:100%;margin:0;max-width:none;}
-#game #loading .load-track .ver-progress-rail{position:relative;display:block;flex:1;min-width:0;height:36px;}
+#game #loading .load-track{display:flex;align-items:flex-end;gap:10px;width:100%;margin:0;max-width:none;}
+#game #loading .load-track .ver-progress-rail{position:relative;display:block;flex:1;min-width:0;height:30px;}
 #game #loading .load-track progress{
-  position:absolute;left:0;bottom:0;display:block;width:100%;height:20px;margin:0;
-  appearance:none;-webkit-appearance:none;border:3px solid #0d2220;border-radius:2px;background:#0f2622;
-  box-shadow:0 0 0 2px #5d8068,inset 0 3px 0 rgba(0,0,0,.4);overflow:hidden;
+  position:absolute;left:0;bottom:0;display:block;width:100%;height:14px;margin:0;
+  appearance:none;-webkit-appearance:none;border:2px solid #10282a;border-radius:0;background:#12302a;
+  box-shadow:0 0 0 2px rgba(255,243,207,.9),0 3px 0 2px rgba(5,18,15,.4);overflow:hidden;
 }
-#game #loading .load-track progress::-webkit-progress-bar{background:#0f2622;}
+#game #loading .load-track progress::-webkit-progress-bar{background:#12302a;}
 #game #loading .load-track progress::-webkit-progress-value{
-  background:repeating-linear-gradient(90deg,var(--v3-leaf) 0 9px,var(--v3-leaf-2) 9px 13px,#0f2622 13px 15px);
-  box-shadow:inset 0 4px 0 rgba(255,255,255,.3),inset 0 -4px 0 rgba(15,60,40,.34);transition:width .18s steps(6,end);
+  background:repeating-linear-gradient(90deg,var(--v3-leaf) 0 6px,var(--v3-leaf-2) 6px 9px,#12302a 9px 10px);
+  box-shadow:inset 0 3px 0 rgba(255,255,255,.28),inset 0 -3px 0 rgba(15,60,40,.3);transition:width .16s steps(5,end);
 }
-#game #loading .load-track progress::-moz-progress-bar{background:repeating-linear-gradient(90deg,var(--v3-leaf) 0 9px,var(--v3-leaf-2) 9px 13px,#0f2622 13px 15px);}
-#game #loading .loading-ver{bottom:15px;width:clamp(40px,4.6vw,56px);}
-#game #loading .load-percent{flex:none;min-width:3.4em;padding-bottom:1px;text-align:right;font:800 clamp(14px,1.4vw,17px)/20px ui-monospace,Consolas,monospace;color:var(--v3-gold);text-shadow:0 2px 0 #10282a;}
+#game #loading .load-track progress::-moz-progress-bar{background:repeating-linear-gradient(90deg,var(--v3-leaf) 0 6px,var(--v3-leaf-2) 6px 9px,#12302a 9px 10px);}
+#game #loading .loading-ver{bottom:12px;width:clamp(34px,3.6vw,44px);}
+#game #loading .load-percent{flex:none;min-width:3.2em;text-align:right;font:800 clamp(12px,1.1vw,14px)/14px ui-monospace,Consolas,monospace;color:var(--v3-cream);
+  text-shadow:-1px 0 #10282a,1px 0 #10282a,0 -1px #10282a,0 1px #10282a,0 2px 0 #10282a;}
 
 /* skip button: small, in-game, quiet */
 #skip.skip{
@@ -236,12 +234,85 @@
 @media(max-width:600px){
   #game #loading .loading-card h2.load-logo{top:clamp(74px,13vh,110px);font-size:clamp(34px,10.4vw,52px);letter-spacing:.1em;text-indent:.1em;}
   #game #loading .load-logo small{font-size:11px;letter-spacing:.55em;text-indent:.55em;margin-top:10px;}
-  #game #loading .load-hud{bottom:clamp(58px,10vh,84px);padding:14px 16px 16px;width:calc(100vw - 32px);}
-  #game #loading .loading-caption{margin-bottom:12px;font-size:14px;}
+  #game #loading .load-hud{bottom:clamp(64px,10vh,88px);width:calc(100vw - 44px);}
+  #game #loading .loading-caption{margin:8px 0 0;font-size:13px;}
   #game #loading .sys-error{top:42%;}
   #game #loading .sys-body{padding:14px 14px 10px;gap:10px;}
   #title .title-content>.eyebrow{font-size:9px;letter-spacing:.24em;}
   #title .subtitle{font-size:12px;letter-spacing:.55em;}
   #title .tagline{font-size:13px;}
   #skip.skip{right:12px;bottom:12px;}
+}
+
+/* ───────── system notification (arrival) ───────── */
+#game #notification.sys-scene{
+  position:relative;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:24px;
+  min-height:100svh;padding:clamp(78px,11vh,108px) clamp(16px,4vw,56px) clamp(24px,5vh,46px);background:none;backdrop-filter:none;
+}
+#game #notification.sys-scene::before{
+  content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(9,24,20,.62) 0,rgba(9,24,20,.18) 30%,rgba(9,24,20,0) 46%,rgba(9,24,20,.30) 66%,rgba(9,24,20,.72) 100%);
+}
+#notification .sys-banner,#notification .sys-menu{position:relative;z-index:1;}
+/* arrival banner */
+#notification .sys-banner{width:min(760px,100%);text-align:center;}
+#notification .sys-kicker{display:flex;align-items:center;justify-content:center;gap:12px;margin:0 0 8px;font:800 11px/1 var(--v3-pixel);letter-spacing:.42em;text-indent:.42em;color:var(--v3-gold);text-shadow:0 1px 0 #10282a,0 2px 8px rgba(5,18,15,.7);}
+#notification .sys-kicker i{width:34px;height:2px;background:linear-gradient(90deg,transparent,var(--v3-gold));}
+#notification .sys-kicker i:last-child{transform:scaleX(-1);}
+#notification .sys-banner h2{margin:0 0 16px;font:700 clamp(24px,3.3vw,38px)/1.25 'Noto Serif KR',serif;letter-spacing:.05em;color:var(--v3-cream);
+  text-shadow:0 2px 0 #10282a,0 3px 0 #10282a,0 8px 22px rgba(5,18,15,.6);}
+#notification .sys-info{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 10px;margin:0;padding:0;}
+#notification .sys-info>div{display:flex;flex-direction:column;gap:3px;min-width:0;padding:9px 16px 10px;text-align:left;
+  background:linear-gradient(180deg,rgba(28,62,53,.88),rgba(17,41,36,.92));border:2px solid rgba(230,207,148,.62);border-radius:2px;
+  box-shadow:0 0 0 2px #10282a,0 6px 14px rgba(3,14,11,.4);}
+#notification .sys-info dt{font:700 10.5px/1 var(--v3-pixel);letter-spacing:.14em;color:var(--v3-gold);}
+#notification .sys-info dd{margin:0;font:700 15px/1.35 var(--v3-pixel);color:var(--v3-cream);}
+#notification .sys-gold dd{display:flex;align-items:baseline;gap:4px;}
+#notification .sys-gold b{font:800 22px/1.1 Georgia,'Noto Serif KR',serif;color:#ffd978;text-shadow:0 1px 0 #10282a;}
+#notification .sys-gold span{font:800 13px/1 var(--v3-pixel);color:#e8c970;}
+#notification .sys-loc dd{font-size:16px;}
+/* choice menu */
+#notification .sys-menu{width:min(560px,100%);display:flex;flex-direction:column;align-items:stretch;gap:10px;padding:16px 16px 14px;
+  background:linear-gradient(180deg,rgba(24,54,46,.94),rgba(14,36,31,.96));border:3px solid var(--v3-gold);border-radius:3px;
+  box-shadow:0 0 0 3px #10282a,0 14px 30px rgba(3,14,11,.5),inset 0 0 0 2px rgba(255,255,255,.05);}
+#notification .sys-prompt{margin:0 0 2px;text-align:center;font:700 13px/1.4 var(--v3-pixel);letter-spacing:.18em;text-indent:.18em;color:var(--v3-gold);text-shadow:0 1px 0 #10282a;}
+#notification .sys-choices{display:grid;gap:8px;}
+#notification .sys-choices button{
+  position:relative;display:flex;align-items:center;gap:14px;width:100%;min-height:54px;padding:8px 16px 8px 10px;text-align:left;
+  color:var(--v3-cream);background:linear-gradient(180deg,#2a5748,#204438);border:2px solid #0f2924;border-radius:2px;
+  box-shadow:inset 0 0 0 2px rgba(230,207,148,.28),0 3px 0 #0a1d19;cursor:pointer;
+  transition:transform .12s ease,background .14s ease,box-shadow .14s ease,border-color .14s ease;
+}
+#notification .sys-choices .sys-key{flex:none;display:grid;place-items:center;width:30px;height:30px;font:800 15px/1 ui-monospace,Consolas,monospace;color:#10282a;background:var(--v3-gold);border:2px solid #10282a;transform:rotate(0);}
+#notification .sys-choices em{flex:1;font:700 clamp(15px,1.5vw,17px)/1.35 var(--v3-pixel);font-style:normal;letter-spacing:.02em;text-shadow:0 1px 0 #10282a;}
+#notification .sys-choices b{flex:none;width:0;height:0;border-left:9px solid var(--v3-gold);border-top:6px solid transparent;border-bottom:6px solid transparent;opacity:0;transform:translateX(-6px);transition:opacity .14s,transform .14s;}
+#notification .sys-choices button:hover:not(:disabled),#notification .sys-choices button:focus-visible{
+  background:linear-gradient(180deg,#37705c,#2a5848);border-color:#fff0b8;transform:translateY(-1px);
+  box-shadow:inset 0 0 0 2px rgba(255,240,184,.75),0 4px 0 #0a1d19,0 0 16px rgba(230,207,148,.28);outline:none;
+}
+#notification .sys-choices button:hover:not(:disabled) b,#notification .sys-choices button:focus-visible b{opacity:1;transform:none;}
+#notification .sys-choices button:active:not(:disabled),#notification .sys-choices button.chosen{
+  transform:translateY(2px);background:linear-gradient(180deg,#e9d89c,#cdb56d);color:#10282a;border-color:#10282a;box-shadow:inset 0 0 0 2px rgba(255,255,255,.4),0 1px 0 #0a1d19;
+}
+#notification .sys-choices button.chosen em,#notification .sys-choices button:active:not(:disabled) em{color:#10282a;text-shadow:none;}
+#notification .sys-choices button.chosen .sys-key{background:#10282a;color:var(--v3-gold);}
+#notification .sys-choices button:disabled:not(.chosen){opacity:.5;cursor:default;}
+#notification .sys-back{align-self:center;margin-top:2px;padding:6px 10px;font:600 12px/1 var(--v3-pixel);letter-spacing:.04em;color:#cfdcc2;background:none;border:0;text-decoration:underline;text-underline-offset:4px;opacity:.85;}
+#notification .sys-back:hover,#notification .sys-back:focus-visible{opacity:1;color:var(--v3-cream);}
+.reduced-motion #notification .sys-choices button,.reduced-motion #notification .sys-choices b{transition:none;}
+@media(max-width:640px){
+  #game #notification.sys-scene{padding:72px 12px 18px;gap:16px;}
+  #notification .sys-banner h2{font-size:23px;margin-bottom:12px;}
+  #notification .sys-info{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+  #notification .sys-info>div{padding:8px 11px 9px;}
+  #notification .sys-loc,#notification .sys-assets{grid-column:1/-1;}
+  #notification .sys-info dd{font-size:14px;}
+  #notification .sys-menu{padding:13px 12px 11px;gap:8px;}
+  #notification .sys-choices button{min-height:50px;gap:11px;}
+  #notification .sys-choices em{font-size:15px;}
+}
+@media(max-height:620px) and (min-width:641px){
+  #game #notification.sys-scene{padding-top:64px;gap:10px;}
+  #notification .sys-banner h2{margin-bottom:8px;font-size:24px;}
+  #notification .sys-choices button{min-height:44px;}
 }

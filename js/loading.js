@@ -217,7 +217,7 @@ export function createTravelLoader(host,options={}){
  const panel=document.createElement('section');panel.className='travel-loader';panel.hidden=true;panel.setAttribute('role','status');panel.setAttribute('aria-label','이동 중');
  const canvas=document.createElement('canvas');canvas.setAttribute('aria-hidden','true');
  const title=document.createElement('p');title.textContent='이동 중...';
- const subtitle=document.createElement('small');subtitle.textContent='베르가 길을 안내하는 중.';
+ const subtitle=document.createElement('small');subtitle.textContent='엑스가 길을 안내하는 중.';
  panel.append(canvas,title,subtitle);host.append(panel);
  const animation=createPixelLoader(canvas,{...options,mode:'ver'});
  return {show(){panel.hidden=false;animation.start();},hide(){panel.hidden=true;animation.stop();},destroy(){animation.stop();panel.remove();}};
