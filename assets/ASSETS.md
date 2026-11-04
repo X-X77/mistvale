@@ -20,4 +20,4 @@ Use case: illustration-story. Asset: wide 16:9 background for a premium fantasy 
 
 ## ver.png
 
-Single character asset for fantasy visual novel, transparent background. A tiny round black furry creature called Ver, two small pink horns, miniature bat wings, small paws, fluffy charcoal fur, sly smug expression with half-lidded pale golden eyes and small mischievous grin. Cute but arrogant, gender neutral imp companion. High quality hand drawn anime illustration with expressive linework and soft painted shading, nonpixel. Whole creature centered with generous transparent margin, no text, no background, no props.
+Single character asset for fantasy visual novel, transparent background. A tiny round black furry creature called X (엑스), two small pink horns, miniature bat wings, small paws, fluffy charcoal fur, sly smug expression with half-lidded pale golden eyes and small mischievous grin. Cute but arrogant, gender neutral imp companion. High quality hand drawn anime illustration with expressive linework and soft painted shading, nonpixel. Whole creature centered with generous transparent margin, no text, no background, no props.

@@ -57,7 +57,7 @@
 #place-purpose{font:12px 'Noto Serif KR',serif;line-height:1.8;color:#ece4c9}
 #place-description{font-size:10px;line-height:1.8;margin-top:5px;color:#aebe9f}.mv-talk-hint{font-size:10px;color:#cbd8b6}
 .mv-fallback{position:absolute;left:8%;right:8%;bottom:12%;text-align:center;font-size:12px;line-height:2;color:#f6edcf;pointer-events:none}
-.mv-transition{position:fixed;inset:0;background:#172f28;z-index:30;opacity:0;pointer-events:none;transition:opacity .22s ease}
+.mv-transition{position:fixed;inset:0;background:#172f28;z-index:30;opacity:0;pointer-events:none;transition:opacity .26s ease}
 .mv-changing .mv-transition{opacity:1;pointer-events:auto}
 .mv-npc-dialog{position:fixed;top:auto;bottom:28px;left:0;right:0;width:min(1050px,calc(100% - 48px));max-width:none;max-height:90svh;padding:0;margin:auto;border:0;background:none;color:#f4e8c6;overflow:visible}
 .mv-npc-dialog::backdrop{background:#13271e70}

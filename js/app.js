@@ -2,7 +2,7 @@ import { narrative, scripts, assets } from './data.js';
 import { readSave, writeSave } from './storage.js';
 import { Sound } from './audio.js';
 import { Music } from './music.js';
-import { createPixelLoader, prepareImages } from './loading.js?v=20261104g';
+import { createPixelLoader, prepareImages } from './loading.js?v=20261104i';
 import { readingTime } from './dialogue-timing.js';
 
 const $ = id => document.getElementById(id);
@@ -61,15 +61,9 @@ function scheduleAuto(){
     if(!signal.aborted&&line===expectedLine&&auto&&!settings.open&&!document.hidden)advance(false);
   },readingTime(fullText,script[line].speaker,preferences.speed));
 }
-/* 장면이 바뀔 때 새 장면만 짧게 페이드인합니다. 진행 상태에는 손대지 않는 순수 표시용 효과입니다. */
 function resetVeil(){
   const veil=document.querySelector('.reality-veil');
   veil.getAnimations().forEach(item=>item.cancel());veil.style.opacity='';veil.style.visibility='';
-}
-function fadeIn(next){
-  if(reduced())return;
-  const element=$(next);if(!element||!['title','story','notification'].includes(next))return;
-  element.classList.remove('scene-fade');void element.offsetWidth;element.classList.add('scene-fade');
 }
 function setScene(next){
   controller.abort();controller=new AbortController();clearInterval(typeTimer);cancelAuto();typing=false;choosing=false;
@@ -78,7 +72,7 @@ function setScene(next){
   game.classList.remove('anomaly','blooming','revealing','glitching','leaking');
   $('sys-error').hidden=true;resetVeil();
   $('exit-veil').classList.remove('on');
-  fadeIn(next);
+  $('chapter').hidden=next!=='title';
   for(const id of ['store','title','loading','story','notification'])$(id).hidden=id!==next;
   $('skip').hidden=!['loading','transition'].includes(next);
   $('continue').disabled=true;
@@ -94,6 +88,25 @@ function wait(ms,signal){
     signal.addEventListener('abort',cancel,{once:true});
   });
 }
+/* 장면 전환: ① 현재 장면이 가려질 때까지 어두워짐 → ② 가려진 상태에서 장면·배경 교체 → ③ 새 장면이 드러남 → ④ 그 뒤에야 조작 가능.
+   전환 중에는 입력을 막아(중복 클릭·Enter 방지) 애니메이션이 겹치지 않게 합니다. 빙의 장면은 이 함수 대신 흰 빛 연출을 씁니다. */
+const fadeLayer=$('scene-fade');
+let swapping=false;
+const nextFrame=()=>new Promise(resolve=>requestAnimationFrame(()=>resolve()));
+async function swap(update,{color='#0e211c',out=280,inn=380}={}){
+  if(swapping)return false;
+  swapping=true;fadeLayer.classList.add('on');fadeLayer.style.background=color;
+  const fast=reduced();
+  try{
+    await fadeLayer.animate([{opacity:0},{opacity:1}],{duration:fast?120:out,easing:'ease-in',fill:'forwards'}).finished;
+    fadeLayer.getAnimations().forEach(item=>item.cancel());fadeLayer.style.opacity='1';
+    await update();
+    await nextFrame();await nextFrame();
+    await fadeLayer.animate([{opacity:1},{opacity:0}],{duration:fast?160:inn,easing:'ease-out',fill:'forwards'}).finished;
+  }catch{}
+  finally{fadeLayer.getAnimations().forEach(item=>item.cancel());fadeLayer.style.opacity='';fadeLayer.classList.remove('on');swapping=false;}
+  return true;
+}
 function store(fromHistory=false){
   setScene('store');if(!fromHistory)routeHash('#store');
   window.scrollTo({top:0,behavior:'instant'});focus($('store-play'));
@@ -102,7 +115,7 @@ function title(fromHistory=false){
   setScene('title');if(!fromHistory)routeHash('#title');
   window.scrollTo({top:0,behavior:'instant'});focus($('new-game'));
 }
-const LOAD_MESSAGES=[[0,'농장을 불러오는 중…'],[30,'씨앗 주머니를 챙기는 중…'],[62,'밭에 물을 주는 중…'],[88,'거의 다 됐어요…']];
+const LOAD_MESSAGES=[[0,'농장을 불러오는 중…'],[30,'씨앗 주머니를 챙기는 중…'],[62,'밭에 물을 주는 중…'],[90,'거의 다 됐어요…'],[100,'준비 완료!']];
 function setProgress(value){
   $('progress').value=value;$('load-percent').textContent=Math.round(value)+'%';
   const message=[...LOAD_MESSAGES].reverse().find(([from])=>value>=from)[1];
@@ -128,20 +141,24 @@ function veilFade(to,duration){
   veil.animate([{opacity:1-to},{opacity:to}],{duration,fill:'forwards',easing:'ease-in-out'}).finished.then(()=>{veil.style.opacity=to;}).catch(()=>{});
 }
 async function launch(){
-  if(scene!=='title')return;
-  sound.play();setScene('loading');routeHash('#opening');
+  if(scene!=='title'||swapping)return;
+  sound.play();
+  const entered=await swap(()=>{setScene('loading');routeHash('#opening');setProgress(0);farmLoader.start();focus($('skip'));});
+  if(!entered||scene!=='loading')return;
   const signal=controller.signal,start=performance.now(),minimum=reduced()?1600:6200;
-  let ready=0;
-  setProgress(0);
-  farmLoader.start();focus($('skip'));
+  let ready=0,shown=0;
   const preparation=prepareImages(Object.values(assets),{signal,onProgress:value=>{ready=value;}});
+  /* 표시 숫자는 실제 진행(시간 60% + 이미지 준비 40%)만 따라갑니다. 이미지가 다 준비되기 전에는 100%가 되지 않습니다. */
   while(!signal.aborted&&performance.now()-start<14000&&(performance.now()-start<minimum||ready<1)){
     if(!(await wait(80,signal)))return;
     const elapsed=Math.min(1,(performance.now()-start)/minimum);
-    setProgress(Math.min(92,Math.round((elapsed*.65+ready*.35)*92)));
+    shown=Math.max(shown,Math.min(99,Math.floor((elapsed*.6+ready*.4)*100)));
+    setProgress(shown);
   }
   if(signal.aborted)return;
   await Promise.race([preparation,wait(1200,signal)]);if(signal.aborted)return;
+  setProgress(100);                                  // 진짜로 다 준비된 뒤에만 100%
+  if(!(await wait(reduced()?350:650,signal)))return; // 완료를 잠깐 보여 준 뒤 오류 연출
   if(!(await errorBeat(signal)))return;
   awaken(false,true);
 }
@@ -165,7 +182,7 @@ function finishText(){
 function showLine(){
   clearInterval(typeTimer);cancelAuto();
   const item=script[line];fullText=item.text;
-  $('speaker').textContent=item.speaker;$('ver-wrap').hidden=item.speaker!=='베르';
+  $('speaker').textContent=item.speaker;$('ver-wrap').hidden=item.speaker!=='엑스';
   $('accessible-dialogue').textContent=item.speaker+': '+item.text;
   const delay={slow:65,normal:35,fast:16,instant:0}[preferences.speed];
   if(!delay||reduced())return finishText();
@@ -176,10 +193,10 @@ function showLine(){
   },delay);
 }
 function advance(manual=true){
-  if(scene!=='story'||settings.open||$('dialogue-shell').hidden)return;
+  if(scene!=='story'||settings.open||$('dialogue-shell').hidden||swapping)return;
   cancelAuto();if(typing)return finishText();
   if(manual)sound.play();
-  if(++line<script.length)showLine();else notify();
+  if(++line<script.length)showLine();else swap(()=>notify());
 }
 function notify(fromHistory=false){
   setScene('notification');
@@ -187,15 +204,15 @@ function notify(fromHistory=false){
   focus(document.querySelector('[data-choice]'));if(!fromHistory)sound.play('arrival');
 }
 async function choose(button){
-  if(scene!=='notification'||choosing)return;
+  if(scene!=='notification'||choosing||swapping)return;
   choosing=true;const signal=controller.signal,kind=button.dataset.choice;
   button.classList.add('chosen');sound.play();
   document.querySelectorAll('[data-choice]').forEach(item=>{item.disabled=true;});
   if(!(await wait(reduced()?0:230,signal)))return;
   if(kind==='village')leaveForVillage();
-  else playScript(kind==='logout'?'logout':'interior');
+  else await swap(()=>playScript(kind==='logout'?'logout':'interior'));
 }
-/* ①·③: 같은 집 배경·대화창·베르 모습으로 짧은 대화를 재생하고, 끝나면 첫 선택지로 돌아갑니다(페이지 이동 없음). */
+/* ①·③: 같은 집 배경·대화창·엑스 모습으로 짧은 대화를 재생하고, 끝나면 첫 선택지로 돌아갑니다(페이지 이동 없음). */
 function playScript(kind){
   const next=scripts[kind];if(!next)return notify();
   setScene('story');script=next;line=0;
@@ -222,7 +239,7 @@ function openSettings(){if(!settings.open){cancelAuto();updateSettings();setting
 systemMotion.addEventListener('change',()=>{updateSettings();if(typing&&reduced())finishText();});
 settings.addEventListener('close',scheduleAuto);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelAuto();else scheduleAuto();});
-$('store-play').addEventListener('click',()=>{sound.play();title();});
+$('store-play').addEventListener('click',()=>{if(swapping)return;sound.play();swap(()=>title());});
 const slides=[
  {src:'./assets/loading/farm-scene.webp',name:'오래된 농장',detail:'풀숲에 잠긴 작은 농장. 여기서부터 모든 것이 시작됩니다.',alt:'작은 농장 도트 게임 화면'},
  {src:'./assets/screenshots/gallery-02.webp',fallback:'./assets/loading/farm-scene.webp',name:'오래된 농가',detail:'안개 낀 계곡 너머 작은 마을을 바라보는 농가.',alt:'계곡과 농가의 전경'},
@@ -261,7 +278,7 @@ document.querySelectorAll('[data-xx-slide]').forEach(button=>button.addEventList
 const reviews=[
  ['추천',42.6,'새벽의감자','농사만 하려고 켰는데 어느새 마을 사람들 일상까지 신경 쓰고 있네요. 하루가 너무 짧아요.'],
  ['추천',18.2,'호숫가산책','낮 분위기가 좋아요. 호수에서 낚시하다 보면 시간 가는 줄 모르겠어요.'],
- ['추천',63.1,'양치기아님','베르라는 안내 캐릭터, 친절한 줄 알았는데 제 실수만 기다리는 것 같음. 그래도 귀여워요.'],
+ ['추천',63.1,'양치기아님','엑스라는 안내 캐릭터, 친절한 줄 알았는데 제 실수만 기다리는 것 같음. 그래도 귀여워요.'],
  ['추천',12.4,'고구마좋아','심은 작물이 자라는 걸 구경하는 맛이 있어요. 작은 농장을 꾸미는 재미가 큽니다.'],
  ['비추천',6.3,'아침잠많음','하루가 너무 짧아서 하고 싶은 걸 다 못하겠어요.'],
  ['추천',89.4,'흐린계곡','낚시하고 요리하고 주민들한테 선물 주는 재미로 계속 켜게 됩니다.'],
@@ -298,14 +315,14 @@ renderReviews();
 $('new-game').addEventListener('click',()=>{music.activate();launch();});
 $('music-toggle').addEventListener('click',toggleMusic);
 
-$('skip').addEventListener('click',()=>{if(['loading','transition'].includes(scene))awaken();});
+$('skip').addEventListener('click',()=>{if(['loading','transition'].includes(scene)&&!swapping)swap(()=>awaken());});
 $('dialogue').addEventListener('click',()=>advance());
 $('auto-toggle').addEventListener('click',()=>{
   auto=!auto;$('auto-toggle').textContent=auto?'AUTO ON':'AUTO OFF';
   $('auto-toggle').setAttribute('aria-pressed',String(auto));scheduleAuto();
 });
-$('story-skip').addEventListener('click',()=>{if(scene==='story')notify();});
-document.querySelectorAll('[data-title]').forEach(button=>button.addEventListener('click',()=>title()));
+$('story-skip').addEventListener('click',()=>{if(scene==='story'&&!swapping)swap(()=>notify());});
+document.querySelectorAll('[data-title]').forEach(button=>button.addEventListener('click',()=>{if(!swapping)swap(()=>title());}));
 document.querySelectorAll('[data-choice]').forEach(button=>button.addEventListener('click',()=>choose(button)));
 $('choices').addEventListener('keydown',event=>{
   const buttons=[...document.querySelectorAll('[data-choice]')],index=buttons.indexOf(document.activeElement);

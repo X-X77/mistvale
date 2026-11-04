@@ -20,7 +20,7 @@
 - 브라우저 1280×720: 대사 다음 진행과 마지막 대사 종료, 키보드 Enter 시작, Escape 종료/초점 복귀 확인.
 - 원화 src 누락 시 fallback 로드, 둘 다 누락 시 준비 중 안내 확인. 테스트용 누락 경로는 원복했습니다.
 - 지도 복귀 및 지도에서 잡화점 진입 확인.
-- 이번 수정에서 오프닝/스토어/베르 관련 파일 변경 없음. 이번 회차에는 오프닝 전체를 처음부터 끝까지 재생하거나 실제 모바일 기기/오디오 청취 검증은 하지 않았습니다.
+- 이번 수정에서 오프닝/스토어/엑스 관련 파일 변경 없음. 이번 회차에는 오프닝 전체를 처음부터 끝까지 재생하거나 실제 모바일 기기/오디오 청취 검증은 하지 않았습니다.
 
 ## 주요 파일
 world.html, visual-novel.css, js/world/world.js, js/world/npc-data.js, js/world/chibi-data.js, js/world/portrait-data.js, scripts/refine-chibis.ps1, assets/characters/chibis-refined, assets/characters/dialogue.

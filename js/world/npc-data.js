@@ -1,4 +1,4 @@
-import { chibiResidents } from './chibi-data.js?v=scene-polish-2';
+import { chibiResidents } from './chibi-data.js?v=cutout-d';
 import { portraitAssets } from './portrait-data.js?v=scene-polish-2';
 import { sceneArt } from './scene-art.js';
 import { firstMeetings } from './first-meetings.js?v=scene-polish-2';

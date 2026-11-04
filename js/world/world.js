@@ -1,9 +1,9 @@
 import { villageMap } from './map-data.js';
 import { places } from './place-data.js';
-import { npcs, npcsAt } from './npc-data.js?v=scene-polish-2';
+import { npcs, npcsAt } from './npc-data.js?v=cutout-d';
 import { hasMet, completeFirstMeeting } from './encounter-session.js';
 import { readSave } from '../storage.js';
-import { chibiResidents } from './chibi-data.js?v=scene-polish-2';
+import { chibiResidents } from './chibi-data.js?v=cutout-d';
 
 const $ = id => document.getElementById(id);
 const app = $('world'), dialog = $('npc-dialog');
@@ -20,6 +20,21 @@ function loadImage(image, source, fallback) {
   image.onload = () => { image.hidden = false; if (fallback) fallback.hidden = true; };
   image.onerror = () => { image.hidden = true; if (fallback) fallback.hidden = false; };
   image.src = source;
+}
+/* 화면이 가려져 있는 동안 다음 장면의 그림을 미리 받아 둡니다(받기 전에 장면이 먼저 나타나 배경이 튀어나오는 것 방지). */
+function preloadImages(urls, timeout = 1800) {
+  const jobs = [...new Set(urls.filter(Boolean))].map(url => new Promise(resolve => {
+    const image = new Image();
+    image.onload = () => { (image.decode ? image.decode() : Promise.resolve()).then(resolve, resolve); };
+    image.onerror = () => resolve();
+    image.src = url;
+  }));
+  return Promise.race([Promise.all(jobs), new Promise(resolve => setTimeout(resolve, timeout))]);
+}
+function assetsFor(target) {
+  if (target === 'map') return [villageMap.background];
+  const place = places[target];
+  return [place.background, ...npcsAt(place.id).map(npc => npc.chibi?.src || npc.illustration?.src)];
 }
 function clearTyping() { clearInterval(typingTimer); typingTimer = 0; }
 function setStatus(message) { $('world-status').textContent = message; }
@@ -176,7 +191,8 @@ async function navigate(value, { fromHistory = false, immediate = false } = {}) 
   if (dialog.open) { returnTarget = null; closeDialogue(true); }
   app.inert = false; app.classList.add('mv-changing'); app.setAttribute('aria-busy', 'true');
   app.inert = true;
-  if (!immediate && !reduced()) await new Promise(resolve => setTimeout(resolve, 220));
+  if (!immediate && !reduced()) await new Promise(resolve => setTimeout(resolve, 260));
+  await preloadImages(assetsFor(target));
   if (ticket !== generation) return;
   if (!fromHistory) setHash(target);
   app.inert = false; render(target);
@@ -196,7 +212,7 @@ function showLine() {
   if (portrait.dataset.src !== key) {
     portrait.dataset.src = key;
     const fallback = $('portrait-fallback');
-    portrait.hidden = true; fallback.hidden = false;
+    portrait.hidden = true; fallback.hidden = true;
     const sources = [...new Set([art.src, art.fallback].filter(Boolean))];
     let attempt = 0;
     const next = () => {
@@ -218,16 +234,25 @@ function showLine() {
     if (count >= fullText.length) finishLine();
   }, speed);
 }
-function openDialogue(npc, source) {
-  if (dialog.open || closing || !npc.dialogue?.length) return;
+let opening = false;
+async function openDialogue(npc, source) {
+  if (dialog.open || closing || opening || !npc.dialogue?.length) return;
+  opening = true;
   const firstMeeting = !hasMet(npc.id) && Boolean(npc.firstMeeting?.length);
   const lines = firstMeeting ? npc.firstMeeting : (npc.repeatDialogue?.length ? npc.repeatDialogue : npc.dialogue);
+  const art = npc.portrait || {};
+  // 인물 그림이 서서히 물러나는 동안 대화 원화를 미리 받아 두고, 준비된 뒤에 대화창을 엽니다.
+  $('place-view').classList.add('mv-talking'); source?.classList.add('is-speaking');
+  const ticket = generation;
+  await Promise.all([preloadImages([art.src, art.fallback], 1200), reduced() ? null : new Promise(resolve => setTimeout(resolve, 200))]);
+  opening = false;
+  if (ticket !== generation || dialog.open) { $('place-view').classList.remove('mv-talking'); source?.classList.remove('is-speaking'); return; }
   activeNpc = { ...npc, dialogue: lines, firstMeeting };
   lineIndex = 0; returnTarget = source;
   dialog.dataset.place = current; app.dataset.mode = 'dialogue';
   $('npc-name').textContent = npc.name; $('npc-note').textContent = npc.note;
-  $('npc-portrait').dataset.src = '__reset__'; $('place-view').classList.add('mv-talking');
-  source?.classList.add('is-speaking'); dialog.showModal(); showLine(); $('dialog-next').focus({preventScroll:true});
+  $('npc-portrait').dataset.src = '__reset__';
+  dialog.showModal(); showLine(); $('dialog-next').focus({preventScroll:true});
 }
 function nextLine() {
   if (!dialog.open || !activeNpc || closing) return;
