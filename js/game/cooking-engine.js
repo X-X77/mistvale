@@ -1,5 +1,6 @@
 // 요리 엔진(순수 계산). 요리 하나는 1~2개의 '조리 동작'(step)으로 이루어집니다.
 //   heat   : 불 세기를 조절해 한쪽 면을 굽다가 알맞을 때 뒤집고, 반대쪽도 구워 접시에 담기 (구이)
+//   chop   : 도마 위로 미끄러져 오는 재료의 표시선이 칼 아래를 지날 때 썰기 (수프)
 //   drop   : 좌우로 흔들리는 재료를 냄비 위에서 정확히 떨어뜨리기 (수프)
 //   stir   : 돌아가는 국자가 위쪽 표시를 지날 때 박자에 맞춰 젓기 (수프·잼)
 //   finish : 윤기가 오르는 것을 보고 알맞은 때 불에서 내리기 (잼)
@@ -54,6 +55,32 @@ export class DropStep {
   get score() { return this.results.length ? Math.round(this.results.reduce((a, r) => a + JUDGE[r.judge].pts, 0) / this.count) : 0; }
 }
 
+/* ---------- 썰기: 재료가 칼 밑을 지나가며, 표시선이 칼 바로 밑에 올 때 내려치기 ----------
+   재료 하나당 두 번 썹니다(표시선 2개). 칼질 시각 = times[i]. 눌린 시각을 cutAt[i] 에 남겨 두면
+   화면이 '조금 어긋난 곳'을 잘린 모양으로 그릴 수 있습니다. 못 누른 칼질은 cutAt 이 null 로 남습니다. */
+export class ChopStep {
+  constructor({ items = 3, gap = .9, rest = 1 } = {}) {
+    this.id = 'chop'; this.title = '재료 썰기'; this.action = '썰기'; this.items = items; this.gap = gap; this.cuts = items * 2; this.t = -1.2; this.done = false;
+    this.times = []; for (let k = 0; k < items; k++) { const a = k * (gap + rest); this.times.push(a, a + gap); }
+    this.results = new Array(this.cuts).fill(null); this.cutAt = new Array(this.cuts).fill(null); this.events = []; this.stray = 0; this.window = { perfect:.1, good:.2, ok:.34 };
+  }
+  step(dt) {
+    if (this.done) return; this.events.length = 0; this.t += dt;
+    for (let i = 0; i < this.cuts; i++) if (this.results[i] === null && this.t > this.times[i] + this.window.ok) { this.results[i] = 'miss'; this.events.push({ type:'skip', index:i }); }
+    if (this.results.every(r => r !== null) && this.t > this.times[this.cuts - 1] + .5) this.done = true;
+  }
+  press() {
+    if (this.done) return null;
+    let best = -1, bestErr = 9;
+    for (let i = 0; i < this.cuts; i++) if (this.results[i] === null) { const e = Math.abs(this.t - this.times[i]); if (e < bestErr) { bestErr = e; best = i; } }
+    if (best < 0 || bestErr > this.window.ok + .15) { this.stray++; this.events.push({ type:'stray' }); return { judge:'stray' }; }
+    const judge = bestErr <= this.window.perfect ? 'perfect' : bestErr <= this.window.good ? 'good' : bestErr <= this.window.ok ? 'ok' : 'miss';
+    this.results[best] = judge; this.cutAt[best] = this.t; this.events.push({ type:'chop', judge, index:best, err:this.t - this.times[best] });
+    return { judge, index:best, err:this.t - this.times[best] };
+  }
+  get score() { const pts = this.results.reduce((a, r) => a + (r ? JUDGE[r].pts : 0), 0) / this.cuts; return Math.max(0, Math.round(pts - this.stray * 3)); }
+}
+
 /* ---------- 젓기 박자 ---------- */
 export class StirStep {
   constructor({ beats = 8, period = 1.25 } = {}) {
@@ -95,6 +122,6 @@ export class FinishStep {
 /* ---------- 요리 진행 ---------- */
 export function buildSteps(recipe) {
   const count = Object.values(recipe.need).reduce((a, b) => a + b, 0);
-  return recipe.steps.map(kind => kind === 'heat' ? new HeatFlip() : kind === 'flip' ? null : kind === 'drop' ? new DropStep(Math.min(3, count)) : kind === 'stir' ? new StirStep(recipe.id === 'dew-berry-jam' ? { beats:8, period:1.05 } : { beats:7, period:1.3 }) : kind === 'finish' ? new FinishStep() : null).filter(Boolean);
+  return recipe.steps.map(kind => kind === 'heat' ? new HeatFlip() : kind === 'chop' ? new ChopStep({ items:Math.min(3, count) }) : kind === 'flip' ? null : kind === 'drop' ? new DropStep(Math.min(3, count)) : kind === 'stir' ? new StirStep(recipe.id === 'dew-berry-jam' ? { beats:8, period:1.05 } : { beats:7, period:1.3 }) : kind === 'finish' ? new FinishStep() : null).filter(Boolean);
 }
 export function dishScore(steps) { return Math.round(steps.reduce((a, s) => a + s.score, 0) / steps.length); }

@@ -2,7 +2,7 @@
 // 바위 면 위에서 약점(균열 위의 빛나는 점)을 찾아, 알맞은 위치(정확도)와 알맞은 순간(맥박)에 곡괭이를 내리칩니다.
 //   좌표: 바위 면 0~1 (가운데 0.5, 0.5).  약점은 맥박(pulse)에 맞춰 밝아졌다 어두워지고, 희귀·특수 광석에서는 균열을 따라 움직입니다.
 //   등급: perfect(약점 한가운데 + 가장 밝을 때) / good / weak(약점은 맞췄지만 어설픔) / miss(바위만 맞힘). 모든 스윙은 1회 소모입니다.
-import { createRng } from './rng.js';
+import { createRng } from './rng.js?v=px2';
 
 export const DAMAGE = {
   common:  { perfect:42, good:30, weak:14, miss:4 },

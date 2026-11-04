@@ -56,6 +56,7 @@ export class Sfx {
       // 요리
       case 'sizzle': this.burst({ dur:.5, freq:6000, type:'highpass', vol:.07 + .06 * a }); break;
       case 'flip': this.burst({ dur:.14, freq:600, vol:.15 }); this.tone({ f:220, f2:420, dur:.14, type:'triangle', vol:.08 }); break;
+      case 'chop': this.burst({ dur:.07, freq:1500, type:'highpass', vol:.16 }); this.tone({ f:170 - 20 * a, f2:90, dur:.1, type:'triangle', vol:.16 }); break;
       case 'drop': this.burst({ dur:.16, freq:900, vol:.14 }); this.tone({ f:300 + 80 * a, f2:200, dur:.12, type:'sine', vol:.1 }); break;
       case 'stir': this.tone({ f:180 + 60 * a, f2:150, dur:.1, type:'sine', vol:.08 }); this.burst({ dur:.1, freq:500, vol:.06 }); break;
       case 'perfect': this.tone({ f:880, dur:.1, type:'triangle', vol:.1 }); this.tone({ f:1320, dur:.16, type:'triangle', vol:.1, at:.07 }); break;

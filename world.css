@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@400;500;600&display=swap');
 /* Scoped to the independent guide; the opening receives only .mv-guide-link. */
 .mv-guide-link{display:inline-block;color:#e5d8a7!important;text-decoration:none;font:11px 'Noto Sans KR',sans-serif;letter-spacing:.7px;padding:9px 13px;border:1px solid #a7b18d69;background:#243b32a6;border-radius:2px}
 .mv-guide-link:hover,.mv-guide-link:focus-visible{background:#405b45;color:#fff4d3!important;outline:2px solid #daca94;outline-offset:3px}
