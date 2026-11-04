@@ -21,11 +21,12 @@ export function normalizeState(raw) {
   if (!raw || typeof raw !== 'object') return state;
   const coins = Number.isFinite(raw.coins) ? raw.coins : raw.gold;   // 옛 저장값(gold)도 이어서 씁니다
   if (Number.isFinite(coins)) state.coins = Math.max(0, Math.floor(coins));
-  if (Number.isFinite(raw.earned)) state.earned = Math.max(0, Math.floor(raw.earned));
+  // 옛 저장(누적 기록 없음)은 지금 가진 코인에서 시작 코인을 뺀 값을 최소 누적액으로 봅니다.
+  state.earned = Number.isFinite(raw.earned) ? Math.max(0, Math.floor(raw.earned)) : Math.max(0, state.coins - START_COINS);
   const gift = raw.gift && typeof raw.gift === 'object' ? raw.gift : {};
   state.gift.bought = gift.bought === true;
   state.gift.seen = gift.seen === true || state.gift.bought;
-  state.gift.unlocked = gift.unlocked === true || state.gift.seen || state.earned >= GIFT_UNLOCK;
+  state.gift.unlocked = gift.unlocked === true || state.gift.seen || state.earned >= GIFT_UNLOCK || state.coins >= GIFT_UNLOCK;
   if (raw.items && typeof raw.items === 'object') for (const [id, count] of Object.entries(raw.items)) if (Number.isFinite(count) && count > 0) state.items[id] = Math.floor(count);
   for (const skill of SKILLS) if (Number.isFinite(raw.skills?.[skill])) state.skills[skill] = Math.max(0, Math.floor(raw.skills[skill]));
   if (raw.caught && typeof raw.caught === 'object') for (const [id, value] of Object.entries(raw.caught)) if (value && Number.isFinite(value.count)) state.caught[id] = { count:Math.floor(value.count), best:Number.isFinite(value.best) ? value.best : 0 };
@@ -66,7 +67,7 @@ export class Progress {
     for (const [id, delta] of Object.entries(items)) if (!Number.isInteger(delta) || this.count(id) + delta < 0) return false;
     this.state.coins += coins; this.state.earned += earn;
     for (const [id, delta] of Object.entries(items)) { const n = this.count(id) + delta; if (n > 0) this.state.items[id] = n; else delete this.state.items[id]; }
-    if (this.state.earned >= GIFT_UNLOCK) this.state.gift.unlocked = true;
+    if (this.state.earned >= GIFT_UNLOCK || this.state.coins >= GIFT_UNLOCK) this.state.gift.unlocked = true;   // 번 누적액이든 지금 가진 코인이든 5,000 에 닿으면 열립니다
     if (change.giftBought) { this.state.gift.bought = true; this.state.gift.unlocked = true; this.state.gift.seen = true; }
     this.#write(); return true;
   }
