@@ -218,3 +218,47 @@ html.mv-reduced-motion .mg-root,html.mv-reduced-motion .mg-layer,html.mv-reduced
 .gt-done{position:absolute;left:50%;bottom:max(16px,3vh);transform:translateX(-50%);min-width:min(220px,60vw);min-height:46px;font-size:16px;z-index:3}.gt-done:active{transform:translateX(-50%) translateY(2px)}.gt-done[hidden]{display:none}
 .gt-judge{font-size:clamp(20px,4vw,30px)}
 @media (max-width:560px){.gt-zones{gap:14px}.gt-zone{width:min(300px,100%)}.gt-top{gap:6px;top:76px}.gt-zname{display:none}.gt-legend{bottom:76px}.gt-lg{font-size:10px;padding:3px 5px 4px}.gt-hint{top:124px;font-size:12px;max-width:90%;padding:6px 10px}.gt-basket{gap:6px;padding:4px 7px}}
+
+/* Activity boards sit in their location; keep the centre clear once play starts. */
+.mg-root[data-game=fishing]{--scene:url("assets/minigames/pond.webp");--wood:#33544b}
+.mg-root[data-game=gathering]{--scene:url("assets/minigames/clearing.webp");--wood:#3e5136}
+.mg-root[data-game=cooking]{--scene:url("assets/minigames/kitchen.webp");--wood:#654632}
+.mg-root[data-game=mining]{--scene:url("assets/minigames/mine.webp");--wood:#414250}
+.mg-root :is(.cs-select,.gt-select,.ms-select){
+  background:linear-gradient(#11201c94,#101c17ac),var(--scene) center/cover;
+  overscroll-behavior:contain;touch-action:pan-y
+}
+.mg-root :is(.gt-select-in,.cs-select-in,.ms-select-in)>:is(h2,p){
+  text-shadow:0 2px 3px #101910,0 0 12px #101910
+}
+.mg-root :is(.cs-recipe,.ms-vein,.gt-zone,.mg-plaque,.mg-tutorial,.mg-result){
+  background:linear-gradient(140deg,var(--wood),#232d26 90%);
+  border:1px solid #ab9464
+}
+.mg-root :is(.cs-recipe,.ms-vein,.gt-zone){max-width:245px;gap:6px}
+.mg-root :is(.plate,.rock,.gt-swatch){
+  width:100%;height:64px;box-shadow:inset 0 -2px #d5ba7959;
+  background:linear-gradient(#19221b45,#19221b85),var(--scene) center 60%/cover
+}
+.gt-zone.g2 .gt-swatch{background-position:30% 25%;background-size:180%}
+.gt-zone.g3 .gt-swatch{background-position:80% 80%;background-size:180%;filter:hue-rotate(24deg)}
+.gt-zone .gt-swatch::after{content:none}
+.mg-root :is(.plate,.rock) img{height:60px;width:60px;animation:none;filter:drop-shadow(0 3px #17201988)}
+.mg-root .mg-plaque{padding:6px 10px;gap:8px}
+.mg-root .mg-ribbon{font-size:21px;margin-inline:-5px}
+.mg-root .mg-slot .box{width:64px;height:64px}
+.mg-root .mg-slot.gain .box::before,.mg-root .mg-slot.gain .box::after{animation-iteration-count:2}
+.mg-root button:focus-visible{outline:3px solid #ffeab4;outline-offset:4px}
+@media(max-width:560px){
+  .mg-root :is(.cs-recipe,.ms-vein,.gt-zone){width:min(95%,340px);max-width:none;display:grid;grid-template-columns:74px 1fr;text-align:left;column-gap:12px}
+  .mg-root :is(.plate,.rock,.gt-swatch){grid-row:span 3;width:74px;height:74px}
+  .mg-root :is(.cs-recipe,.ms-vein,.gt-zone)>:is(dl,button,.cs-cost){grid-column:1/-1}
+  .mg-root :is(.cs-recipe,.ms-vein,.gt-zone)>button{max-width:none;min-height:44px}
+  .mg-root .gt-zone p{min-height:0}
+  .mg-root .mg-tools .px-ico{width:40px;height:40px}
+}
+@media(prefers-reduced-motion:reduce){
+  .mg-root :is(.mg-ribbon,.mg-slot,.mg-card,.mg-level,.gt-basket .bump){animation:none}
+  .mg-root .mg-slot.gain .box::before,.mg-root .mg-slot.gain .box::after{display:none}
+}
+.gt-basket::before{content:"";width:25px;height:25px;align-self:center;background:url("assets/minigames/forest-props.png") right center/600% 100%;image-rendering:pixelated}

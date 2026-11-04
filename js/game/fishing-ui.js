@@ -1,5 +1,6 @@
 // 낚시 화면(픽셀 캔버스): 위에서 내려다본 물가. 찌·물보라·줄의 휘어짐·낚싯대의 휘어짐·물고기의 몸짓으로 상태를 보여 줍니다.
 // 규칙(장력·체력·저항 패턴)은 fishing-engine.js 가 그대로 담당하고, 이 파일은 입력과 그림만 맡습니다.
+import { scenePainter } from './scene-art.js';
 import { FISH, FISHING_SPOTS, TIERS, GRADES, TRAITS, josa } from './items.js?v=mg4';
 import { equipmentBonus, baitEffect, BAIT_IDS, GOODS } from './goods.js?v=mg4';
 import { BiteSession, Fight, TUNING, rollSize } from './fishing-engine.js?v=mg4';
@@ -11,6 +12,7 @@ import { describeItem } from './items.js?v=mg4';
 const TAU = Math.PI * 2;
 
 export function createFishing({ host, placeId, progress, sfx, reduced }) {
+  const paintScene = scenePainter('pond', .08);
   const spot = FISHING_SPOTS[placeId], pool = spot.fish.map(id => FISH[id]);
   const rng = createRng();
   const stage = host.stage; stage.classList.add('fs-stage');
@@ -345,6 +347,7 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
     polyline(pts, '#8a5a32', 2); polyline(pts.slice(7).map(([x, y]) => [x, y]), '#d19a60', 1); polyline(pts.slice(0, 7), '#5a3a1c', 2);
     for (const i of [6, 12, 17]) p.rect(pts[i][0], pts[i][1], 2, 1, '#f0d890');
     p.disc(pts[pts.length - 1][0], pts[pts.length - 1][1], 1, '#f0d890'); // 낚싯대 끝 고리
+    for (const i of [1, 3, 5]) p.rect(pts[i][0] - 1, pts[i][1], 3, 1, '#bc8555');
     // 릴
     const rx = B[0] - 4, ry = B[1] - 5; p.disc(rx, ry, 4, INK); p.disc(rx, ry, 3, '#c5d0d2'); p.disc(rx, ry, 1, '#7c8e92');
     const k = S.reeling ? Math.floor(time * 20) % 4 : 0, hx = [[0, -3], [3, 0], [0, 3], [-3, 0]][k]; p.px(rx + hx[0], ry + hx[1], INK); p.px(rx + hx[0] * .7, ry + hx[1] * .7, '#ffe27a');
@@ -373,7 +376,7 @@ export function createFishing({ host, placeId, progress, sfx, reduced }) {
   const mouthOf = (x, y, heading, spr) => { const d = (spr.headX - spr.w / 2) * 1; return [x + Math.cos(heading) * d * PX, y + Math.sin(heading) * d * PX]; };
 
   function drawWater() {
-    g.drawImage(bg.cv, 0, 0); const p = surf.pix, vw = surf.vw, sy = R(shoreY());
+    paintScene(g, bg.cv, R(shoreY())); const p = surf.pix, vw = surf.vw, sy = R(shoreY());
     // 물결 무늬와 반짝임
     for (let i = 0; i < 46; i++) { const sp = 2 + hash(i * 3) * 4, x = ((hash(i * 11) * (vw + 30) + time * sp * (i & 1 ? 1 : -1)) % (vw + 30) + (vw + 30)) % (vw + 30) - 15, y = 4 + hash(i * 5 + 1) * (sy - 10), w = 3 + Math.floor(hash(i * 7) * 5); p.g.globalAlpha = i % 3 ? .2 : .28; p.rect(x, y, w, 1, i % 3 ? '#e9fbff' : '#06202e'); }
     p.g.globalAlpha = 1;

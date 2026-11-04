@@ -1,11 +1,12 @@
 // 채집 화면(픽셀 캔버스): 작은 숲 한 구역. 렌즈(마우스·손가락)로 주변을 살피며 재료 단서를 찾고, 의심 가는 곳을 들춰 재료를 직접 담습니다.
 // 규칙(배치·숨는 곳·단서·헛손질·희귀 재료 담기)은 gathering-engine.js 가 그대로 담당하고, 이 파일은 입력과 그림·소리만 맡습니다.
+import { scenePainter } from './scene-art.js';
 import { INGREDIENTS, josa } from './items.js?v=mg4';
 import { GatherSession, ZONES, TEMPLATES, SPOT_NAMES, CLUE_NAMES, HOLD, clueLevel, ASPECT } from './gathering-engine.js?v=mg4';
 import { createRng } from './rng.js?v=mg4';
 import { Pix, pixelSurface, blit, clamp, lerp, mix, INK, hash } from './pixel.js?v=mg4';
 import { iconSprite, iconImg, uiIcon } from './art.js?v=mg4';
-import { spotSprite, drawClue, buildGround, PALS, ITEM_COLOR, GOLD } from './gather-art.js?v=mg4';
+import { spotSprite, drawClue, buildGround, PALS, ITEM_COLOR, GOLD } from './gather-art.js?v=mg-art1';
 
 const TAU = Math.PI * 2;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -16,6 +17,7 @@ const ing = id => ({ ...INGREDIENTS[id], kind:'ingredient' });
 const rnd = (a, b) => a + Math.random() * (b - a);
 
 export function createGathering({ host, placeId, progress, sfx, reduced }) {
+  const paintScene = scenePainter('clearing', .24);
   const stage = host.stage; stage.classList.add('gt-stage');
   const coarse = matchMedia('(pointer: coarse)').matches || matchMedia('(hover: none)').matches;
   stage.innerHTML = `<div class="gt-select"></div>
@@ -240,7 +242,7 @@ export function createGathering({ host, placeId, progress, sfx, reduced }) {
     if (!run || playEl.hidden || !ground) return;
     g.setTransform(1, 0, 0, 1, 0, 0); g.imageSmoothingEnabled = false; g.clearRect(0, 0, VW, VH);
     const sh = S.shake > 0 && !reduced ? S.shake : 0; canvas.style.transform = sh ? `translate(${Math.round((Math.random() - .5) * sh) * PX}px,${Math.round((Math.random() - .5) * sh) * PX}px)` : '';
-    g.drawImage(ground.cv, 0, 0);
+    paintScene(g, ground.cv);
     const s = run.g, zone = run.zone, order = [...s.spots].sort((a, b) => a.y - b.y);
     for (const sp of order) drawSpot(sp);
     // 단서

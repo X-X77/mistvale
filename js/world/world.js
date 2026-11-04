@@ -4,7 +4,7 @@ import { npcs, npcsAt } from './npc-data.js?v=cutout-d';
 import { hasMet, completeFirstMeeting } from './encounter-session.js';
 import { readSave } from '../storage.js';
 import { chibiResidents } from './chibi-data.js?v=cutout-d';
-import { startMinigame, progress, shopSfx } from '../game/launcher.js?v=mg4';
+import { startMinigame, progress, shopSfx } from '../game/launcher.js?v=mg-art1';
 import { shopByPlace, shopByNpc } from '../game/shop-data.js?v=mg4';
 import { uiIcon } from '../game/art.js?v=mg4';
 import { renderPack } from '../game/host.js?v=mg4';

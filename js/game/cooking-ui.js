@@ -1,5 +1,6 @@
 // 요리 화면(픽셀 캔버스): 주방 한 칸. 썰기(도마·식칼) / 젓기(국자·냄비) / 굽기(프라이팬·불 손잡이) / 졸이기(냄비)가 서로 다른 손맛을 갖도록
 // 각각 다른 도구와 다른 입력 방식으로 그립니다. 점수·품질·재료 소비 규칙은 cooking-engine.js 와 items.js 가 그대로 담당합니다.
+import { scenePainter } from './scene-art.js';
 import { RECIPES, INGREDIENTS, FISH, describeItem, qualityOf } from './items.js?v=mg4';
 import { buildSteps, dishScore, JUDGE } from './cooking-engine.js?v=mg4';
 import { itemIcon } from './host.js?v=mg4';
@@ -17,6 +18,7 @@ const chip = (label, tone = '') => `<span class="demo-chip ${tone}">${label}</sp
 const key = label => `<span class="demo-key">${label}</span>`;
 
 export function createCooking({ host, progress, sfx, reduced }) {
+  const paintScene = scenePainter('kitchen', 0);
   const stage = host.stage; stage.classList.add('cs-stage');
   stage.innerHTML = `<div class="cs-select"></div>
     <div class="cs-play" hidden><canvas class="cs-canvas" aria-label="주방 화면"></canvas><div class="cs-steps" aria-hidden="true"></div><div class="cs-pop" aria-hidden="true"></div><div class="fs-hint cs-hint" aria-hidden="true"></div>
@@ -296,7 +298,13 @@ export function createCooking({ host, progress, sfx, reduced }) {
     const p = P(), G = chopGeo(), { bx0, bw, boardR, knifeX, by, iy, v } = G, V = S.V, t = V.tt;
     // 도마
     p.rect(bx0 - 1, by - 1, bw + 2, 32, INK); p.rect(bx0, by + 26, bw, 4, '#7a4a28'); p.rect(bx0, by, bw, 26, '#d9a56a'); p.rect(bx0, by, bw, 1, '#f0c488'); p.rect(bx0, by + 25, bw, 1, '#b98350');
-    for (let i = 0; i < 5; i++) { const gy = by + 4 + i * 5; p.rect(bx0 + 4 + ((i * 29) % 40), gy, 26 + (i * 13) % 20, 1, '#c58f55'); p.rect(bx0 + 70 + ((i * 17) % 50), gy + 2, 22, 1, '#c58f55'); }
+    for (let i = 0; i < 13; i++) {
+      const x = bx0 + 4 + Math.floor(hash(i + 73) * (bw - 26));
+      const y = by + 3 + Math.floor(hash(i + 91) * 20);
+      const span = 5 + Math.floor(hash(i + 29) * 16);
+      p.line(x, y, x + span, y + 1, '#c58f55');
+      if (i % 3 === 0) p.line(x + 2, y - 1, x + span - 2, y - 1, '#e5b77b');
+    }
     p.ellipse(bx0 + 7, by + 13, 2, 3, INK); p.px(bx0 + 7, by + 12, '#8a5a2e');
     const bowlX = boardR - 5, rimY = iy + 30, landed = [];
     // 재료 조각
@@ -433,7 +441,7 @@ export function createCooking({ host, progress, sfx, reduced }) {
     if (!cooking || playEl.hidden || !bg) return;
     g.setTransform(1, 0, 0, 1, 0, 0); g.imageSmoothingEnabled = false; g.clearRect(0, 0, VW, VH);
     const sh = S.shake > 0 && !reduced ? Math.round((Math.random() - .5) * S.shake * 1.2) : 0; canvas.style.transform = sh ? `translate(${sh * PX}px,${Math.round((Math.random() - .5) * S.shake) * PX}px)` : '';
-    g.drawImage(bg.cv, 0, 0);
+    paintScene(g, bg.cv, Y.counter);
     if (cooking.phase === 'serve' || cooking.phase === 'done') { drawServe(); drawParts(); return; }
     const step = cooking.steps[Math.min(cooking.idx, cooking.steps.length - 1)];
     if (step.id === 'chop') drawChop(step); else if (step.id === 'stir') drawPot(step, 'stir'); else if (step.id === 'finish') drawPot(step, 'finish'); else if (step.id === 'heat') drawHeat(step);

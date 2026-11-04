@@ -11,10 +11,10 @@ export function shopSfx() { let sound = true; try { sound = localStorage.getItem
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 const loaders = {
-  fishing: () => import('./fishing-ui.js?v=mg4').then(m => m.createFishing),
-  cooking: () => import('./cooking-ui.js?v=mg4').then(m => m.createCooking),
-  mining:  () => import('./mining-ui.js?v=mg4').then(m => m.createMining),
-  gathering: () => import('./gathering-ui.js?v=mg4').then(m => m.createGathering),
+  fishing: () => import('./fishing-ui.js?v=mg-art1').then(m => m.createFishing),
+  cooking: () => import('./cooking-ui.js?v=mg-art1').then(m => m.createCooking),
+  mining:  () => import('./mining-ui.js?v=mg-art1').then(m => m.createMining),
+  gathering: () => import('./gathering-ui.js?v=mg-art1').then(m => m.createGathering),
 };
 const TITLES = { fishing:'낚시', cooking:'요리', mining:'채광', gathering:'채집' };
 
