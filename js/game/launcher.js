@@ -1,7 +1,7 @@
 // 미니게임 시작/종료: 화면을 덮고 → 오버레이를 올리고 → 걷어내는 전환. 장소 화면(world.html)에서 호출합니다.
-import { Progress } from './progress.js?v=mg4';
-import { Sfx } from './sfx.js?v=mg4';
-import { MinigameHost } from './host.js?v=mg4';
+import { Progress } from './progress.js?v=mine1';
+import { Sfx } from './sfx.js?v=mine1';
+import { MinigameHost } from './host.js?v=mine1';
 
 export const progress = new Progress();
 const sfx = new Sfx();
@@ -11,12 +11,13 @@ export function shopSfx() { let sound = true; try { sound = localStorage.getItem
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 const loaders = {
-  fishing: () => import('./fishing-ui.js?v=mg-art1').then(m => m.createFishing),
-  cooking: () => import('./cooking-ui.js?v=mg-art1').then(m => m.createCooking),
-  mining:  () => import('./mining-ui.js?v=mg-art1').then(m => m.createMining),
-  gathering: () => import('./gathering-ui.js?v=mg-art1').then(m => m.createGathering),
+  fishing: () => import('./fishing-ui.js?v=mine1').then(m => m.createFishing),
+  cooking: () => import('./cooking-ui.js?v=mine1').then(m => m.createCooking),
+  mining:  () => import('./mining-ui.js?v=mine1').then(m => m.createMining),
+  gathering: () => import('./gathering-ui.js?v=mine1').then(m => m.createGathering),
+  mine: () => import('./mine-ui.js?v=mine1').then(m => m.createMine),
 };
-const TITLES = { fishing:'낚시', cooking:'요리', mining:'채광', gathering:'채집' };
+const TITLES = { fishing:'낚시', cooking:'요리', mining:'채광', gathering:'채집', mine:'광산' };
 
 /* app: 전환 막(.mv-changing)을 가진 #world, placeName: 헤더 부제 */
 export async function startMinigame({ type, placeId, placeName, app, reduced, onExit }) {

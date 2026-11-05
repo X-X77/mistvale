@@ -1,12 +1,12 @@
 // 미니게임 공통 껍데기: 전체 화면 오버레이, 튜토리얼, 결과 카드, 소지품 패널, 전환.
-import { describeItem, TIERS } from './items.js?v=mg4';
-import { GROUPS, groupOf, isProtected } from './goods.js?v=mg4';
-import { SHOPS, GIFT } from './shop-data.js?v=mg4';
-import { sellPrice } from './shop-engine.js?v=mg4';
-import { GIFT_ICON } from './gift-ui.js?v=mg4';
-import { effectText } from './shop-ui.js?v=mg4';
-import { levelOf } from './progress.js?v=mg4';
-import { iconImg, uiIcon } from './art.js?v=mg4';
+import { describeItem, TIERS } from './items.js?v=mine1';
+import { GROUPS, groupOf, isProtected } from './goods.js?v=mine1';
+import { SHOPS, GIFT } from './shop-data.js?v=mine1';
+import { sellPrice } from './shop-engine.js?v=mine1';
+import { GIFT_ICON } from './gift-ui.js?v=mine1';
+import { effectText } from './shop-ui.js?v=mine1';
+import { levelOf } from './progress.js?v=mine1';
+import { iconImg, uiIcon } from './art.js?v=mine1';
 
 /* 소지품 아이콘: 픽셀 그림(art.js) */
 export function itemIcon(info, size = 28) { return iconImg(info, size); }
@@ -42,12 +42,19 @@ export class MinigameHost {
   }
   #syncSfx() { this.sfxBtn.querySelector('img').src = uiIcon(this.sfx.enabled ? 'sound' : 'mute'); this.sfxBtn.setAttribute('aria-pressed', String(this.sfx.enabled)); this.sfxBtn.title = this.sfx.enabled ? '효과음 끄기' : '효과음 켜기'; }
   refreshSkill() {
-    const skill = { fishing:'fishing', cooking:'cooking', mining:'mining', gathering:'gathering' }[this.id]; const level = levelOf(this.progress.state.skills[skill] || 0);
+    const skill = { fishing:'fishing', cooking:'cooking', mining:'mining', mine:'mining', gathering:'gathering' }[this.id]; const level = levelOf(this.progress.state.skills[skill] || 0);
     const names = { fishing:'낚시', cooking:'요리', mining:'채광', gathering:'채집' };
     this.skillEl.textContent = `Lv.${level.level}`; this.skillEl.title = `${names[skill]} 숙련도`;
   }
   say(message) { this.live.textContent = message; }
   setGame(game) { this.game = game; }
+  /* 같은 틀 안에서 화면을 바꿉니다(광산 안 ↔ 채광). 이전 화면은 정리하고, 열려 있던 안내·결과 창은 닫습니다. */
+  switchGame(id, title, create) {
+    this.game?.destroy?.(); this.game = null; this.layer.hidden = true; this.layer.innerHTML = ''; this.root.classList.remove('has-layer');
+    this.stage.className = 'mg-stage'; this.stage.innerHTML = ''; delete this.stage.dataset.mode; this.stage.style.cssText = '';
+    this.id = id; this.root.dataset.game = id; this.root.setAttribute('aria-label', title); this.root.querySelector('.mg-plaque strong').textContent = title;
+    this.setGame(create()); this.refreshSkill(); this.root.__game = this.game; return this.game;
+  }
   requestClose() { if (this.closed) return; if (this.game?.busy?.()) { this.confirmClose(); return; } this.close(); }
   confirmClose() {
     this.showLayer('confirm', `<div class="mg-card mg-small px"><h2>그만둘까요?</h2><p class="mg-body">${esc(this.game.leaveWarning?.() || '진행 중인 일이 있습니다. 지금 나가면 이번 시도는 실패로 끝납니다.')}</p><div class="mg-actions"><button class="px-btn" data-a="stay">계속하기</button><button class="px-btn alt" data-a="leave">그만두기</button></div></div>`);

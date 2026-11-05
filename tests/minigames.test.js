@@ -41,8 +41,8 @@ test('물고기·광석·요리 데이터는 장소·재료와 서로 연결되�
 });
 test('활동이 있는 장소(낚시·채광·채집·요리)가 모두 실제 장소로 연결된다', () => {
   assert.deepEqual(places['silver-lake'].activities, ['fishing']); assert.deepEqual(places['blue-coast'].activities, ['fishing']);
-  assert.deepEqual(places['wet-cave'].activities, ['mining']); assert.deepEqual(places['whisper-forest'].activities, ['gather']); assert.deepEqual(places.farmhouse.activities, ['cooking']);
-  for (const [id, place] of Object.entries(places)) for (const kind of place.activities || []) assert.ok(['fishing', 'cooking', 'mining', 'gather'].includes(kind), id + ' ' + kind);
+  assert.deepEqual(places['wet-cave'].activities, ['mining']); assert.deepEqual(places['grey-mine'].activities, ['mine']); assert.deepEqual(places['whisper-forest'].activities, ['gather']); assert.deepEqual(places.farmhouse.activities, ['cooking']);
+  for (const [id, place] of Object.entries(places)) for (const kind of place.activities || []) assert.ok(['fishing', 'cooking', 'mining', 'gather', 'mine'].includes(kind), id + ' ' + kind);
   for (const id of Object.keys(FISHING_SPOTS)) assert.ok(places[id].activities.includes('fishing'));
   assert.ok(Object.keys(GATHER_SPOTS).every(id => places[id].activities.includes('gather')));
 });

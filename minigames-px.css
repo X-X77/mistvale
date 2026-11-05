@@ -223,7 +223,7 @@ html.mv-reduced-motion .mg-root,html.mv-reduced-motion .mg-layer,html.mv-reduced
 .mg-root[data-game=fishing]{--scene:url("assets/minigames/pond.webp");--wood:#33544b}
 .mg-root[data-game=gathering]{--scene:url("assets/minigames/clearing.webp");--wood:#3e5136}
 .mg-root[data-game=cooking]{--scene:url("assets/minigames/kitchen.webp");--wood:#654632}
-.mg-root[data-game=mining]{--scene:url("assets/minigames/mine.webp");--wood:#414250}
+.mg-root[data-game=mine],.mg-root[data-game=mining]{--scene:url("assets/minigames/mine.webp");--wood:#414250}
 .mg-root :is(.cs-select,.gt-select,.ms-select){
   background:linear-gradient(#11201c94,#101c17ac),var(--scene) center/cover;
   overscroll-behavior:contain;touch-action:pan-y
@@ -262,3 +262,22 @@ html.mv-reduced-motion .mg-root,html.mv-reduced-motion .mg-layer,html.mv-reduced
   .mg-root .mg-slot.gain .box::before,.mg-root .mg-slot.gain .box::after{display:none}
 }
 .gt-basket::before{content:"";width:25px;height:25px;align-self:center;background:url("assets/minigames/forest-props.png") right center/600% 100%;image-rendering:pixelated}
+
+/* ---- 광산 안 화면 ---- */
+.mn-stage{background:#080b0f;overflow:hidden}
+.mn-canvas{position:absolute;inset:0;display:block;width:100%;height:100%}
+.mn-veins{position:absolute;inset:0}
+.mn-vein{position:absolute;display:block;padding:0;border:0;border-radius:50%;background:transparent;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.mn-vein.empty{cursor:not-allowed}
+.mn-vein:focus-visible{outline:3px solid #ffe27a;outline-offset:2px}
+.mn-tag{position:absolute;z-index:3;max-width:min(300px,86%);padding:7px 12px 9px;background:#101a16f0;color:var(--px-cream);font:400 12.5px/1.35 var(--px-font);pointer-events:none;text-align:center;
+  box-shadow:0 -3px 0 0 var(--px-ink),0 3px 0 0 var(--px-ink),-3px 0 0 0 var(--px-ink),3px 0 0 0 var(--px-ink)}
+.mn-tag[hidden]{display:none}.mn-tag b{display:block;font-weight:400;font-size:14px;color:var(--px-gold)}.mn-tag b em{font-style:normal;color:#ffb35a;margin-left:4px}.mn-tag span{color:#cfe0c8}
+.mn-pop{position:absolute;left:50%;top:max(80px,12vh);transform:translate(-50%,-6px);z-index:3;max-width:min(88%,420px);padding:8px 14px 10px;background:#142a21;color:var(--px-gold);font:400 14px/1.4 var(--px-font);text-align:center;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;
+  box-shadow:0 -3px 0 0 var(--px-ink),0 3px 0 0 var(--px-ink),-3px 0 0 0 var(--px-ink),3px 0 0 0 var(--px-ink)}
+.mn-pop.on{opacity:1;transform:translate(-50%,0)}
+.mn-legend{position:absolute;left:50%;bottom:max(12px,2.4vh);transform:translateX(-50%);display:flex;flex-wrap:wrap;gap:4px 8px;justify-content:center;width:min(96%,720px);pointer-events:none;z-index:2}
+.mn-lg{font:400 11.5px/1 var(--px-font);padding:5px 8px 6px;background:#0b1410d9;color:#cfe6d6;border-left:4px solid #8fd37a}.mn-lg b{font-weight:400;color:#ffcf70;margin-right:2px}.mn-lg i{font-style:normal;color:#a9bba0;margin-left:2px}
+.mn-lg.hard{border-color:#9db8d8}.mn-lg.rare{border-color:#b79af0}
+@media (max-width:560px){.mn-lg{font-size:10.5px;padding:4px 6px 5px}.mn-lg i{display:none}.mn-pop{top:104px;font-size:13px}}
+@media (prefers-reduced-motion:reduce){.mn-pop{transition:none}}

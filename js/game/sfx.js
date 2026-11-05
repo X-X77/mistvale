@@ -1,7 +1,7 @@
 // 미니게임 효과음: 파일 없이 WebAudio 로 만듭니다(저작권 문제 없음). 사용자가 미니게임에서 직접 켜고 끌 수 있고, 브라우저 정책상 첫 입력 뒤에만 소리가 납니다.
 //  - 같은 소리가 너무 촘촘히 겹치지 않도록 소리마다 최소 간격(MIN_GAP)을 두고, 한꺼번에 울리는 소리 수(MAX_VOICES)도 제한합니다.
 //  - 전체 음량(master)은 낮게 잡아 사이트의 배경음악과 부딪히지 않게 합니다.
-const MIN_GAP = { rustle:.09, tick:.035, chop:.05, nibble:.06, splash:.08, plop:.1, 'hit-perfect':.06, 'hit-good':.06, 'hit-weak':.06, 'hit-miss':.06, sizzle:.25, bubble:.07, rubble:.12, crack:.08, ui:.04, coin:.05, leaf:.07, find:.08, collect:.05, stir:.06, drop:.06 };
+const MIN_GAP = { rustle:.09, tick:.035, chop:.05, nibble:.06, splash:.08, plop:.1, 'hit-perfect':.06, 'hit-good':.06, 'hit-weak':.06, 'hit-miss':.06, sizzle:.25, bubble:.07, drip:.4, rubble:.12, crack:.08, ui:.04, coin:.05, leaf:.07, find:.08, collect:.05, stir:.06, drop:.06 };
 const MAX_VOICES = 20;
 export class Sfx {
   constructor() { this.enabled = true; this.ctx = null; this.master = null; this.noise = null; this.hum = null; this.voices = 0; this.lastAt = {}; }
@@ -91,6 +91,7 @@ export class Sfx {
       case 'hit-weak': this.burst({ dur:.14, freq:900, vol:.18 }); this.tone({ f:140, f2:70, dur:.2, type:'sine', vol:.2 }); break;
       case 'hit-miss': this.burst({ dur:.18, freq:500, vol:.22, q:.4 }); this.tone({ f:70, f2:40, dur:.22, type:'sine', vol:.3 }); break;
       case 'rubble': for (let i = 0; i < 5; i++) this.tone({ f:900 + Math.random() * 1000, f2:260, dur:.045, type:'square', vol:.028, at:i * .055 + Math.random() * .03 }); break;
+      case 'drip': this.tone({ f:1500, f2:780, dur:.07, type:'sine', vol:.05 }); this.tone({ f:700, f2:520, dur:.18, type:'sine', vol:.025, at:.08 }); break;
       case 'bubble': this.tone({ f:170 + Math.random() * 220, f2:260 + Math.random() * 300, dur:.07, type:'sine', vol:.05 + .03 * a }); break;
       case 'crack': this.burst({ dur:.3, freq:3500, sweep:.4, type:'highpass', vol:.22 }); break;
       case 'ore': [988, 1319, 1760].forEach((f, i) => this.tone({ f, dur:.3, type:'sine', vol:.09, at:i * .07 })); break;

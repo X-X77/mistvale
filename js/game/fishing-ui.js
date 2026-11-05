@@ -1,13 +1,13 @@
 // 낚시 화면(픽셀 캔버스): 위에서 내려다본 물가. 찌·물보라·줄의 휘어짐·낚싯대의 휘어짐·물고기의 몸짓으로 상태를 보여 줍니다.
 // 규칙(장력·체력·저항 패턴)은 fishing-engine.js 가 그대로 담당하고, 이 파일은 입력과 그림만 맡습니다.
 import { scenePainter } from './scene-art.js';
-import { FISH, FISHING_SPOTS, TIERS, GRADES, TRAITS, josa } from './items.js?v=mg4';
-import { equipmentBonus, baitEffect, BAIT_IDS, GOODS } from './goods.js?v=mg4';
-import { BiteSession, Fight, TUNING, rollSize } from './fishing-engine.js?v=mg4';
-import { createRng } from './rng.js?v=mg4';
-import { Pix, pixelSurface, blit, text, clamp, lerp, mix, light, dark, INK, hash } from './pixel.js?v=mg4';
-import { fishSprite, uiIcon, iconImg } from './art.js?v=mg4';
-import { describeItem } from './items.js?v=mg4';
+import { FISH, FISHING_SPOTS, TIERS, GRADES, TRAITS, josa } from './items.js?v=mine1';
+import { equipmentBonus, baitEffect, BAIT_IDS, GOODS } from './goods.js?v=mine1';
+import { BiteSession, Fight, TUNING, rollSize } from './fishing-engine.js?v=mine1';
+import { createRng } from './rng.js?v=mine1';
+import { Pix, pixelSurface, blit, text, clamp, lerp, mix, light, dark, INK, hash } from './pixel.js?v=mine1';
+import { fishSprite, uiIcon, iconImg } from './art.js?v=mine1';
+import { describeItem } from './items.js?v=mine1';
 
 const TAU = Math.PI * 2;
 

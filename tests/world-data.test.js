@@ -55,7 +55,7 @@ test('각 그림의 클릭 영역이 지도 안에 있고 서로 겹치지 않�
 });
 
 test('모든 장소에 최소 한 명 이상의 인물이 있다', () => {
-  for (const id of Object.keys(places)) if (!places[id].home) assert.ok(entries.some(([, n]) => n.placeId === id), id + ' 인물 없음');
+  for (const id of Object.keys(places)) if (!places[id].home && !places[id].noNpc) assert.ok(entries.some(([, n]) => n.placeId === id), id + ' 인물 없음');
 });
 
 test('공개 데이터에 비밀 설정·성인 설정 표현이 없고 성별 호칭을 쓰지 않는다', () => {

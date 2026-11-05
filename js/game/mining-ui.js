@@ -1,13 +1,13 @@
 // 채광 화면(픽셀 캔버스): 동굴 안 광석 하나를 가운데 두고, 약점의 위치와 빛나는 순간을 맞춰 곡괭이로 내리칩니다.
 // 규칙(약점·맥박·등급·피해)은 mining-engine.js 가 그대로 담당하고, 이 파일은 입력과 그림(바위·균열·곡괭이·파편)을 맡습니다.
 import { scenePainter } from './scene-art.js';
-import { MINING_SPOTS, ORES, TIERS, josa } from './items.js?v=mg4';
-import { equipmentBonus } from './goods.js?v=mg4';
-import { MineSession } from './mining-engine.js?v=mg4';
-import { createRng } from './rng.js?v=mg4';
-import { itemIcon } from './host.js?v=mg4';
-import { Pix, pixelSurface, blit, clamp, lerp, mix, light, dark, INK, hash } from './pixel.js?v=mg4';
-import { rockSprite, rockShards, iconSprite, uiIcon } from './art.js?v=mg4';
+import { MINING_SPOTS, ORES, TIERS, josa } from './items.js?v=mine1';
+import { equipmentBonus } from './goods.js?v=mine1';
+import { MineSession } from './mining-engine.js?v=mine1';
+import { createRng } from './rng.js?v=mine1';
+import { itemIcon } from './host.js?v=mine1';
+import { Pix, pixelSurface, blit, clamp, lerp, mix, light, dark, INK, hash } from './pixel.js?v=mine1';
+import { rockSprite, rockShards, iconSprite, uiIcon } from './art.js?v=mine1';
 
 const TAU = Math.PI * 2;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
@@ -15,7 +15,9 @@ const GRADE = { perfect:['정확!', 'perfect'], good:['좋아요', 'good'], weak
 const chip = (label, tone = '') => `<span class="demo-chip ${tone}">${label}</span>`;
 const key = label => `<span class="demo-key">${label}</span>`;
 
-export function createMining({ host, placeId, progress, sfx, reduced }) {
+// mine: 광산 안에서 광맥을 골라 들어온 경우 { ore, onResult({success, ore, n}), onBack() } — 광맥 고르기 화면을 건너뛰고 그 광석으로 바로 시작하며,
+//       끝나면 「광산으로 돌아가기」로 이어집니다. 조작·난이도·보상은 평소 채광과 똑같습니다.
+export function createMining({ host, placeId, progress, sfx, reduced, mine = null }) {
   const paintScene = scenePainter('mine', 0);
   const spot = MINING_SPOTS[placeId], rng = createRng();
   const stage = host.stage; stage.classList.add('ms-stage');
@@ -149,15 +151,17 @@ export function createMining({ host, placeId, progress, sfx, reduced }) {
 
   function finish() {
     const m = run.m, ore = run.ore; run.phase = 'done';
-    const again = { label:'다른 광맥 캐기', primary:true, run:() => renderSelect() }, leave = { label:'동굴에서 나가기', run:() => host.close() };
+    const again = mine ? { label:'다시 도전', primary:true, run:() => begin(ore) } : { label:'다른 광맥 캐기', primary:true, run:() => renderSelect() }, leave = mine ? { label:'광산으로 돌아가기', run:() => mine.onBack() } : { label:'동굴에서 나가기', run:() => host.close() };
     const summary = `정확 ${m.stats.perfect} · 좋음 ${m.stats.good} · 약함 ${m.stats.weak} · 빗나감 ${m.stats.miss}`;
     if (m.over === 'cracked') {
       const n = m.yieldCount(); progress.add(ore.id, n); const xpAmt = Math.round(ore.xp * (1 + Math.min(.5, m.stats.perfect * .12))), xp = progress.addXp('mining', xpAmt); sfx.play('ore'); if (xp.leveled) sfx.play('level');
-      host.showResult({ tone:'win', title:`${ore.name}${josa(ore.name, '을/를')} 캐냈어요!`, message:summary, rewards:[{ item:ore.id, n, note:m.stats.perfect >= 2 && n > ore.mine.yield[0] ? '정확한 타격이 많아 광석을 더 얻었어요.' : ore.desc }], xp:`채광 경험치 +${xpAmt}`, level:xp.leveled ? `채광 Lv.${xp.after.level} 달성!` : '', actions:[again, leave] });
+      host.showResult({ tone:'win', title:`${ore.name}${josa(ore.name, '을/를')} 캐냈어요!`, message:summary, rewards:[{ item:ore.id, n, note:m.stats.perfect >= 2 && n > ore.mine.yield[0] ? '정확한 타격이 많아 광석을 더 얻었어요.' : ore.desc }], xp:`채광 경험치 +${xpAmt}`, level:xp.leveled ? `채광 Lv.${xp.after.level} 달성!` : '', actions:mine ? [{ ...leave, primary:true }] : [again, leave] });
+      mine?.onResult?.({ success:true, ore, n });
     } else {
       const xp = progress.addXp('mining', 2); sfx.play('lose');
       const why = m.stats.perfect + m.stats.good === 0 ? '약점을 제대로 맞히지 못했어요. 링이 약점에 딱 맞는 순간, 한가운데를 노려 봐요.' : ore.tier === 'special' ? '특수 광맥은 정확한 타격이 모자라면 열리지 않아요. 움직이는 약점을 따라가 봐요.' : '곡괭이를 다 썼어요. 약점이 가장 밝을 때 노려 봐요.';
       host.showResult({ tone:'lose', title:'광맥을 캐지 못했어요', message:summary, detail:why, xp:'채광 경험치 +2 (도전 보상)', actions:[again, leave] });
+      mine?.onResult?.({ success:false, ore, n:0 });
     }
   }
 
@@ -256,14 +260,15 @@ export function createMining({ host, placeId, progress, sfx, reduced }) {
     if (S.flash > 0) { g.globalAlpha = S.flash * .5; g.fillStyle = '#fff'; g.fillRect(0, 0, VW, VH); g.globalAlpha = 1; }
   }
   function frame(now) { raf = requestAnimationFrame(frame); if (destroyed) return; const dt = clamp((now - last) / 1000, 0, .05); last = now; if (!paused) update(dt); draw(); }
-  last = performance.now(); raf = requestAnimationFrame(frame); renderSelect();
+  last = performance.now(); raf = requestAnimationFrame(frame);
+  if (mine) begin(mine.ore); else renderSelect();
 
   return {
     tutorial:{ title:'채광', pages:[
       { title:'광맥 고르기', demo:chip('일반 · 9번') + chip('희귀 · 7번', 'warn') + chip('특수 · 5번', 'bad'), text:'광맥마다 <b>곡괭이 횟수</b>가 달라요. 어려울수록 약점이 작고 움직여요.' },
       { title:'약점과 링', demo:chip('빛나는 약점') + chip('줄어드는 링') + chip('딱 맞으면 정확!', 'ok'), text:'<b>빛나는 약점</b>에 조준하고, 바깥 링이 약점에 <b>딱 맞춰질 때</b> 내리쳐요.' },
       { title:'내리치기', demo:key('클릭') + key('Space') + key('←') + key('→') + chip('탭'), text:'마우스 클릭·스페이스·탭으로 내리쳐요. 방향키로 조준도 돼요. 정확할수록 빨리 깨지고 광석도 더 나와요.' },
-    ] },
+    ].slice(mine ? 1 : 0) },
     busy: () => !!run && run.phase === 'play' && run.m.swingsMax - run.m.swings > 0,
     leaveWarning: () => '채광 중이에요. 지금 나가면 이 광맥은 캐지 못한 채 끝나요. (곡괭이 말고 쓰이는 건 없어요)',
     pause: () => { paused = true; }, resume: () => { paused = false; }, layerClosed: () => { paused = false; }, abort: () => {},

@@ -1,12 +1,12 @@
 // 채집 화면(픽셀 캔버스): 작은 숲 한 구역. 렌즈(마우스·손가락)로 주변을 살피며 재료 단서를 찾고, 의심 가는 곳을 들춰 재료를 직접 담습니다.
 // 규칙(배치·숨는 곳·단서·헛손질·희귀 재료 담기)은 gathering-engine.js 가 그대로 담당하고, 이 파일은 입력과 그림·소리만 맡습니다.
 import { scenePainter } from './scene-art.js';
-import { INGREDIENTS, josa } from './items.js?v=mg4';
-import { GatherSession, ZONES, TEMPLATES, SPOT_NAMES, CLUE_NAMES, HOLD, clueLevel, ASPECT } from './gathering-engine.js?v=mg4';
-import { createRng } from './rng.js?v=mg4';
-import { Pix, pixelSurface, blit, clamp, lerp, mix, INK, hash } from './pixel.js?v=mg4';
-import { iconSprite, iconImg, uiIcon } from './art.js?v=mg4';
-import { spotSprite, drawClue, buildGround, PALS, ITEM_COLOR, GOLD } from './gather-art.js?v=mg-art1';
+import { INGREDIENTS, josa } from './items.js?v=mine1';
+import { GatherSession, ZONES, TEMPLATES, SPOT_NAMES, CLUE_NAMES, HOLD, clueLevel, ASPECT } from './gathering-engine.js?v=mine1';
+import { createRng } from './rng.js?v=mine1';
+import { Pix, pixelSurface, blit, clamp, lerp, mix, INK, hash } from './pixel.js?v=mine1';
+import { iconSprite, iconImg, uiIcon } from './art.js?v=mine1';
+import { spotSprite, drawClue, buildGround, PALS, ITEM_COLOR, GOLD } from './gather-art.js?v=mine1';
 
 const TAU = Math.PI * 2;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));

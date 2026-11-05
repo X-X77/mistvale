@@ -4,11 +4,11 @@ import { npcs, npcsAt } from './npc-data.js?v=cutout-d';
 import { hasMet, completeFirstMeeting } from './encounter-session.js';
 import { readSave } from '../storage.js';
 import { chibiResidents } from './chibi-data.js?v=cutout-d';
-import { startMinigame, progress, shopSfx } from '../game/launcher.js?v=mg-art1';
-import { shopByPlace, shopByNpc } from '../game/shop-data.js?v=mg4';
-import { uiIcon } from '../game/art.js?v=mg4';
-import { renderPack } from '../game/host.js?v=mg4';
-import { GATHER_SPOTS, INGREDIENTS, ACTIVITIES, FISHING_SPOTS } from '../game/items.js?v=mg4';
+import { startMinigame, progress, shopSfx } from '../game/launcher.js?v=mine1';
+import { shopByPlace, shopByNpc } from '../game/shop-data.js?v=mine1';
+import { uiIcon } from '../game/art.js?v=mine1';
+import { renderPack } from '../game/host.js?v=mine1';
+import { GATHER_SPOTS, INGREDIENTS, ACTIVITIES, FISHING_SPOTS } from '../game/items.js?v=mine1';
 
 const $ = id => document.getElementById(id);
 const app = $('world'), dialog = $('npc-dialog');
@@ -126,6 +126,7 @@ const ACTIVITY_COPY = {
   fishing: place => ({ label:'낚시하기', hint:'장력과 물고기의 움직임을 읽는 힘겨루기', icon:'rod' }),
   cooking: () => ({ label:'요리하기', hint:'불 조절·타이밍·젓기로 직접 조리', icon:'pan' }),
   mining:  () => ({ label:'광맥 캐기', hint:'약점을 정확히 노려 내리치기', icon:'pick' }),
+  mine:    () => ({ label:'광산에 들어간다', hint:'광맥을 골라 직접 곡괭이질', icon:'pick' }),
   gather:  () => ({ label:'채집하기', hint:'숲에서 단서를 찾아 재료를 직접 모으기', icon:'leaf' }),
 };
 function toast(message) { const node = $('mv-toast'); node.textContent = message; node.classList.add('on'); clearTimeout(toast.timer); toast.timer = setTimeout(() => node.classList.remove('on'), 2600); }
@@ -166,7 +167,7 @@ async function openShopFor(npc, source) {
   const shop = shopByNpc(npc?.id); if (!shop || shopRunning) return; shopRunning = true;
   app.inert = true; document.documentElement.classList.add('mg-open');
   try {
-    const { openShop } = await import('../game/shop-ui.js?v=mg4');
+    const { openShop } = await import('../game/shop-ui.js?v=mine1');
     openShop({ shop, npc, place:places[shop.placeId], progress, sfx:shopSfx(), reduced:reduced(), onClose: () => {
       shopRunning = false; app.inert = false; document.documentElement.classList.remove('mg-open'); refreshGold();
       (source?.isConnected ? source : document.querySelector(`.mv-chibi[data-npc="${npc.id}"]`))?.focus({ preventScroll:true });
@@ -178,7 +179,7 @@ const paintPack = () => { $('pack-body').innerHTML = renderPack(progress, packSe
 function openPack() { paintPack(); if (!$('pack-dialog').open) $('pack-dialog').showModal(); }
 $('pack-body').addEventListener('click', async event => {
   if (event.target.closest('[data-open-reward]')) {   // 받은 선물의 코드 다시 보기
-    const { openReward } = await import('../game/gift-ui.js?v=mg4'); const dialogEl = $('pack-dialog');
+    const { openReward } = await import('../game/gift-ui.js?v=mine1'); const dialogEl = $('pack-dialog');
     openReward({ progress, parent:dialogEl, sfx:shopSfx(), reduced:reduced(), onClose:() => dialogEl.querySelector('[data-open-reward]')?.focus({ preventScroll:true }) }); return;
   }
   const item = event.target.closest('[data-pack-item]'); if (!item) return;

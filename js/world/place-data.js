@@ -122,6 +122,14 @@ export const places = {
     mood:{ a:'#0f2a47', b:'#4f89ab', glow:'#d2efff' },
     activities:['fishing'],
   },
+  'grey-mine': {
+    id:'grey-mine', name:'회색산 광산', category:'마을 밖 · 광산', hours:null, noNpc:true,
+    purpose:'회색산 중턱의 갱도. 안으로 들어가 광맥을 캘 수 있는 광산',
+    description:'마을 북쪽 회색산에 뚫린 낡은 갱도입니다. 입구에는 나무 지지대와 광차 선로가 이어지고, 안쪽에서 곡괭이 소리와 은은한 빛이 새어 나옵니다.',
+    background:null, alt:'회색산 광산 입구',
+    mood:{ a:'#14171c', b:'#3a3f4a', glow:'#ffcf70' },
+    activities:['mine'],
+  },
   'wet-cave': {
     id:'wet-cave', name:'숲의 습한 동굴', category:'마을 밖 · 동굴', hours:null,
     purpose:'안개 온천 외곽으로 이어지는 습한 동굴',

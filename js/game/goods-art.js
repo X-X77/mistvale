@@ -1,6 +1,6 @@
 // 상점 물품 아이콘(16×16 픽셀 그림). goods.js 의 icon 종류마다 한 장씩 코드로 그리고, 색은 물품의 color 를 따라 바뀝니다.
 // art.js 의 iconSprite 가 불러다 씁니다. 윤곽선은 art.js 쪽에서 다른 아이콘과 똑같이 둘러 줍니다(그림 둘레에 1칸 여백).
-import { INK, mix, light, dark } from './pixel.js?v=mg4';
+import { INK, mix, light, dark } from './pixel.js?v=mine1';
 
 
 const WOOD = '#a77746', WOOD_L = '#d19a60', WOOD_D = '#6a4527', STEEL = '#c5d0d2', STEEL_D = '#7c8e92', CREAM = '#f3ecd3', LEAF = '#78b86a', LEAF_D = '#3f7a4e', GLASS = '#dff1f2';

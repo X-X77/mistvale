@@ -1,11 +1,11 @@
 // 상점 화면(클로버 잡화점 하나): 사기/팔기 탭, 한 개 팔기·전부 팔기, 작은 구매 연출, 엑스의 비밀 선물.
 // 사고파는 규칙·가격은 모두 shop-engine.js / shop-data.js 가 정하고, 이 파일은 보여 주고 누르게만 합니다.
-import { describeItem, RECIPES, TIERS } from './items.js?v=mg4';
-import { groupOf, GROUPS, isProtected } from './goods.js?v=mg4';
-import { MAX_QTY, MAX_STACK, GIFT, GIFT_NOTE, buyPrice } from './shop-data.js?v=mg4';
-import { buy, sell, sellAll, buyGift, quoteBuy, quoteSell, quoteGift, giftStatus, stockFor, sellables } from './shop-engine.js?v=mg4';
-import { iconImg, uiIcon } from './art.js?v=mg4';
-import { openXEvent, openReward, GIFT_ICON } from './gift-ui.js?v=mg4';
+import { describeItem, RECIPES, TIERS } from './items.js?v=mine1';
+import { groupOf, GROUPS, isProtected } from './goods.js?v=mine1';
+import { MAX_QTY, MAX_STACK, GIFT, GIFT_NOTE, buyPrice } from './shop-data.js?v=mine1';
+import { buy, sell, sellAll, buyGift, quoteBuy, quoteSell, quoteGift, giftStatus, stockFor, sellables } from './shop-engine.js?v=mine1';
+import { iconImg, uiIcon } from './art.js?v=mine1';
+import { openXEvent, openReward, GIFT_ICON } from './gift-ui.js?v=mine1';
 
 const esc = text => String(text).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 const fmt = n => Number(n).toLocaleString('ko-KR');
