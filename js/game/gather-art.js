@@ -1,6 +1,6 @@
 // 채집 화면의 그림(픽셀): 숨을 곳 다섯 종류(높은 풀·덤불·통나무·바위·낙엽 더미)와 재료 단서(반짝임·포자·나비).
 // 구역이 어려울수록 팔레트가 바닥색과 비슷해져서 눈에 덜 띕니다(위장).
-import { Pix, clamp, lerp, mix, light, dark, hash } from './pixel.js?v=mg4';
+import { Pix, clamp, lerp, mix, light, dark, hash } from './pixel.js?v=mine1';
 
 export const PALS = {
   meadow:  { ground:['#5fb257', '#56a850', '#4f9d4a'], g0:'#2f7a3a', g1:'#4ea04c', g2:'#7fd06a', g3:'#b9f08a', wood:'#8a5a32', wood2:'#c08a52', stone:'#8f9a96', stone2:'#d0d8d3', leaf:['#e0803a', '#f0b84a', '#c0552e'], ink:'#1c2a22' },

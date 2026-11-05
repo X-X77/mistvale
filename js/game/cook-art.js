@@ -1,5 +1,5 @@
 // 요리 화면 전용 픽셀 그림: 식칼, 도마 위 재료, 구이 생선, 완성 접시. (art.js 의 아이콘과 같은 윤곽선·팔레트)
-import { Pix, INK, mix, light, dark, hash } from './pixel.js?v=mg4';
+import { Pix, INK, mix, light, dark, hash } from './pixel.js?v=mine1';
 
 const cache = new Map();
 const memo = (key, make) => { if (!cache.has(key)) cache.set(key, make()); return cache.get(key); };

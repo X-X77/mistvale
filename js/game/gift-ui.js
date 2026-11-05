@@ -2,8 +2,8 @@
 //   openXEvent  : 누적 5,000코인에 처음 닿았을 때 한 번만 열리는 작은 이벤트 창(상자를 열고 엑스가 놀립니다)
 //   openReward  : 선물을 산 뒤 코드와 복사 버튼을 보여 주는 보상 화면(소지품·상점에서 언제든 다시 열 수 있음)
 // 코드는 구매한 뒤에만 이 화면에 그려집니다. 이 사이트는 케이브덕과 연동되지 않고, 코드가 쓰였는지 확인하지도 않습니다.
-import { iconImg, uiIcon } from './art.js?v=mg4';
-import { GIFT, GIFT_NOTE, giftCode } from './shop-data.js?v=mg4';
+import { iconImg, uiIcon } from './art.js?v=mine1';
+import { GIFT, GIFT_NOTE, giftCode } from './shop-data.js?v=mine1';
 
 const CHEST = { id:'ui-chest', kind:'ui', icon:'chest', color:'#b8844c' }, CHEST_OPEN = { id:'ui-chest-open', kind:'ui', icon:'chestOpen', color:'#b8844c' };
 export const GIFT_ICON = { id:'ui-gift', kind:'ui', icon:'gift', color:'#c96ab0' };

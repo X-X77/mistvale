@@ -7,7 +7,7 @@
 //   - 들췄는데 아무것도 없으면 '헛손질'. 헛손질을 다 쓰면 손이 지쳐 거기서 끝납니다. 무작정 다 눌러 보는 방식은 통하지 않습니다.
 //   - 들춰서 나온 재료는 직접 눌러 담습니다. 반짝이는 희귀 재료는 손을 떼지 않고 '살금살금' 담아야 합니다(손이 흔들리면 달아납니다).
 //   - 배치는 템플릿(4가지) × 난수로 매번 달라집니다.
-import { createRng } from './rng.js?v=mg4';
+import { createRng } from './rng.js?v=mine1';
 
 export const FIELD = { w:4 / 3, h:1 };
 export const SPOT_KINDS = ['tallgrass', 'bush', 'log', 'rock', 'leaves'];

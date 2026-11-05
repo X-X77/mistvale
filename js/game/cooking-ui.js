@@ -1,12 +1,12 @@
 // 요리 화면(픽셀 캔버스): 주방 한 칸. 썰기(도마·식칼) / 젓기(국자·냄비) / 굽기(프라이팬·불 손잡이) / 졸이기(냄비)가 서로 다른 손맛을 갖도록
 // 각각 다른 도구와 다른 입력 방식으로 그립니다. 점수·품질·재료 소비 규칙은 cooking-engine.js 와 items.js 가 그대로 담당합니다.
 import { scenePainter } from './scene-art.js';
-import { RECIPES, INGREDIENTS, FISH, describeItem, qualityOf } from './items.js?v=mg4';
-import { buildSteps, dishScore, JUDGE } from './cooking-engine.js?v=mg4';
-import { itemIcon } from './host.js?v=mg4';
-import { Pix, pixelSurface, clamp, lerp, mix, light, dark, INK, hash } from './pixel.js?v=mg4';
-import { uiIcon } from './art.js?v=mg4';
-import { knifeSprite, ingredientStrip, panFish, dishPlate, burntPlate, potSprite, panSprite, BIT_COLORS } from './cook-art.js?v=mg4';
+import { RECIPES, INGREDIENTS, FISH, describeItem, qualityOf } from './items.js?v=mine1';
+import { buildSteps, dishScore, JUDGE } from './cooking-engine.js?v=mine1';
+import { itemIcon } from './host.js?v=mine1';
+import { Pix, pixelSurface, clamp, lerp, mix, light, dark, INK, hash } from './pixel.js?v=mine1';
+import { uiIcon } from './art.js?v=mine1';
+import { knifeSprite, ingredientStrip, panFish, dishPlate, burntPlate, potSprite, panSprite, BIT_COLORS } from './cook-art.js?v=mine1';
 
 const TAU = Math.PI * 2;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));

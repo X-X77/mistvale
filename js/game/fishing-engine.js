@@ -8,7 +8,7 @@
 //    - 놓으면 장력은 내려가지만 물고기가 멀어지고, 너무 오래 풀어 두면 바늘이 빠집니다(loose).
 //    - 모든 '돌진'은 신호(telegraph)가 먼저 나옵니다. 장력이 갑자기 터지는 일은 없습니다.
 //    - 좌우(lean)로 물고기를 중앙에 붙잡아 두어야 합니다. 갈대·바위 쪽으로 몰리면 줄이 쓸려 장력이 오르고 물고기가 힘을 되찾습니다.
-import { createRng } from './rng.js?v=mg4';
+import { createRng } from './rng.js?v=mine1';
 
 export const TUNING = {
   teleMin: .26,                                  // 어떤 돌진 신호도 이보다 짧지 않습니다(사람이 보고 반응할 수 있는 최소 시간)

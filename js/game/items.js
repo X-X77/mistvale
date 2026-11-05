@@ -2,7 +2,7 @@
 // value 는 상점을 만들기 전의 옛 기준값이라 더 이상 가격으로 쓰이지 않습니다. 실제 구매가·판매가는 shop-data.js 의 가격표에서만 정합니다.
 // 이름·설명은 시범용 문구입니다. 세계관에 맞게 고쳐도 게임 로직은 id 만 쓰므로 영향이 없습니다.
 
-import { GOODS } from './goods.js?v=mg4';
+import { GOODS } from './goods.js?v=mine1';
 
 export const TIERS = { common: '일반', rare: '희귀', special: '특수' };
 /* 낚시 난이도 4단계와 물고기 저항 유형 (화면 표시용) */
@@ -82,7 +82,7 @@ export const ORES = {
     desc:'단 몇 번의 정확한 타격만 허락하는 수정. 약점 세 곳을 차례로 깨야 합니다.', xp:58, kind:'ore',
     mine:{ swings:5, hp:100, weak:{ r:.075, moves:true, pulse:1, goodWin:.36 }, nodes:3, yield:[1,1] } },
 };
-export const MINING_SPOTS = { 'wet-cave': { name:'숲의 습한 동굴', ores:['moss-copper','silver-mist-stone','moondrop-crystal'] } };
+export const MINING_SPOTS = { 'wet-cave': { name:'숲의 습한 동굴', ores:['moss-copper','silver-mist-stone','moondrop-crystal'] }, 'grey-mine': { name:'회색산 광산', ores:['moss-copper','silver-mist-stone','moondrop-crystal'] } };
 
 /* ---------------- 요리 ---------------- */
 // steps: 조리 단계(요리마다 1~2가지 핵심 동작)
